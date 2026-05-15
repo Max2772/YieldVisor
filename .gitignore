@@ -214,3 +214,6 @@ __marimo__/
 
 # Zip
 *.zip
+
+# Project
+PROJECT/
