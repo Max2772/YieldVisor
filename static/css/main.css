@@ -32,7 +32,8 @@
 
 .pub-nav-logo-text {
   font-family:    var(--font-serif);
-  font-size:      16px;
+  font-size:      20px;
+  font-weight:    700;
   letter-spacing: -0.3px;
 }
 
@@ -592,7 +593,11 @@
   font-size:       11px;
 }
 
-.footer-logo-text { font-family: var(--font-serif); font-size: 14px; }
+.footer-logo-text {
+  font-family: var(--font-serif);
+  font-size: 20px;
+  font-weight: 700;
+}
 .footer-logo-text span { color: var(--green); }
 
 .footer-links {

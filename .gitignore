@@ -1,6 +1,6 @@
 # Docs
-.pdf
-.docx
+*.pdf
+*.docx
 docs/
 
 # Byte-compiled / optimized / DLL files
