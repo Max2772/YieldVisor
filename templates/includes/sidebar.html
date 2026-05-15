@@ -1,7 +1,7 @@
 <aside class="sidebar">
 
   {# Logo #}
-  <a href="/" class="sidebar-logo">
+  <a href="{% url 'main:main' %}" class="sidebar-logo">
     <div class="sidebar-logo-text">Yield<span>Visor</span></div>
   </a>
 
@@ -30,13 +30,13 @@
       Stocks
     </a>
 
-    <a href="#"
+    <a href="{% url 'crypto:crypto' %}"
        class="sidebar-nav-item {% if active_nav == 'crypto' %}active{% endif %}">
       <span class="sidebar-nav-icon">⚡</span>
       Crypto
     </a>
 
-    <a href="#"
+    <a href="{% url 'steam:steam' %}"
        class="sidebar-nav-item {% if active_nav == 'steam' %}active{% endif %}">
       <span class="sidebar-nav-icon">🎮</span>
       Steam
@@ -44,7 +44,7 @@
 
     <div class="sidebar-nav-label">Tools</div>
 
-    <a href="#"
+    <a href="{% url 'alerts:alerts' %}"
        class="sidebar-nav-item {% if active_nav == 'alerts' %}active{% endif %}">
       <span class="sidebar-nav-icon">🔔</span>
       Alerts
@@ -53,7 +53,7 @@
       {% endif %}
     </a>
 
-    <a href="#"
+    <a href="{% url 'history:history' %}"
        class="sidebar-nav-item {% if active_nav == 'history' %}active{% endif %}">
       <span class="sidebar-nav-icon">📜</span>
       History

@@ -28,7 +28,7 @@ urlpatterns = [
     path('', include('apps.main.urls')),
     path('', include('apps.users.urls')),
     path('portfolio/', include('apps.portfolio.urls')),
-    path('', include('apps.stocks.urls')),
+    path('stocks', include('apps.stocks.urls')),
     path('crypto/', include('apps.crypto.urls')),
     path('steam/', include('apps.steam.urls')),
 
