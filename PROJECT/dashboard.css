@@ -1,0 +1,229 @@
+/*
+ * dashboard.css
+ * ──────────────────────────────────────────────
+ * Стили только для страницы Dashboard.
+ * Зависит от: tokens.css, base.css, sidebar.css
+ */
+
+/* ── Stats grid ───────────────────────────── */
+.stats-grid {
+  display:               grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:                   16px;
+  margin-bottom:         28px;
+}
+
+.stat-card {
+  background:    var(--surface);
+  border:        1px solid var(--border);
+  border-radius: var(--radius);
+  padding:       22px 24px;
+  position:      relative;
+  overflow:      hidden;
+  transition:    border-color 0.2s;
+}
+
+.stat-card:hover { border-color: var(--border-light); }
+
+/* Glow blob per colour */
+.stat-card::after {
+  content:       '';
+  position:      absolute;
+  top: -20px; right: -20px;
+  width:         100px;
+  height:        100px;
+  border-radius: 50%;
+  filter:        blur(35px);
+  opacity:       0.15;
+}
+.stat-card.c-green::after { background: var(--green); }
+.stat-card.c-red::after   { background: var(--red);   }
+.stat-card.c-amber::after { background: var(--amber); }
+.stat-card.c-blue::after  { background: var(--blue);  }
+
+.stat-label {
+  font-size:      11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  margin-bottom:  10px;
+}
+
+.stat-value {
+  font-family:   var(--font-mono);
+  font-size:     26px;
+  color:         var(--text);
+  line-height:   1;
+  margin-bottom: 8px;
+}
+
+.stat-value .cents {
+  font-size: 16px;
+  color:     var(--text-muted);
+}
+
+/* ── Content grid ─────────────────────────── */
+.content-grid {
+  display:               grid;
+  grid-template-columns: 1fr 360px;
+  gap:                   20px;
+}
+
+.left-col  { display: flex; flex-direction: column; gap: 20px; }
+.right-col { display: flex; flex-direction: column; gap: 20px; }
+
+/* ── Chart area ───────────────────────────── */
+.chart-h280 {
+  position: relative;
+  height:   280px;
+}
+
+/* ── Assets table ─────────────────────────── */
+.assets-table {
+  width:           100%;
+  border-collapse: collapse;
+  margin-top:      4px;
+}
+
+.assets-table th {
+  font-size:      11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color:          var(--text-muted);
+  text-align:     left;
+  padding:        0 0 14px;
+  font-weight:    500;
+}
+
+.assets-table th:not(:first-child) { text-align: right; }
+
+.assets-table td {
+  padding:        13px 0;
+  border-top:     1px solid var(--border);
+  vertical-align: middle;
+}
+
+.assets-table td:not(:first-child) { text-align: right; }
+
+.asset-cell {
+  display:     flex;
+  align-items: center;
+  gap:         12px;
+}
+
+.asset-icon {
+  width:           36px;
+  height:          36px;
+  border-radius:   10px;
+  flex-shrink:     0;
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  font-size:       14px;
+  font-weight:     800;
+}
+
+.asset-ticker {
+  font-size:   14px;
+  font-weight: 700;
+}
+
+.asset-type {
+  font-size:      11px;
+  color:          var(--text-muted);
+  margin-top:     2px;
+  letter-spacing: 0.5px;
+}
+
+/* ── Donut / allocation ───────────────────── */
+.donut-wrap {
+  position:      relative;
+  height:        200px;
+  margin-bottom: 16px;
+}
+
+.donut-center {
+  position:   absolute;
+  top: 50%; left: 50%;
+  transform:  translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-total {
+  font-family: var(--font-mono);
+  font-size:   20px;
+  font-weight: 500;
+}
+
+.donut-label {
+  font-size:  11px;
+  color:      var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Colour bar strip */
+.bar-strip {
+  width:         100%;
+  height:        4px;
+  background:    var(--surface2);
+  border-radius: 2px;
+  display:       flex;
+  overflow:      hidden;
+  margin:        14px 0 18px;
+}
+
+/* ── Legend ───────────────────────────────── */
+.legend       { display: flex; flex-direction: column; gap: 10px; }
+.legend-item  { display: flex; align-items: center; justify-content: space-between; }
+.legend-left  { display: flex; align-items: center; gap: 8px; }
+.legend-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name  { font-size: 13px; color: var(--text-dim); }
+.legend-pct   { font-family: var(--font-mono); font-size: 13px; }
+
+/* ── Alerts panel ─────────────────────────── */
+.alert-item {
+  display:       flex;
+  align-items:   flex-start;
+  gap:           12px;
+  padding:       14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.alert-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.alert-dot {
+  width:         8px;
+  height:        8px;
+  border-radius: 50%;
+  margin-top:    5px;
+  flex-shrink:   0;
+}
+
+.alert-dot.pending   { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.alert-dot.triggered { background: var(--green);  box-shadow: 0 0 6px var(--green); }
+
+.alert-name { font-size: 13px; font-weight: 700; }
+.alert-meta { font-family: var(--font-mono); font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.alert-prog      { margin-top: 6px; height: 3px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+.alert-prog-fill { height: 100%; border-radius: 2px; }
+
+/* ── Quick stats ──────────────────────────── */
+.qs-row   { display: flex; justify-content: space-between; align-items: center; }
+.qs-label { font-size: 13px; color: var(--text-muted); }
+.qs-val   { font-family: var(--font-mono); font-size: 13px; }
+
+/* ── Date badge ───────────────────────────── */
+.date-badge {
+  font-family:   var(--font-mono);
+  font-size:     12px;
+  color:         var(--text-muted);
+  background:    var(--surface2);
+  border:        1px solid var(--border);
+  padding:       6px 12px;
+  border-radius: 6px;
+}

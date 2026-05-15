@@ -1,0 +1,53 @@
+/*
+ * tokens.css
+ * ──────────────────────────────────────────────
+ * Единственный источник всех дизайн-токенов.
+ * Подключается первым во всех base-шаблонах.
+ * Не содержит никаких правил — только переменные.
+ */
+
+:root {
+  /* ── Colours ── */
+  --bg:           #0a0c0f;
+  --surface:      #111418;
+  --surface2:     #181c22;
+  --surface3:     #1d2128;
+
+  --border:       rgba(255, 255, 255, 0.06);
+  --border-light: rgba(255, 255, 255, 0.12);
+
+  --green:        #00e676;
+  --green-dim:    rgba(0, 230, 118, 0.12);
+
+  --red:          #ff4d6d;
+  --red-dim:      rgba(255, 77, 109, 0.12);
+
+  --amber:        #ffb300;
+  --amber-dim:    rgba(255, 179, 0, 0.10);
+
+  --blue:         #4fc3f7;
+  --blue-dim:     rgba(79, 195, 247, 0.10);
+
+  --purple:       #7c83ff;
+  --purple-dim:   rgba(124, 131, 255, 0.12);
+
+  --teal:         #26c6da;
+
+  /* ── Text ── */
+  --text:         #e8eaf0;
+  --text-dim:     #9ca3af;
+  --text-muted:   #6b7280;
+
+  /* ── Typography ── */
+  --font-sans:    'Syne', sans-serif;
+  --font-serif:   'Libre Baskerville', serif;
+  --font-mono:    'DM Mono', monospace;
+
+  /* ── Geometry ── */
+  --radius:       14px;
+  --radius-sm:    8px;
+  --radius-lg:    16px;
+
+  /* ── Layout ── */
+  --sidebar-w:    240px;
+}

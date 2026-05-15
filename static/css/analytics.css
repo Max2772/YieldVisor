@@ -1,0 +1,44 @@
+/*
+ * analytics.css
+ * Extra layout rules for the Analytics page.
+ * Depends on: tokens.css, base.css, dashboard.css
+ */
+
+/* full-width asset breakdown table cells */
+.assets-table td:first-child,
+.assets-table th:first-child {
+  padding-left: 24px;
+}
+
+.assets-table td:last-child,
+.assets-table th:last-child {
+  padding-right: 24px;
+}
+
+/* progress bar inside table */
+.weight-bar-wrap {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+}
+
+.weight-bar-track {
+  flex:          1;
+  height:        4px;
+  background:    var(--surface2);
+  border-radius: 2px;
+  overflow:      hidden;
+}
+
+.weight-bar-fill {
+  height:        100%;
+  border-radius: 2px;
+}
+
+.weight-label {
+  font-family: var(--font-mono);
+  font-size:   11px;
+  color:       var(--text-muted);
+  width:       30px;
+  text-align:  right;
+}

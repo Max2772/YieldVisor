@@ -51,7 +51,7 @@
   <div class="auth-form-title">Create account</div>
   <div class="auth-form-subtitle">
     Already have one?
-    <a href="{% url 'users:login' %}">Log in →</a>
+    <a href="{% url 'user:login' %}">Log in →</a>
   </div>
 
   {% if form.non_field_errors %}
@@ -70,7 +70,7 @@
     <div class="auth-divider-line"></div>
   </div>
 
-  <form method="post" action="{% url 'users:registration' %}" class="auth-form" novalidate>
+  <form method="post" action="{% url 'user:registration' %}" class="auth-form" novalidate>
     {% csrf_token %}
 
     <div class="form-row">

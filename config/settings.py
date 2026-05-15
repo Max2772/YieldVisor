@@ -40,6 +40,7 @@ INSTALLED_APPS = [
 
     'debug_toolbar',
 
+    'apps.analytics',
     'apps.alerts',
     'apps.core',
     'apps.crypto',

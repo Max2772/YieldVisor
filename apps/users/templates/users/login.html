@@ -57,7 +57,7 @@
   <div class="auth-form-title">Welcome back</div>
   <div class="auth-form-subtitle">
     No account?
-    <a href="{% url 'users:registration' %}">Create one for free →</a>
+    <a href="{% url 'user:registration' %}">Create one for free →</a>
   </div>
 
   {% if form.non_field_errors %}
@@ -66,7 +66,7 @@
     </div>
   {% endif %}
 
-  <form method="post" action="{% url 'users:login' %}" class="auth-form" novalidate>
+  <form method="post" action="{% url 'user:login' %}" class="auth-form" novalidate>
     {% csrf_token %}
 
     {% if next %}

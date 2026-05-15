@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include "includes/messages.html" %}
+    <div class="app">
+
+      {# ── Sidebar (переиспользуемый компонент) ── #}
+      {% include "includes/sidebar.html" %}
+
+      {# ── Основной контент ── #}
+      <main class="main">
+        {# Topbar: каждая страница определяет заголовок и кнопки #}
+        <div class="topbar">
+          <div>
+            <div class="page-title">{% block page_title %}{% endblock %}</div>
+            <div class="topbar-meta">{% block page_meta %}{% endblock %}</div>
+          </div>
+          <div class="topbar-actions">
+            {% block topbar_actions %}{% endblock %}
+          </div>
+        </div>
+
+        <div class="page-content">
+            {% block page_content %}{% endblock %}
+        </div>
+
+      </main>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'js/messages.js' %}"></script>
+{% endblock %}

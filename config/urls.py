@@ -22,10 +22,15 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.main.urls', namespace='main')),
-    path('', include('apps.users.urls', namespace='user')),
-    path('', include('apps.portfolio.urls', namespace='portfolio')),
-    path('', include('apps.stocks.urls', namespace='stocks')),
+    path('analytics/', include('apps.analytics.urls')),
+    path('alerts/', include('apps.alerts.urls')),
+    path('', include('apps.main.urls')),
+    path('', include('apps.users.urls')),
+    path('portfolio/', include('apps.portfolio.urls')),
+    path('', include('apps.stocks.urls')),
+    path('crypto/', include('apps.crypto.urls')),
+    path('steam/', include('apps.steam.urls')),
+
 ]
 
 if settings.DEBUG:

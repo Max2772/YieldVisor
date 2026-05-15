@@ -1,0 +1,266 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block page_title %}Alerts{% endblock %}
+{% block page_meta %}Price notifications for your tracked assets{% endblock %}
+
+{% block topbar_actions %}
+  <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+  <button class="btn btn-ghost" id="openModalBtn">+ New Alert</button>
+{% endblock %}
+
+{% block page_content %}
+
+{# ── Summary strip ── #}
+<div class="stats-grid anim-1">
+  <div class="stat-card c-amber">
+    <div class="stat-label">Active Alerts</div>
+    <div class="stat-value">{{ active_count|default:"5" }}</div>
+    <span class="badge badge-warn">⏳ Watching</span>
+  </div>
+  <div class="stat-card c-green">
+    <div class="stat-label">Triggered Today</div>
+    <div class="stat-value">{{ triggered_today|default:"2" }}</div>
+    <span class="badge badge-up">▲ Fired</span>
+  </div>
+  <div class="stat-card c-blue">
+    <div class="stat-label">Total Created</div>
+    <div class="stat-value">{{ total_alerts|default:"14" }}</div>
+    <span class="badge badge-blue">All time</span>
+  </div>
+  <div class="stat-card c-red">
+    <div class="stat-label">Expired / Inactive</div>
+    <div class="stat-value">{{ inactive_count|default:"7" }}</div>
+    <span class="badge badge-down">Archived</span>
+  </div>
+</div>
+
+<div class="content-grid anim-2">
+  <div class="left-col">
+
+    {# Active alerts table #}
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Active Alerts</div>
+          <div class="card-subtitle">Monitoring in real time</div>
+        </div>
+        <div class="tabs">
+          <div class="tab active">All</div>
+          <div class="tab">Stocks</div>
+          <div class="tab">Crypto</div>
+          <div class="tab">Steam</div>
+        </div>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="assets-table">
+          <thead><tr>
+            <th style="padding-left:24px">Asset</th>
+            <th>Condition</th>
+            <th>Target</th>
+            <th>Current</th>
+            <th>Progress</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            {% for alert in alerts %}
+            <tr>
+              <td style="padding-left:24px">
+                <div class="asset-cell">
+                  <div class="alert-dot {% if alert.triggered %}triggered{% else %}pending{% endif %}" style="width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:0"></div>
+                  <div>
+                    <div class="asset-ticker">{{ alert.asset_name }}</div>
+                    <div class="asset-type">{{ alert.asset_type|upper }}</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge badge-purple">{{ alert.direction }} ${{ alert.target_price }}</span></td>
+              <td><span class="mono">${{ alert.target_price }}</span></td>
+              <td><span class="mono {% if alert.above_target %}up{% else %}down{% endif %}">${{ alert.current_price }}</span></td>
+              <td style="padding-right:0;width:160px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden">
+                    <div style="width:{{ alert.progress }}%;height:100%;background:{{ alert.color }};border-radius:2px;transition:width 0.3s"></div>
+                  </div>
+                  <span class="mono muted" style="font-size:11px;width:32px">{{ alert.progress }}%</span>
+                </div>
+              </td>
+              <td><span class="mono muted" style="font-size:11px">{{ alert.created_at|date:"d/m/Y" }}</span></td>
+              <td style="padding-right:24px">
+                <div style="display:flex;gap:6px">
+                  <a href="{% url 'alerts:edit' alert.pk %}" class="btn btn-ghost" style="padding:4px 8px;font-size:11px">✏</a>
+                  <form method="post" action="{% url 'alerts:delete' alert.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="padding:4px 8px;font-size:11px">✕</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            {% for i in "12345" %}
+            <tr>
+              <td style="padding-left:24px"><div class="asset-cell"><div class="alert-dot pending" style="width:10px;height:10px;border-radius:50%;flex-shrink:0"></div><div><div class="asset-ticker">BTC</div><div class="asset-type">CRYPTO</div></div></div></td>
+              <td><span class="badge badge-purple">≥ $100,000</span></td>
+              <td><span class="mono">$100,000</span></td>
+              <td><span class="mono">$83,200</span></td>
+              <td style="width:160px"><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="width:83%;height:100%;background:var(--amber);border-radius:2px"></div></div><span class="mono muted" style="font-size:11px;width:32px">83%</span></div></td>
+              <td><span class="mono muted" style="font-size:11px">01/05/2026</span></td>
+              <td style="padding-right:24px"><div style="display:flex;gap:6px"><button class="btn btn-ghost" style="padding:4px 8px;font-size:11px">✏</button><button class="btn btn-danger" style="padding:4px 8px;font-size:11px">✕</button></div></td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    {# Triggered / history #}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Trigger History</div>
+        <div class="card-subtitle">Recently fired alerts</div>
+      </div>
+      <div class="card-body" style="padding-top:8px">
+        {% for t in triggered_history %}
+        <div class="alert-item">
+          <div class="alert-dot triggered"></div>
+          <div style="flex:1">
+            <div style="display:flex;justify-content:space-between">
+              <div class="alert-name up">{{ t.asset_name }} {{ t.direction }} ${{ t.target }} ✓</div>
+              <span class="mono muted" style="font-size:11px">{{ t.triggered_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="alert-meta">Triggered at ${{ t.triggered_price }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="alert-item"><div class="alert-dot triggered"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><div class="alert-name up">AMD &gt; $200 ✓</div><span class="mono muted" style="font-size:11px">15/05/2026 09:41</span></div><div class="alert-meta">Triggered at $202.05</div></div></div>
+        <div class="alert-item"><div class="alert-dot triggered"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><div class="alert-name up">NVDA &gt; $850 ✓</div><span class="mono muted" style="font-size:11px">14/05/2026 14:22</span></div><div class="alert-meta">Triggered at $874.15</div></div></div>
+        <div class="alert-item"><div class="alert-dot triggered"></div><div style="flex:1"><div style="display:flex;justify-content:space-between"><div class="alert-name up">SOL &lt; $150 ✓</div><span class="mono muted" style="font-size:11px">12/05/2026 11:05</span></div><div class="alert-meta">Triggered at $148.20</div></div></div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>{# /left-col #}
+
+  <div class="right-col">
+
+    {# Create alert form #}
+    <div class="card" id="alertFormCard">
+      <div class="card-header"><div class="card-title">Create Alert</div></div>
+      <div class="card-body">
+{# ДОБАВИТЬ СЮДА ДОБАВЛЕНИЕ #}
+          {#        <form method="post" action="{% url 'alerts:create' %}" style="display:flex;flex-direction:column;gap:14px">#}
+        <form method="post" action="#" style="display:flex;flex-direction:column;gap:14px">
+          {% csrf_token %}
+
+          <div>
+            <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px">Asset Type</label>
+            <select name="asset_type" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none">
+              <option value="stock">Stock</option>
+              <option value="crypto">Crypto</option>
+              <option value="steam">Steam Item</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px">Asset Name</label>
+            <input type="text" name="asset_name" placeholder="e.g. BTC, NVDA, AK-47 Redline"
+                   required
+                   style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none"
+                   pattern="[A-Za-z0-9\s\-\|]+" title="Letters, numbers, spaces, dashes and pipes">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px">Condition</label>
+              <select name="direction" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none">
+                <option value=">">&gt; Greater than</option>
+                <option value=">=">&gt;= At least</option>
+                <option value="<">&lt; Less than</option>
+                <option value="<=">&lt;= At most</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:6px">Target Price $</label>
+              <input type="number" name="target_price" min="0" step="0.01" placeholder="0.00" required
+                     style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none">
+            </div>
+          </div>
+
+          {# Client-side validation feedback #}
+          <div id="alertFormError" style="display:none;padding:10px 14px;background:var(--red-dim);border:1px solid rgba(255,77,109,0.2);border-radius:var(--radius-sm);color:var(--red);font-size:12px"></div>
+
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:11px">
+            ＋ Create Alert
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# Near-target alerts spotlight #}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Near Target</div>
+        <span class="badge badge-warn">⚡ 90%+</span>
+      </div>
+      <div class="card-body" style="padding-top:8px">
+        {% for near in near_alerts %}
+        <div class="alert-item">
+          <div class="alert-dot pending"></div>
+          <div style="flex:1">
+            <div class="alert-name">{{ near.asset_name }} {{ near.direction }} ${{ near.target }}</div>
+            <div class="alert-meta">Current: ${{ near.current }} · {{ near.progress }}% there</div>
+            <div class="alert-prog"><div class="alert-prog-fill" style="width:{{ near.progress }}%;background:var(--amber)"></div></div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="alert-item"><div class="alert-dot pending"></div><div style="flex:1"><div class="alert-name">BTC ≥ $100,000</div><div class="alert-meta">Current: $83,200 · 83% there</div><div class="alert-prog"><div class="alert-prog-fill" style="width:83%;background:var(--amber)"></div></div></div></div>
+        <div class="alert-item"><div class="alert-dot pending"></div><div style="flex:1"><div class="alert-name">ETH ≤ $2,000</div><div class="alert-meta">Current: $2,112 · 94% there</div><div class="alert-prog"><div class="alert-prog-fill" style="width:94%;background:var(--purple)"></div></div></div></div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>{# /right-col #}
+</div>
+
+{% endblock %}
+
+{% block js %}
+<script>
+"use strict";
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* client-side form validation */
+  document.querySelector("form[action]")?.addEventListener("submit", function(e) {
+    const name   = this.querySelector("[name=asset_name]").value.trim();
+    const target = parseFloat(this.querySelector("[name=target_price]").value);
+    const errEl  = document.getElementById("alertFormError");
+    let   err    = "";
+    if (!name)            err = "Asset name is required.";
+    else if (isNaN(target) || target <= 0) err = "Target price must be a positive number.";
+    if (err) {
+      e.preventDefault();
+      errEl.textContent = err;
+      errEl.style.display = "block";
+    } else {
+      errEl.style.display = "none";
+    }
+  });
+
+  /* tab filter (demo — real filtering done server-side in Django) */
+  document.querySelectorAll(".tabs .tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      tab.closest(".tabs").querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+    });
+  });
+
+});
+</script>
+{% endblock %}

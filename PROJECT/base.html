@@ -1,0 +1,41 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YieldVisor · {{ title }}</title>
+
+    {# ── Google Fonts ── #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap"
+          rel="stylesheet">
+
+    {# ── Base stylesheets ── #}
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+
+    {# ── Page-specific CSS ── #}
+    {% block css %}{% endblock %}
+</head>
+
+<body>
+    {# ── Navigation Bar ── #}
+    {% block navbar %}{% endblock %}
+
+    {# ── Page Content ── #}
+    {% block content %}{% endblock %}
+
+    {# ── Global scripts ── #}
+    <script src="{% static 'js/chartjs/chart.umd.min.js' %}"></script>
+    <script src="{% static 'js/jquery/jquery-3.7.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/base.js' %}"></script>
+
+    {# ── Page-specific JS ── #}
+    {% block js %}{% endblock %}
+</body>
+</html>
