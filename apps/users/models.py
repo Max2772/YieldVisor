@@ -25,19 +25,20 @@ class UserProfile(models.Model):
     max_alerts = models.PositiveSmallIntegerField(default=10)
 
     # Telegram-интеграция (опционально, как в боте)
-    telegram_id       = models.BigIntegerField(null=True, blank=True, unique=True)
-    notify_telegram   = models.BooleanField(default=False)
+    telegram_id = models.BigIntegerField(null=True, blank=True, unique=True)
+    notify_telegram = models.BooleanField(default=False)
 
     # Email-уведомления
-    notify_email      = models.BooleanField(default=False)
+    notify_email = models.BooleanField(default=False)
 
     # Валюта отображения
     currency = models.CharField(max_length=3, default="USD")
-
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        db_table = "users_profile"
+        db_table = 'users_profile'
+        verbose_name = 'Профиль'
+        verbose_name_plural = 'Профили'
 
     def __str__(self):
         return f"Profile({self.user.username})"
