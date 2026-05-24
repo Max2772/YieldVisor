@@ -12,53 +12,20 @@
         {# ── Бегущая строка с ценами ── #}
         <div class="ticker-wrap">
           <div class="ticker-track">
-            {% for item in ticker_items %}
-              <div class="ticker-item">
-                <span class="ticker-symbol">{{ item.symbol }}</span>
-                <span class="ticker-price">{{ item.price }}</span>
-                <span class="ticker-delta {% if item.positive %}up{% else %}down{% endif %}">
-                  {% if item.positive %}▲{% else %}▼{% endif %} {{ item.delta }}
-                </span>
-              </div>
-              <span class="ticker-sep">·</span>
-            {% empty %}
-              {# Fallback статические данные (для preview без бэкенда) #}
-              <div class="ticker-item"><span class="ticker-symbol">NVDA</span><span class="ticker-price">$874.15</span><span class="ticker-delta up">▲ +2.34%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">BTC</span><span class="ticker-price">$83,200</span><span class="ticker-delta up">▲ +1.10%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">TSLA</span><span class="ticker-price">$405.99</span><span class="ticker-delta up">▲ +0.72%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">ETH</span><span class="ticker-price">$2,112.49</span><span class="ticker-delta down">▼ −1.80%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AMD</span><span class="ticker-price">$202.05</span><span class="ticker-delta up">▲ +0.52%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">SOL</span><span class="ticker-price">$91.81</span><span class="ticker-delta down">▼ −2.14%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AAPL</span><span class="ticker-price">$228.40</span><span class="ticker-delta up">▲ +0.90%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AK-47 Redline</span><span class="ticker-price">$48.30</span><span class="ticker-delta down">▼ −0.41%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">MSFT</span><span class="ticker-price">$412.60</span><span class="ticker-delta up">▲ +1.22%</span></div>
-              <span class="ticker-sep">·</span>
+            {% if ticker_items %}
+              {% for item in ticker_items %}
+                {% include "main/includes/ticker_item.html" %}
+              {% endfor %}
               {# Дубликат для бесшовной анимации #}
-              <div class="ticker-item"><span class="ticker-symbol">NVDA</span><span class="ticker-price">$874.15</span><span class="ticker-delta up">▲ +2.34%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">BTC</span><span class="ticker-price">$83,200</span><span class="ticker-delta up">▲ +1.10%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">TSLA</span><span class="ticker-price">$405.99</span><span class="ticker-delta up">▲ +0.72%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">ETH</span><span class="ticker-price">$2,112.49</span><span class="ticker-delta down">▼ −1.80%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AMD</span><span class="ticker-price">$202.05</span><span class="ticker-delta up">▲ +0.52%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AAPL</span><span class="ticker-price">$228.40</span><span class="ticker-delta up">▲ +0.90%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">AK-47 Redline</span><span class="ticker-price">$48.30</span><span class="ticker-delta down">▼ −0.41%</span></div>
-              <span class="ticker-sep">·</span>
-              <div class="ticker-item"><span class="ticker-symbol">MSFT</span><span class="ticker-price">$412.60</span><span class="ticker-delta up">▲ +1.22%</span></div>
-              <span class="ticker-sep">·</span>
-            {% endfor %}
+              {% for item in ticker_items %}
+                {% include "main/includes/ticker_item.html" %}
+              {% endfor %}
+            {% else %}
+              <div class="ticker-item ticker-item--loading">
+                <span class="ticker-symbol">YieldVisor</span>
+                <span class="ticker-price">Loading market data…</span>
+              </div>
+            {% endif %}
           </div>
         </div>
 

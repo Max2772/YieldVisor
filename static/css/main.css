@@ -123,10 +123,12 @@
 }
 
 .ticker-symbol { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--text); }
-.ticker-price  { font-family: var(--font-mono); font-size: 13px; color: var(--text-dim); }
+.ticker-price  { font-family: var(--font-mono); font-size: 13px; color: var(--green); }
 .ticker-delta  { font-family: var(--font-mono); font-size: 12px; padding: 2px 7px; border-radius: 4px; }
 .ticker-delta.up   { background: var(--green-dim); color: var(--green); }
 .ticker-delta.down { background: var(--red-dim);   color: var(--red); }
+.ticker-delta.live { background: rgba(79, 195, 247, 0.12); color: var(--blue, #4fc3f7); }
+.ticker-item--loading .ticker-price { color: var(--text-dim); font-style: italic; padding-left: 600px}
 .ticker-sep    { color: var(--border-light); }
 
 @keyframes ticker {

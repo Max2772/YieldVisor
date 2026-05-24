@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -152,3 +153,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = '/'
+
+# InvestAPI (https://api.bibikau.org)
+INVEST_API_BASE_URL = os.environ.get(
+    "INVEST_API_BASE_URL",
+    "https://api.bibikau.org",
+)
+INVEST_API_TIMEOUT = float(os.environ.get("INVEST_API_TIMEOUT", "15"))
+INVEST_API_CACHE_TTL = int(os.environ.get("INVEST_API_CACHE_TTL", "300"))
+
+TICKER_CHANGE_DAYS = int(os.environ.get("TICKER_CHANGE_DAYS", "30"))
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "yieldvisor",
+        "OPTIONS": {"MAX_ENTRIES": 1000},
+    },
+}

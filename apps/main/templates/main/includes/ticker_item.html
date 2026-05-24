@@ -1,0 +1,12 @@
+<div class="ticker-item">
+  <span class="ticker-symbol">{{ item.symbol }}</span>
+  <span class="ticker-price">{{ item.price }}</span>
+  {% if item.delta %}
+    <span class="ticker-delta {% if item.positive %}up{% else %}down{% endif %}">
+      {% if item.positive %}▲{% else %}▼{% endif %} {{ item.delta }}
+    </span>
+  {% elif item.live %}
+    <span class="ticker-delta live">● live</span>
+  {% endif %}
+</div>
+<span class="ticker-sep">·</span>
