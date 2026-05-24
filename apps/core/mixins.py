@@ -13,7 +13,7 @@ from apps.core.services.invest_api import InvestAPIError
 from apps.portfolio.forms import AddHoldingForm
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
-from apps.portfolio.services.holdings import build_holdings
+from apps.portfolio.services.market_page import build_market_page_context
 
 
 class AssetMarketMixin(LoginRequiredMixin, TemplateView):
@@ -24,11 +24,7 @@ class AssetMarketMixin(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        items, summary = build_holdings(self.request.user, self.asset_type)
-        context["items"] = items
-        context.update(summary)
-        context["coin_count"] = summary.get("position_count", 0)
-        context["item_count"] = summary.get("position_count", 0)
+        context.update(build_market_page_context(self.request.user, self.asset_type))
         context["active_nav"] = self.active_nav
         return context
 

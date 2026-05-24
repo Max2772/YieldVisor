@@ -1,4 +1,5 @@
 {% extends "base_app.html" %}
+
 {% load static %}
 
 {% block css %}
@@ -6,221 +7,147 @@
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
+
 {% block page_title %}Stocks Market{% endblock %}
 {% block page_meta %}US equities &amp; ETFs · live quotes{% endblock %}
 
 {% block topbar_actions %}
-  <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
-  <select id="exchangeSelect" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
-    <option value="us">US Market</option>
-    <option value="etf">ETFs</option>
-  </select>
-  <button class="btn btn-ghost">⟳ Refresh</button>
-  <a href="#" class="btn btn-primary">+ Add Stock</a>
+    <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+    <button class="btn btn-ghost" onclick="location.reload()">⟳ Refresh</button>
 {% endblock %}
 
 {% block page_content %}
-
-<div class="stats-grid anim-1">
-  <div class="stat-card c-blue">
-    <div class="stat-label">Portfolio Value</div>
-    <div class="stat-value">${{ portfolio_value|default:"14,256" }}<span class="cents">.48</span></div>
-    <span class="badge badge-blue">{{ position_count|default:"8" }} positions</span>
-  </div>
-  <div class="stat-card c-green">
-    <div class="stat-label">Best Performer</div>
-    <div class="stat-value" style="font-size:16px">{{ best_ticker|default:"NVDA" }}</div>
-    <span class="badge badge-up">▲ {{ best_change|default:"+22.4" }}%</span>
-  </div>
-  <div class="stat-card c-amber">
-    <div class="stat-label">Unrealised P&amp;L</div>
-    <div class="stat-value {% if pnl_pos %}up{% else %}down{% endif %}">
-      {% if pnl_pos %}+{% else %}−{% endif %}${{ unrealised_pnl|default:"892" }}<span class="cents">.30</span>
-    </div>
-    <span class="badge badge-warn">{{ pnl_pct|default:"−5.88" }}% total</span>
-  </div>
-  <div class="stat-card c-red">
-    <div class="stat-label">Cash Balance</div>
-    <div class="stat-value">${{ cash_balance|default:"1,240" }}<span class="cents">.00</span></div>
-    <span class="badge badge-down">Available to invest</span>
-  </div>
-</div>
-
-<div class="content-grid anim-2">
-  <div class="left-col">
-
-    <div class="card">
-      <div class="card-header">
-        <div>
-          <div class="card-title">My Holdings</div>
-          <div class="card-subtitle">Tracked stocks with live market prices</div>
+    <div class="stats-grid anim-1">
+        <div class="stat-card c-blue">
+            <div class="stat-label">Portfolio Value</div>
+            <div class="stat-value">${{ portfolio_value_dollars }}<span
+                    class="cents">.{{ portfolio_value_cents }}</span></div>
+            <span class="badge badge-blue">{{ position_count }} position{{ position_count|pluralize }}</span>
         </div>
-        <div style="display:flex;align-items:center;gap:10px">
-          <input type="text" id="stocksSearch" placeholder="Search ticker…"
-                 style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
+        <div class="stat-card c-green">
+            <div class="stat-label">Best Performer</div>
+            <div class="stat-value" style="font-size:16px">{{ best_ticker }}</div>
+            <span class="badge badge-up">{{ best_change }}</span>
         </div>
-      </div>
-      <div class="card-body" style="padding:0">
-        <table class="assets-table" id="stocksTable">
-          <thead><tr>
-            <th style="padding-left:24px">Stock</th>
-            <th>Avg Buy</th>
-            <th>Market Price</th>
-            <th>P&amp;L</th>
-            <th>Qty</th>
-            <th>Total Value</th>
-            <th>7D</th>
-          </tr></thead>
-          <tbody>
-            {% include "includes/holdings_rows_stocks.html" %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Portfolio Value History</div>
-        <div class="card-subtitle">Last 30 days</div>
-      </div>
-      <div class="card-body">
-        <div class="chart-h280"><canvas id="stocksChart"></canvas></div>
-      </div>
-    </div>
-
-  </div>
-
-  <div class="right-col">
-
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">By Holding</div>
-        <span class="muted" style="font-size:12px">by value</span>
-      </div>
-      <div class="card-body">
-        <div class="donut-wrap" style="height:160px">
-          <canvas id="holdingsDonut"></canvas>
-          <div class="donut-center">
-            <div class="donut-total" style="font-size:16px">${{ portfolio_value_short|default:"0" }}</div>
-            <div class="donut-label">Total</div>
-          </div>
-        </div>
-        <div class="legend" style="margin-top:12px">
-          {% for slice in allocation %}
-          <div class="legend-item">
-            <div class="legend-left">
-              <div class="legend-dot" style="background:{{ slice.color }}"></div>
-              <div class="legend-name">{{ slice.label }}</div>
+        <div class="stat-card c-amber">
+            <div class="stat-label">Unrealised P&amp;L</div>
+            <div class="stat-value {% if pnl_pos %}up{% else %}down{% endif %}">
+                {% if pnl_pos %}+{% else %}−{% endif %}${{ unrealised_pnl }}
             </div>
-            <div class="legend-pct">{{ slice.pct }}%</div>
-          </div>
-          {% empty %}
-          <div class="muted" style="font-size:12px;text-align:center;padding:8px 0">No holdings to display</div>
-          {% endfor %}
+            <span class="badge badge-warn">{% if pnl_pos %}+{% else %}−{% endif %}{{ pnl_pct }}% total</span>
         </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header"><div class="card-title">Market Search</div></div>
-      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-        <input type="text" id="marketSearchInput" placeholder="e.g. NVDA, AAPL…"
-               style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none;width:100%">
-        <button type="button" id="marketSearchBtn" class="btn btn-ghost" style="width:100%;justify-content:center">🔍 Search Stocks</button>
-        <div id="marketResults" style="display:flex;flex-direction:column;gap:8px">
-          {% for res in market_results %}
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
-            <div>
-              <div style="font-size:13px;font-weight:700">{{ res.ticker }}</div>
-              <div class="muted" style="font-size:11px;margin-top:2px">{{ res.name }}</div>
-            </div>
-            <div style="text-align:right">
-              <div class="mono" style="font-size:14px">${{ res.price }}</div>
-              <span class="badge {% if res.pos %}badge-up{% else %}badge-down{% endif %}" style="font-size:10px">{{ res.change }}</span>
-            </div>
-          </div>
-          {% empty %}
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
-            <div><div style="font-size:13px;font-weight:700">GOOGL</div><div class="muted" style="font-size:11px;margin-top:2px">Alphabet Inc.</div></div>
-            <div style="text-align:right"><div class="mono" style="font-size:14px">$178.20</div><span class="badge badge-up" style="font-size:10px">+0.9%</span></div>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
-            <div><div style="font-size:13px;font-weight:700">META</div><div class="muted" style="font-size:11px;margin-top:2px">Meta Platforms</div></div>
-            <div style="text-align:right"><div class="mono" style="font-size:14px">$512.40</div><span class="badge badge-down" style="font-size:10px">−0.4%</span></div>
-          </div>
-          {% endfor %}
+        <div class="stat-card c-red">
+            <div class="stat-label">Cost Basis</div>
+            <div class="stat-value">${{ cost_basis }}</div>
+            <span class="badge badge-down">Total invested</span>
         </div>
-      </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><div class="card-title">Quick Stats</div></div>
-      <div class="card-body" style="display:flex;flex-direction:column;gap:13px;padding-top:14px">
-        <div class="qs-row"><span class="qs-label">Best performer</span><span class="qs-val up">{{ best_ticker|default:"NVDA" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Worst performer</span><span class="qs-val down">{{ worst_ticker|default:"TSLA" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Total positions</span><span class="qs-val">{{ position_count|default:"8" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Last price update</span><span class="qs-val muted">5 min ago</span></div>
-      </div>
+    <div class="content-grid anim-2">
+        <div class="left-col">
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">My Holdings</div>
+                        <div class="card-subtitle">Tracked stocks with live market prices</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <input type="text" id="stocksSearch" placeholder="Search ticker…"
+                               style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
+                    </div>
+                </div>
+                <div class="card-body" style="padding:0">
+                    <table class="assets-table" id="stocksTable">
+                        <thead>
+                        <tr>
+                            <th style="padding-left:24px">Stock</th>
+                            <th>Avg Buy</th>
+                            <th>Market Price</th>
+                            <th>P&amp;L</th>
+                            <th>Qty</th>
+                            <th>Total Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% include "includes/holdings_rows_stocks.html" %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Portfolio Value History</div>
+                    <div class="card-subtitle">Last {{ portfolio_chart.labels|length }} days</div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-h280">
+                        <canvas id="stocksChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-col">
+
+            {% include "includes/market_allocation_card.html" with allocation_title="By Holding" donut_id="holdingsDonut" %}
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Market Search</div>
+                </div>
+
+                <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+                    <input type="text" id="marketSearchInput" placeholder="e.g. NVDA, AAPL…"
+                           style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none;width:100%">
+                    <button type="button" id="marketSearchBtn" class="btn btn-ghost"
+                            style="width:100%;justify-content:center">🔍 Search Stocks
+                    </button>
+                    <div id="marketResults" style="display:flex;flex-direction:column;gap:8px">
+                        {% include "includes/market_search_results.html" %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Quick Stats</div>
+                </div>
+
+                <div class="card-body" style="display:flex;flex-direction:column;gap:13px;padding-top:14px">
+                    <div class="qs-row"><span class="qs-label">Best performer</span><span
+                            class="qs-val up">{{ best_ticker }}</span></div>
+                    <div class="qs-row"><span class="qs-label">Worst performer</span><span
+                            class="qs-val down">{{ worst_ticker }}</span></div>
+                    <div class="qs-row"><span class="qs-label">Total positions</span><span
+                            class="qs-val">{{ position_count }}</span></div>
+                    <div class="qs-row"><span class="qs-label">Last price update</span><span
+                            class="qs-val muted">{{ last_price_update }}</span></div>
+                </div>
+            </div>
+        </div>
     </div>
-
-  </div>
-</div>
-
-{{ allocation|json_script:"holdings-allocation-data" }}
-
 {% endblock %}
 
 {% block js %}
-{{ block.super }}
-<script src="{% static 'js/market_search.js' %}"></script>
-<script>
-"use strict";
-document.addEventListener("DOMContentLoaded", () => {
-  initMarketSearch({ type: "stock", baseUrl: "{% url 'stocks:market' %}" });
-  document.querySelectorAll(".sparkline-canvas").forEach(c => {
-    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
-  });
-
-  const sc = document.getElementById("stocksChart");
-  if (sc) {
-    const labels = Array.from({length:30},(_,i)=>{const d=new Date("2026-04-15");d.setDate(d.getDate()+i);return d.toLocaleDateString("en",{month:"short",day:"numeric"});});
-    const vals = [12800,12950,12700,13100,13200,13050,13400,13300,13550,13600,13800,13700,13950,14000,13850,14100,14200,14050,14300,14400,14150,14500,14350,14450,14280,14320,14400,14256,14256,14256];
-    const g = sc.getContext("2d").createLinearGradient(0,0,0,280);
-    g.addColorStop(0,"rgba(0,230,118,0.18)"); g.addColorStop(1,"rgba(0,230,118,0)");
-    new Chart(sc.getContext("2d"),{type:"line",data:{labels,datasets:[{data:vals,borderColor:"#00e676",borderWidth:2,fill:true,backgroundColor:g,tension:0.4,pointRadius:0,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`  $${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},maxTicksLimit:7}},y:{grid:{color:"rgba(255,255,255,0.04)"},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},callback:v=>"$"+v.toLocaleString()}}}}});
-  }
-
-  const hd = document.getElementById("holdingsDonut");
-  if (hd) {
-    const allocEl = document.getElementById("holdings-allocation-data");
-    const slices = allocEl ? JSON.parse(allocEl.textContent) : [];
-    if (slices.length) {
-      new Chart(hd.getContext("2d"), {
-        type: "doughnut",
-        data: {
-          datasets: [{
-            data: slices.map(s => s.pct),
-            backgroundColor: slices.map(s => s.color),
-            borderColor: "#111418",
-            borderWidth: 3,
-          }],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: "72%",
-          plugins: { legend: { display: false } },
-        },
-      });
-    }
-  }
-
-  document.getElementById("stocksSearch")?.addEventListener("input", e => {
-    const q = e.target.value.toLowerCase();
-    document.querySelectorAll("#stocksTable tbody tr").forEach(tr => {
-      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
-    });
-  });
-});
-</script>
+    {{ block.super }}
+    <script src="{% static 'js/market_search.js' %}"></script>
+    {% include "includes/market_page_charts.html" with chart_canvas_id="stocksChart" donut_id="holdingsDonut" chart_line_color="#00e676" chart_fill_start="rgba(0,230,118,0.18)" chart_fill_end="rgba(0,230,118,0)" %}
+    <script>
+        "use strict";
+        document.addEventListener("DOMContentLoaded", () => {
+            initMarketSearch({type: "stock", baseUrl: "{% url 'stocks:market' %}"});
+            document.querySelectorAll(".sparkline-canvas").forEach(c =>
+                initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
+            });
+            document.getElementById("stocksSearch")?.addEventListener("input", e => {
+                const q = e.target.value.toLowerCase();
+                document.querySelectorAll("#stocksTable tbody tr").forEach(tr => {
+                    tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+                });
+            });
+        });
+    </script>
 {% endblock %}
+
+

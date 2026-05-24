@@ -1,0 +1,93 @@
+{{ portfolio_chart|json_script:"portfolio-chart-data" }}
+{{ allocation|json_script:"holdings-allocation-data" }}
+
+<script>
+"use strict";
+document.addEventListener("DOMContentLoaded", () => {
+  const chartEl = document.getElementById("{{ chart_canvas_id }}");
+  const chartDataEl = document.getElementById("portfolio-chart-data");
+  if (chartEl && chartDataEl) {
+    const { labels, values } = JSON.parse(chartDataEl.textContent);
+    if (values.length) {
+      const ctx = chartEl.getContext("2d");
+      const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+      gradient.addColorStop(0, "{{ chart_fill_start }}");
+      gradient.addColorStop(1, "{{ chart_fill_end }}");
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: "{{ chart_line_color }}",
+            borderWidth: 2,
+            fill: true,
+            backgroundColor: gradient,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 5,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (c) => `  $${c.parsed.y.toLocaleString()}`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                color: "#4b5563",
+                font: { family: "DM Mono", size: 11 },
+                maxTicksLimit: 7,
+              },
+            },
+            y: {
+              grid: { color: "rgba(255,255,255,0.04)" },
+              border: { display: false },
+              ticks: {
+                color: "#4b5563",
+                font: { family: "DM Mono", size: 11 },
+                callback: (v) => "$" + v.toLocaleString(),
+              },
+            },
+          },
+        },
+      });
+    }
+  }
+
+  const donutEl = document.getElementById("{{ donut_id }}");
+  const allocEl = document.getElementById("holdings-allocation-data");
+  if (donutEl && allocEl) {
+    const slices = JSON.parse(allocEl.textContent);
+    if (slices.length) {
+      new Chart(donutEl.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          datasets: [{
+            data: slices.map((s) => s.pct),
+            backgroundColor: slices.map((s) => s.color),
+            borderColor: "#111418",
+            borderWidth: 3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "72%",
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
+  }
+});
+</script>

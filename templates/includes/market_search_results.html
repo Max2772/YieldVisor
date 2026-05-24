@@ -1,0 +1,18 @@
+{% for res in market_results %}
+<a href="{{ res.detail_url }}" style="text-decoration:none;color:inherit">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+    <div>
+      <div style="font-size:13px;font-weight:700">{{ res.symbol }}</div>
+      {% if res.name %}
+      <div class="muted" style="font-size:11px;margin-top:2px">{{ res.name }}</div>
+      {% endif %}
+    </div>
+    <div style="text-align:right">
+      <div class="mono" style="font-size:14px">${{ res.price }}</div>
+      <span class="badge {% if res.pos %}badge-up{% else %}badge-down{% endif %}" style="font-size:10px">{{ res.change }}</span>
+    </div>
+  </div>
+</a>
+{% empty %}
+<div class="muted" style="font-size:12px;text-align:center;padding:8px 0">No market data available</div>
+{% endfor %}

@@ -16,44 +16,39 @@
     <option value="570">Dota 2</option>
     <option value="440">TF2</option>
   </select>
-  <button class="btn btn-ghost">⟳ Refresh</button>
-{# ДОБАВИТЬ ДОБАВЛЕНИЕ #}
-    {#  <a href="{% url 'portfolio:add_asset' %}?type=steam" class="btn btn-primary">+ Add Item</a>#}
-  <a href="#" class="btn btn-primary">+ Add Item</a>
+  <button class="btn btn-ghost" onclick="location.reload()">⟳ Refresh</button>
 {% endblock %}
 
 {% block page_content %}
 
-{# ── KPI strip ── #}
 <div class="stats-grid anim-1">
   <div class="stat-card c-blue">
     <div class="stat-label">Inventory Value</div>
-    <div class="stat-value">${{ inv_value|default:"1,042" }}<span class="cents">.30</span></div>
-    <span class="badge badge-blue">{{ item_count|default:"23" }} items</span>
+    <div class="stat-value">${{ portfolio_value_dollars }}<span class="cents">.{{ portfolio_value_cents }}</span></div>
+    <span class="badge badge-blue">{{ item_count }} item{{ item_count|pluralize }}</span>
   </div>
   <div class="stat-card c-green">
     <div class="stat-label">Best Item</div>
-    <div class="stat-value" style="font-size:16px">{{ best_item|default:"AK-47 Redline" }}</div>
-    <span class="badge badge-up">▲ ${{ best_item_val|default:"87.40" }}</span>
+    <div class="stat-value" style="font-size:16px">{{ best_item }}</div>
+    <span class="badge badge-up">${{ best_item_val }}</span>
   </div>
   <div class="stat-card c-amber">
     <div class="stat-label">Unrealised P&amp;L</div>
     <div class="stat-value {% if steam_pnl_pos %}up{% else %}down{% endif %}">
-      {% if steam_pnl_pos %}+{% else %}−{% endif %}${{ steam_pnl|default:"143" }}<span class="cents">.60</span>
+      {% if steam_pnl_pos %}+{% else %}−{% endif %}${{ steam_pnl }}
     </div>
-    <span class="badge badge-warn">{{ steam_pnl_pct|default:"+16.0" }}% total</span>
+    <span class="badge badge-warn">{{ steam_pnl_pct }}% total</span>
   </div>
   <div class="stat-card c-red">
-    <div class="stat-label">Steam Wallet</div>
-    <div class="stat-value">${{ wallet|default:"24" }}<span class="cents">.99</span></div>
-    <span class="badge badge-down">Low balance</span>
+    <div class="stat-label">Cost Basis</div>
+    <div class="stat-value">${{ cost_basis }}</div>
+    <span class="badge badge-down">Total invested</span>
   </div>
 </div>
 
 <div class="content-grid anim-2">
   <div class="left-col">
 
-    {# Items table #}
     <div class="card">
       <div class="card-header">
         <div>
@@ -63,25 +58,18 @@
         <div style="display:flex;align-items:center;gap:10px">
           <input type="text" id="steamSearch" placeholder="Search item…"
                  style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
-          <div class="tabs">
-            <div class="tab active">All</div>
-            <div class="tab">Knives</div>
-            <div class="tab">Rifles</div>
-            <div class="tab">Pistols</div>
-          </div>
         </div>
       </div>
       <div class="card-body" style="padding:0">
         <table class="assets-table" id="steamTable">
           <thead><tr>
             <th style="padding-left:24px">Item</th>
-            <th>Exterior</th>
+            <th>App</th>
             <th>Avg Buy</th>
             <th>Market Price</th>
             <th>P&amp;L</th>
             <th>Qty</th>
             <th>Total Value</th>
-            <th>7D</th>
           </tr></thead>
           <tbody>
             {% include "includes/holdings_rows.html" %}
@@ -90,81 +78,45 @@
       </div>
     </div>
 
-    {# Price history chart #}
     <div class="card">
       <div class="card-header">
         <div class="card-title">Inventory Value History</div>
-        <div class="card-subtitle">Last 30 days</div>
+        <div class="card-subtitle">Last {{ portfolio_chart.labels|length }} days</div>
       </div>
       <div class="card-body">
         <div class="chart-h280"><canvas id="steamChart"></canvas></div>
       </div>
     </div>
 
-  </div>{# /left-col #}
+  </div>
 
   <div class="right-col">
 
-    {# By type breakdown #}
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">By Type</div>
-        <span class="muted" style="font-size:12px">by value</span>
-      </div>
-      <div class="card-body">
-        <div class="donut-wrap" style="height:160px">
-          <canvas id="typeDonut"></canvas>
-          <div class="donut-center">
-            <div class="donut-total" style="font-size:16px">${{ inv_value_short|default:"1.0K" }}</div>
-            <div class="donut-label">Total</div>
-          </div>
-        </div>
-        <div class="legend" style="margin-top:12px">
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Rifles</div></div><div class="legend-pct">45%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ff4d6d"></div><div class="legend-name">Knives</div></div><div class="legend-pct">30%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#4fc3f7"></div><div class="legend-name">Pistols</div></div><div class="legend-pct">15%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Other</div></div><div class="legend-pct">10%</div></div>
-        </div>
-      </div>
-    </div>
+    {% include "includes/market_allocation_card.html" with allocation_title="By Item" donut_id="typeDonut" %}
 
-    {# Market search #}
     <div class="card">
       <div class="card-header"><div class="card-title">Market Search</div></div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
-        <input type="text" id="marketSearchInput" placeholder="e.g. AWP Dragon Lore…"
+        <input type="text" id="marketSearchInput" placeholder="e.g. AWP Asiimov…"
                style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none;width:100%">
         <button type="button" id="marketSearchBtn" class="btn btn-ghost" style="width:100%;justify-content:center">🔍 Search Steam Market</button>
         <div id="marketResults" style="display:flex;flex-direction:column;gap:8px">
-          {# Results injected by JS or Django context #}
-          {% for res in market_results %}
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
-            <div>
-              <div style="font-size:13px;font-weight:700">{{ res.name }}</div>
-              <div class="muted" style="font-size:11px;margin-top:2px">{{ res.listings }} listings</div>
-            </div>
-            <div style="text-align:right">
-              <div class="mono" style="font-size:14px">${{ res.price }}</div>
-              <span class="badge {% if res.pos %}badge-up{% else %}badge-down{% endif %}" style="font-size:10px">{{ res.change }}</span>
-            </div>
-          </div>
-          {% endfor %}
+          {% include "includes/market_search_results.html" %}
         </div>
       </div>
     </div>
 
-    {# Quick stats #}
     <div class="card">
       <div class="card-header"><div class="card-title">Quick Stats</div></div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:13px;padding-top:14px">
-        <div class="qs-row"><span class="qs-label">Best performer</span><span class="qs-val up">{{ best_item|default:"AK Redline" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Worst performer</span><span class="qs-val down">{{ worst_item|default:"P250 Sand Dune" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Total items</span><span class="qs-val">{{ item_count|default:"23" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Last price update</span><span class="qs-val muted">5 min ago</span></div>
+        <div class="qs-row"><span class="qs-label">Best performer</span><span class="qs-val up">{{ best_item }}</span></div>
+        <div class="qs-row"><span class="qs-label">Worst performer</span><span class="qs-val down">{{ worst_item }}</span></div>
+        <div class="qs-row"><span class="qs-label">Total items</span><span class="qs-val">{{ item_count }}</span></div>
+        <div class="qs-row"><span class="qs-label">Last price update</span><span class="qs-val muted">{{ last_price_update }}</span></div>
       </div>
     </div>
 
-  </div>{# /right-col #}
+  </div>
 </div>
 
 {% endblock %}
@@ -172,6 +124,7 @@
 {% block js %}
 {{ block.super }}
 <script src="{% static 'js/market_search.js' %}"></script>
+{% include "includes/market_page_charts.html" with chart_canvas_id="steamChart" donut_id="typeDonut" chart_line_color="#4fc3f7" chart_fill_start="rgba(79,195,247,0.18)" chart_fill_end="rgba(79,195,247,0)" %}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
@@ -183,25 +136,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
     initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
   });
-
-  /* Inventory value history */
-  const sc = document.getElementById("steamChart");
-  if (sc) {
-    const labels = Array.from({length:30},(_,i)=>{const d=new Date("2026-04-15");d.setDate(d.getDate()+i);return d.toLocaleDateString("en",{month:"short",day:"numeric"});});
-    const vals = [880,890,870,900,920,910,940,930,950,960,980,970,1000,1010,990,1020,1030,1010,1040,1050,1020,1060,1040,1050,1030,1042,1042,1042,1042,1042];
-    const g = sc.getContext("2d").createLinearGradient(0,0,0,280);
-    g.addColorStop(0,"rgba(79,195,247,0.18)"); g.addColorStop(1,"rgba(79,195,247,0)");
-    new Chart(sc.getContext("2d"),{type:"line",data:{labels,datasets:[{data:vals,borderColor:"#4fc3f7",borderWidth:2,fill:true,backgroundColor:g,tension:0.4,pointRadius:0,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`  $${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},maxTicksLimit:7}},y:{grid:{color:"rgba(255,255,255,0.04)"},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},callback:v=>"$"+v}}}}});
-  }
-
-  /* type donut */
-  const td = document.getElementById("typeDonut");
-  if (td) new Chart(td.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[45,30,15,10],backgroundColor:["#7c83ff","#ff4d6d","#4fc3f7","#ffb300"],borderColor:"#111418",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false}}}});
-
-  /* search filter */
-  document.getElementById("steamSearch")?.addEventListener("input",e=>{
-    const q=e.target.value.toLowerCase();
-    document.querySelectorAll("#steamTable tbody tr").forEach(tr=>{tr.style.display=tr.textContent.toLowerCase().includes(q)?"":"none";});
+  document.getElementById("steamSearch")?.addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll("#steamTable tbody tr").forEach(tr => {
+      tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
   });
 });
 </script>

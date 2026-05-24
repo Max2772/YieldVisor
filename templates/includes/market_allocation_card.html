@@ -1,0 +1,28 @@
+<div class="card">
+  <div class="card-header">
+    <div class="card-title">{{ allocation_title }}</div>
+    <span class="muted" style="font-size:12px">by value</span>
+  </div>
+  <div class="card-body">
+    <div class="donut-wrap" style="height:160px">
+      <canvas id="{{ donut_id }}"></canvas>
+      <div class="donut-center">
+        <div class="donut-total" style="font-size:16px">${{ portfolio_value_short }}</div>
+        <div class="donut-label">Total</div>
+      </div>
+    </div>
+    <div class="legend" style="margin-top:12px">
+      {% for slice in allocation %}
+      <div class="legend-item">
+        <div class="legend-left">
+          <div class="legend-dot" style="background:{{ slice.color }}"></div>
+          <div class="legend-name">{{ slice.label }}</div>
+        </div>
+        <div class="legend-pct">{{ slice.pct }}%</div>
+      </div>
+      {% empty %}
+      <div class="muted" style="font-size:12px;text-align:center;padding:8px 0">No holdings to display</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
