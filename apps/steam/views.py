@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import unquote
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from apps.core.mixins import AssetDetailMixin
+from apps.core.mixins import AssetDetailMixin, AssetMarketMixin
 from apps.portfolio.types import AssetType
 
 STEAM_APP_LABELS = {
@@ -16,13 +15,14 @@ STEAM_APP_LABELS = {
 }
 
 
-class SteamView(LoginRequiredMixin, TemplateView):
+class SteamView(AssetMarketMixin, TemplateView):
     template_name = 'steam/steam.html'
+    asset_type = AssetType.STEAM
+    active_nav = 'steam'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Steam'
-        context['active_nav'] = 'steam'
         return context
 
 

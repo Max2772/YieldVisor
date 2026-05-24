@@ -79,77 +79,7 @@
             <th>7D</th>
           </tr></thead>
           <tbody>
-            {% for item in items %}
-            <tr>
-              <td style="padding-left:24px">
-                <div class="asset-cell">
-                  <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px">{{ item.ticker|slice:":2" }}</div>
-                  <div>
-                    <div class="asset-ticker" style="font-size:12px">{{ item.ticker }}</div>
-                    <div class="asset-type">{{ item.name }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge badge-blue">{{ item.sector }}</span></td>
-              <td><span class="mono">${{ item.avg_buy }}</span></td>
-              <td><span class="mono">${{ item.market_price }}</span></td>
-              <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
-              <td><span class="mono muted">{{ item.qty }}</span></td>
-              <td><span class="mono">${{ item.total }}</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-{{ forloop.counter }}" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2e40;color:#4fc3f7;font-size:11px;font-weight:700;border-radius:6px">NV</div><div><div class="asset-ticker" style="font-size:12px">NVDA</div><div class="asset-type">NVIDIA Corporation</div></div></div></td>
-              <td><span class="badge badge-blue">Technology</span></td>
-              <td><span class="mono">$715.00</span></td>
-              <td><span class="mono">$874.15</span></td>
-              <td><span class="badge badge-up">▲ $159.15</span></td>
-              <td><span class="mono muted">5</span></td>
-              <td><span class="mono">$4,370.75</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-1" width="80" height="36" data-values="710,720,740,730,760,780,874" data-color="#00e676"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676;font-size:11px;font-weight:700;border-radius:6px">AA</div><div><div class="asset-ticker" style="font-size:12px">AAPL</div><div class="asset-type">Apple Inc.</div></div></div></td>
-              <td><span class="badge badge-blue">Technology</span></td>
-              <td><span class="mono">$198.50</span></td>
-              <td><span class="mono">$228.40</span></td>
-              <td><span class="badge badge-up">▲ $29.90</span></td>
-              <td><span class="mono muted">10</span></td>
-              <td><span class="mono">$2,284.00</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-2" width="80" height="36" data-values="210,215,218,220,222,225,228" data-color="#00e676"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#2a1a1a;color:#ff4d6d;font-size:11px;font-weight:700;border-radius:6px">TS</div><div><div class="asset-ticker" style="font-size:12px">TSLA</div><div class="asset-type">Tesla, Inc.</div></div></div></td>
-              <td><span class="badge badge-blue">Consumer</span></td>
-              <td><span class="mono">$420.00</span></td>
-              <td><span class="mono">$405.99</span></td>
-              <td><span class="badge badge-down">▼ $14.01</span></td>
-              <td><span class="mono muted">3</span></td>
-              <td><span class="mono">$1,217.97</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-3" width="80" height="36" data-values="430,425,420,415,410,408,406" data-color="#ff4d6d"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2040;color:#7c83ff;font-size:11px;font-weight:700;border-radius:6px">MS</div><div><div class="asset-ticker" style="font-size:12px">MSFT</div><div class="asset-type">Microsoft Corp.</div></div></div></td>
-              <td><span class="badge badge-blue">Technology</span></td>
-              <td><span class="mono">$380.00</span></td>
-              <td><span class="mono">$412.60</span></td>
-              <td><span class="badge badge-up">▲ $32.60</span></td>
-              <td><span class="mono muted">4</span></td>
-              <td><span class="mono">$1,650.40</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-4" width="80" height="36" data-values="390,395,400,405,408,410,413" data-color="#00e676"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2e40;color:#4fc3f7;font-size:11px;font-weight:700;border-radius:6px">AM</div><div><div class="asset-ticker" style="font-size:12px">AMD</div><div class="asset-type">Advanced Micro Devices</div></div></div></td>
-              <td><span class="badge badge-blue">Technology</span></td>
-              <td><span class="mono">$185.00</span></td>
-              <td><span class="mono">$202.05</span></td>
-              <td><span class="badge badge-up">▲ $17.05</span></td>
-              <td><span class="mono muted">8</span></td>
-              <td><span class="mono">$1,616.40</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-5" width="80" height="36" data-values="188,190,195,192,198,200,202" data-color="#00e676"></canvas></td>
-            </tr>
-            {% endfor %}
+            {% include "includes/holdings_rows.html" %}
           </tbody>
         </table>
       </div>

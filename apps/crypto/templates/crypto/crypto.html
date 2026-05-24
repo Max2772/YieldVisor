@@ -80,67 +80,7 @@
             <th>7D</th>
           </tr></thead>
           <tbody>
-            {% for item in items %}
-            <tr>
-              <td style="padding-left:24px">
-                <div class="asset-cell">
-                  <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px">{{ item.symbol|slice:":1" }}</div>
-                  <div>
-                    <div class="asset-ticker" style="font-size:12px">{{ item.symbol }}</div>
-                    <div class="asset-type">{{ item.name }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge badge-purple">{{ item.network }}</span></td>
-              <td><span class="mono">${{ item.avg_buy }}</span></td>
-              <td><span class="mono">${{ item.market_price }}</span></td>
-              <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
-              <td><span class="mono muted">{{ item.qty }}</span></td>
-              <td><span class="mono">${{ item.total }}</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-{{ forloop.counter }}" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
-            </tr>
-            {% empty %}
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676;font-size:11px;font-weight:700;border-radius:6px">₿</div><div><div class="asset-ticker" style="font-size:12px">BTC</div><div class="asset-type">Bitcoin</div></div></div></td>
-              <td><span class="badge badge-purple">Bitcoin</span></td>
-              <td><span class="mono">$77,000</span></td>
-              <td><span class="mono">$83,200</span></td>
-              <td><span class="badge badge-up">▲ $310.00</span></td>
-              <td><span class="mono muted">0.05</span></td>
-              <td><span class="mono">$4,160.00</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-1" width="80" height="36" data-values="79000,80500,82000,81000,83500,82800,83200" data-color="#00e676"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a1a2e;color:#7c83ff;font-size:11px;font-weight:700;border-radius:6px">Ξ</div><div><div class="asset-ticker" style="font-size:12px">ETH</div><div class="asset-type">Ethereum</div></div></div></td>
-              <td><span class="badge badge-purple">Ethereum</span></td>
-              <td><span class="mono">$3,200</span></td>
-              <td><span class="mono">$2,112</span></td>
-              <td><span class="badge badge-down">▼ $756.00</span></td>
-              <td><span class="mono muted">0.7</span></td>
-              <td><span class="mono">$1,478.40</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-2" width="80" height="36" data-values="2400,2300,2200,2350,2100,2080,2112" data-color="#ff4d6d"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2040;color:#4fc3f7;font-size:11px;font-weight:700;border-radius:6px">◎</div><div><div class="asset-ticker" style="font-size:12px">SOL</div><div class="asset-type">Solana</div></div></div></td>
-              <td><span class="badge badge-purple">Solana</span></td>
-              <td><span class="mono">$120.00</span></td>
-              <td><span class="mono">$148.20</span></td>
-              <td><span class="badge badge-up">▲ $28.20</span></td>
-              <td><span class="mono muted">12</span></td>
-              <td><span class="mono">$1,778.40</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-3" width="80" height="36" data-values="120,125,130,128,135,142,148" data-color="#00e676"></canvas></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#2a1a30;color:#ffb300;font-size:11px;font-weight:700;border-radius:6px">B</div><div><div class="asset-ticker" style="font-size:12px">BNB</div><div class="asset-type">BNB</div></div></div></td>
-              <td><span class="badge badge-purple">BSC</span></td>
-              <td><span class="mono">$580</span></td>
-              <td><span class="mono">$612</span></td>
-              <td><span class="badge badge-up">▲ $32.00</span></td>
-              <td><span class="mono muted">2</span></td>
-              <td><span class="mono">$1,224.00</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-4" width="80" height="36" data-values="580,590,595,600,605,608,612" data-color="#00e676"></canvas></td>
-            </tr>
-            {% endfor %}
+            {% include "includes/holdings_rows.html" %}
           </tbody>
         </table>
       </div>

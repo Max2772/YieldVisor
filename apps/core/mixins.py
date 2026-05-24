@@ -2,17 +2,39 @@ from __future__ import annotations
 
 from typing import Any
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.views.generic import TemplateView
 
 from apps.core.services.asset_detail import build_asset_detail_context
 from apps.core.services.invest_api import InvestAPIError
+from apps.portfolio.forms import AddHoldingForm
+from apps.portfolio.models import Portfolio
+from apps.portfolio.services.add_holding import add_holding
+from apps.portfolio.services.holdings import build_holdings
+
+
+class AssetMarketMixin(LoginRequiredMixin, TemplateView):
+    """Список активов пользователя по категории с ценами из API."""
+
+    asset_type: str = ""
+    active_nav: str = ""
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        items, summary = build_holdings(self.request.user, self.asset_type)
+        context["items"] = items
+        context.update(summary)
+        context["coin_count"] = summary.get("position_count", 0)
+        context["item_count"] = summary.get("position_count", 0)
+        context["active_nav"] = self.active_nav
+        return context
 
 
 class AssetDetailMixin(LoginRequiredMixin, TemplateView):
-    """Загрузка карточки актива из InvestAPI; своя 404, если актив не найден."""
+    """Карточка актива из InvestAPI; добавление в портфель; 404 если не найден."""
 
     asset_type: str = ""
     list_url_name: str = ""
@@ -25,6 +47,17 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
 
     def get_hero_meta(self, **kwargs: Any) -> str:
         return ""
+
+    def _get_portfolio_position(self, params: dict[str, Any]) -> Portfolio | None:
+        qs = Portfolio.objects.filter(
+            user=self.request.user,
+            asset_type=self.asset_type,
+            asset_name=params["asset_name"],
+        )
+        app_id = params.get("app_id")
+        if app_id is not None:
+            return qs.filter(app_id=app_id).first()
+        return qs.filter(app_id__isnull=True).first()
 
     def _render_asset_not_found(
         self,
@@ -48,8 +81,9 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
             status=404,
         )
 
-    def get(self, request, *args, **kwargs):
+    def _load_detail(self, **kwargs: Any) -> dict[str, Any] | None:
         params = self.get_asset_params(**kwargs)
+        self._asset_params = params
         try:
             detail = build_asset_detail_context(
                 self.asset_type,
@@ -60,14 +94,49 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
                 hero_meta=self.get_hero_meta(**kwargs),
             )
         except InvestAPIError:
-            return self._render_asset_not_found(request, params, api_unavailable=True)
-
+            self._load_error = "api"
+            return None
         if detail is None:
-            return self._render_asset_not_found(request, params)
-
+            self._load_error = "not_found"
+            return None
+        self._load_error = None
         self._asset_detail = detail
-        self._asset_params = params
+        return detail
+
+    def get(self, request, *args, **kwargs):
+        if self._load_detail(**kwargs) is None:
+            if self._load_error == "api":
+                return self._render_asset_not_found(
+                    request, self._asset_params, api_unavailable=True
+                )
+            return self._render_asset_not_found(request, self._asset_params)
+
         return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if self._load_detail(**kwargs) is None:
+            if self._load_error == "api":
+                return self._render_asset_not_found(
+                    request, self._asset_params, api_unavailable=True
+                )
+            return self._render_asset_not_found(request, self._asset_params)
+
+        form = AddHoldingForm(request.POST)
+        if form.is_valid():
+            add_holding(
+                request.user,
+                asset_type=self.asset_type,
+                asset_name=self._asset_params["asset_name"],
+                app_id=self._asset_params.get("app_id"),
+                quantity=form.cleaned_data["quantity"],
+                buy_price=form.cleaned_data["buy_price"],
+            )
+            messages.success(request, f"Added {self._asset_params['display_symbol']} to portfolio.")
+            return redirect(request.path)
+
+        context = self.get_context_data(**kwargs)
+        context["add_form"] = form
+        return self.render_to_response(context)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
@@ -76,4 +145,6 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
         context["active_nav"] = self.active_nav
         context["list_label"] = self.list_label
         context["list_url_name"] = self.list_url_name
+        context["portfolio_position"] = self._get_portfolio_position(self._asset_params)
+        context.setdefault("add_form", AddHoldingForm())
         return context

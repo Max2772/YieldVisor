@@ -7,6 +7,7 @@ from typing import Any
 from django.conf import settings
 
 from apps.core.constants import HOMEPAGE_TICKERS, TickerSpec
+from apps.core.async_utils import run_async
 from apps.core.services.invest_api import (
     InvestAPIClient,
     InvestAPIError,
@@ -116,4 +117,4 @@ def build_ticker_items() -> list[dict[str, Any]]:
     Синхронная обёртка для Django views.
     Один event loop на загрузку всего тикера.
     """
-    return asyncio.run(build_ticker_items_async())
+    return run_async(build_ticker_items_async())

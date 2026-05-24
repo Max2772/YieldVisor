@@ -2,20 +2,20 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
-from apps.core.mixins import AssetDetailMixin
+from apps.core.mixins import AssetDetailMixin, AssetMarketMixin
 from apps.portfolio.types import AssetType
 
 
-class StockMarket(LoginRequiredMixin, TemplateView):
+class StockMarket(AssetMarketMixin, TemplateView):
     template_name = 'stocks/stocks.html'
+    asset_type = AssetType.STOCK
+    active_nav = 'stocks'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Stocks'
-        context['active_nav'] = 'stocks'
         return context
 
 

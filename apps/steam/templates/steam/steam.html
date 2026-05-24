@@ -84,39 +84,7 @@
             <th>7D</th>
           </tr></thead>
           <tbody>
-            {% for item in items %}
-            <tr>
-              <td style="padding-left:24px">
-                <div class="asset-cell">
-                  <div class="asset-icon" style="background:{{ item.rarity_bg }};color:{{ item.rarity_fg }};font-size:10px;font-weight:700;border-radius:6px">{{ item.type_icon }}</div>
-                  <div>
-                    <div class="asset-ticker" style="font-size:12px">{{ item.name }}</div>
-                    <div class="asset-type">{{ item.app_name }}</div>
-                  </div>
-                </div>
-              </td>
-              <td><span class="badge" style="background:{{ item.wear_bg }};color:{{ item.wear_fg }}">{{ item.wear }}</span></td>
-              <td><span class="mono">${{ item.avg_buy }}</span></td>
-              <td><span class="mono">${{ item.market_price }}</span></td>
-              <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
-              <td><span class="mono muted">{{ item.qty }}</span></td>
-              <td><span class="mono">${{ item.total }}</span></td>
-              <td><canvas class="sparkline-canvas" id="ssp-{{ forloop.counter }}" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
-            </tr>
-            {% empty %}
-            {% for i in "123456789" %}
-            <tr>
-              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a1a2e;color:#7c83ff;font-size:10px;font-weight:700;border-radius:6px">AK</div><div><div class="asset-ticker" style="font-size:12px">AK-47 | Redline</div><div class="asset-type">CS2 · Rifle</div></div></div></td>
-              <td><span class="badge badge-purple">FT</span></td>
-              <td><span class="mono">$65.20</span></td>
-              <td><span class="mono">$87.40</span></td>
-              <td><span class="badge badge-up">▲ $22.20</span></td>
-              <td><span class="mono muted">1</span></td>
-              <td><span class="mono">$87.40</span></td>
-              <td><canvas id="ssp-{{ forloop.counter }}" width="80" height="36" data-values="70,72,75,74,80,85,87" data-color="#00e676"></canvas></td>
-            </tr>
-            {% endfor %}
-            {% endfor %}
+            {% include "includes/holdings_rows.html" %}
           </tbody>
         </table>
       </div>

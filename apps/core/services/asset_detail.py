@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
 
+from apps.core.async_utils import run_async
 from apps.core.services.invest_api import (
     InvestAPIError,
     PriceHistory,
@@ -80,7 +80,7 @@ def build_asset_detail_context(
     history_days = days if days is not None else settings.TICKER_CHANGE_DAYS
 
     try:
-        result = asyncio.run(
+        result = run_async(
             _fetch_quote_and_history(
                 asset_type,
                 asset_name,
