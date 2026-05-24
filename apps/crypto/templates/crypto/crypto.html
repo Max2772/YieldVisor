@@ -6,75 +6,60 @@
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
-{% block page_title %}Crypto{% endblock %}
-{% block page_meta %}Live prices · Binance feed{% endblock %}
+{% block page_title %}Crypto Market{% endblock %}
+{% block page_meta %}Digital assets · live prices{% endblock %}
 
 {% block topbar_actions %}
   <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
-  <button class="btn btn-ghost" id="refreshBtn">⟳ Refresh</button>
-    {# ЗДЕСЬ ДОБАВИТЬ ДОБАВЛЕНИЕ #}
-{#  <a href="{% url 'portfolio:add_asset' %}?type=crypto" class="btn btn-primary">+ Add Crypto</a>#}
+  <select id="chainSelect" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
+    <option value="all">All chains</option>
+    <option value="btc">Bitcoin</option>
+    <option value="eth">Ethereum</option>
+    <option value="sol">Solana</option>
+  </select>
+  <button class="btn btn-ghost">⟳ Refresh</button>
   <a href="#" class="btn btn-primary">+ Add Crypto</a>
 {% endblock %}
 
 {% block page_content %}
 
-{# ── Market overview strip ── #}
 <div class="stats-grid anim-1">
   <div class="stat-card c-green">
-    <div class="stat-label">BTC Price</div>
-    <div class="stat-value" id="btc-price">${{ btc_price|default:"83,200" }}</div>
-    <span class="badge badge-up" id="btc-change">▲ +1.2% 24h</span>
-  </div>
-  <div class="stat-card c-red">
-    <div class="stat-label">ETH Price</div>
-    <div class="stat-value" id="eth-price">${{ eth_price|default:"2,112" }}</div>
-    <span class="badge badge-down" id="eth-change">▼ −0.9% 24h</span>
+    <div class="stat-label">Portfolio Value</div>
+    <div class="stat-value">${{ portfolio_value|default:"6,840" }}<span class="cents">.12</span></div>
+    <span class="badge badge-up">{{ coin_count|default:"4" }} coins</span>
   </div>
   <div class="stat-card c-blue">
-    <div class="stat-label">Market Cap</div>
-    <div class="stat-value">$<span id="mcap">{{ market_cap|default:"2.74" }}</span><span class="cents">T</span></div>
-    <span class="badge badge-blue">Global</span>
+    <div class="stat-label">Best Coin</div>
+    <div class="stat-value" style="font-size:16px">{{ best_coin|default:"BTC" }}</div>
+    <span class="badge badge-up">▲ {{ best_change|default:"+8.1" }}%</span>
   </div>
   <div class="stat-card c-amber">
-    <div class="stat-label">Fear &amp; Greed</div>
-    <div class="stat-value">{{ fear_greed|default:"62" }}</div>
-    <span class="badge badge-warn">⚡ Greed</span>
+    <div class="stat-label">Unrealised P&amp;L</div>
+    <div class="stat-value {% if pnl_pos %}up{% else %}down{% endif %}">
+      {% if pnl_pos %}+{% else %}−{% endif %}${{ unrealised_pnl|default:"412" }}<span class="cents">.50</span>
+    </div>
+    <span class="badge badge-warn">{{ pnl_pct|default:"+6.4" }}% total</span>
+  </div>
+  <div class="stat-card c-red">
+    <div class="stat-label">Stablecoin Balance</div>
+    <div class="stat-value">${{ stable_balance|default:"320" }}<span class="cents">.00</span></div>
+    <span class="badge badge-blue">USDT · USDC</span>
   </div>
 </div>
 
 <div class="content-grid anim-2">
-
   <div class="left-col">
 
-    {# BTC price chart #}
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">Bitcoin</div>
-          <div class="card-subtitle">BTC / USD · price history</div>
+          <div class="card-title">My Holdings</div>
+          <div class="card-subtitle">Tracked coins with market prices</div>
         </div>
-        <div class="tabs" id="cryptoTabs">
-          <div class="tab" data-coin="btc">BTC</div>
-          <div class="tab active" data-coin="eth">ETH</div>
-          <div class="tab" data-coin="bnb">BNB</div>
-          <div class="tab" data-coin="sol">SOL</div>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="chart-h280"><canvas id="cryptoChart"></canvas></div>
-      </div>
-    </div>
-
-    {# Crypto table #}
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">All Crypto Assets</div>
         <div style="display:flex;align-items:center;gap:10px">
           <input type="text" id="cryptoSearch" placeholder="Search coin…"
-                 style="background:var(--surface2);border:1px solid var(--border);color:var(--text);
-                        padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);
-                        font-size:12px;outline:none;width:160px">
+                 style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
           <div class="tabs">
             <div class="tab active">All</div>
             <div class="tab">Top 10</div>
@@ -85,133 +70,161 @@
       <div class="card-body" style="padding:0">
         <table class="assets-table" id="cryptoTable">
           <thead><tr>
-            <th style="padding-left:24px">#</th>
-            <th>Coin</th>
-            <th>Price</th>
-            <th>24h %</th>
-            <th>7d %</th>
-            <th>Market Cap</th>
-            <th>7D Chart</th>
-            <th>Action</th>
+            <th style="padding-left:24px">Coin</th>
+            <th>Network</th>
+            <th>Avg Buy</th>
+            <th>Market Price</th>
+            <th>P&amp;L</th>
+            <th>Qty</th>
+            <th>Total Value</th>
+            <th>7D</th>
           </tr></thead>
           <tbody>
-            {% for coin in coins %}
+            {% for item in items %}
             <tr>
-              <td style="padding-left:24px"><span class="mono muted">{{ forloop.counter }}</span></td>
-              <td>
+              <td style="padding-left:24px">
                 <div class="asset-cell">
-                  <div class="asset-icon" style="background:{{ coin.bg }};color:{{ coin.fg }}">{{ coin.symbol|first }}</div>
+                  <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px">{{ item.symbol|slice:":1" }}</div>
                   <div>
-                    <div class="asset-ticker">{{ coin.symbol }}</div>
-                    <div class="asset-type">{{ coin.name }}</div>
+                    <div class="asset-ticker" style="font-size:12px">{{ item.symbol }}</div>
+                    <div class="asset-type">{{ item.name }}</div>
                   </div>
                 </div>
               </td>
-              <td><span class="mono">${{ coin.price }}</span></td>
-              <td><span class="badge {% if coin.change24_pos %}badge-up{% else %}badge-down{% endif %}">{% if coin.change24_pos %}▲{% else %}▼{% endif %} {{ coin.change24 }}%</span></td>
-              <td><span class="badge {% if coin.change7_pos %}badge-up{% else %}badge-down{% endif %}">{% if coin.change7_pos %}▲{% else %}▼{% endif %} {{ coin.change7 }}%</span></td>
-              <td><span class="mono muted">${{ coin.mcap }}</span></td>
-              <td><canvas class="sparkline-canvas" id="csp-{{ forloop.counter }}" width="80" height="36" data-values="{{ coin.sparkline }}" data-color="{% if coin.change7_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
-              <td style="padding-right:24px"><a href="#" class="btn btn-outline" style="padding:4px 10px;font-size:11px">+ Buy</a></td>
+              <td><span class="badge badge-purple">{{ item.network }}</span></td>
+              <td><span class="mono">${{ item.avg_buy }}</span></td>
+              <td><span class="mono">${{ item.market_price }}</span></td>
+              <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
+              <td><span class="mono muted">{{ item.qty }}</span></td>
+              <td><span class="mono">${{ item.total }}</span></td>
+              <td><canvas class="sparkline-canvas" id="csp-{{ forloop.counter }}" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
             </tr>
             {% empty %}
-            {% for row in "1234567" %}
             <tr>
-              <td style="padding-left:24px"><span class="mono muted">{{ forloop.counter }}</span></td>
-              <td><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676">₿</div><div><div class="asset-ticker">BTC</div><div class="asset-type">Bitcoin</div></div></div></td>
+              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676;font-size:11px;font-weight:700;border-radius:6px">₿</div><div><div class="asset-ticker" style="font-size:12px">BTC</div><div class="asset-type">Bitcoin</div></div></div></td>
+              <td><span class="badge badge-purple">Bitcoin</span></td>
+              <td><span class="mono">$77,000</span></td>
               <td><span class="mono">$83,200</span></td>
-              <td><span class="badge badge-up">▲ 1.2%</span></td>
-              <td><span class="badge badge-up">▲ 3.8%</span></td>
-              <td><span class="mono muted">$1.64T</span></td>
-              <td><canvas id="csp-{{ forloop.counter }}" width="80" height="36" data-values="79000,80500,82000,81000,83500,82800,83200" data-color="#00e676"></canvas></td>
-              <td style="padding-right:24px"><a href="#" class="btn btn-outline" style="padding:4px 10px;font-size:11px">+ Buy</a></td>
+              <td><span class="badge badge-up">▲ $310.00</span></td>
+              <td><span class="mono muted">0.05</span></td>
+              <td><span class="mono">$4,160.00</span></td>
+              <td><canvas class="sparkline-canvas" id="csp-1" width="80" height="36" data-values="79000,80500,82000,81000,83500,82800,83200" data-color="#00e676"></canvas></td>
             </tr>
-            {% endfor %}
+            <tr>
+              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a1a2e;color:#7c83ff;font-size:11px;font-weight:700;border-radius:6px">Ξ</div><div><div class="asset-ticker" style="font-size:12px">ETH</div><div class="asset-type">Ethereum</div></div></div></td>
+              <td><span class="badge badge-purple">Ethereum</span></td>
+              <td><span class="mono">$3,200</span></td>
+              <td><span class="mono">$2,112</span></td>
+              <td><span class="badge badge-down">▼ $756.00</span></td>
+              <td><span class="mono muted">0.7</span></td>
+              <td><span class="mono">$1,478.40</span></td>
+              <td><canvas class="sparkline-canvas" id="csp-2" width="80" height="36" data-values="2400,2300,2200,2350,2100,2080,2112" data-color="#ff4d6d"></canvas></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#1a2040;color:#4fc3f7;font-size:11px;font-weight:700;border-radius:6px">◎</div><div><div class="asset-ticker" style="font-size:12px">SOL</div><div class="asset-type">Solana</div></div></div></td>
+              <td><span class="badge badge-purple">Solana</span></td>
+              <td><span class="mono">$120.00</span></td>
+              <td><span class="mono">$148.20</span></td>
+              <td><span class="badge badge-up">▲ $28.20</span></td>
+              <td><span class="mono muted">12</span></td>
+              <td><span class="mono">$1,778.40</span></td>
+              <td><canvas class="sparkline-canvas" id="csp-3" width="80" height="36" data-values="120,125,130,128,135,142,148" data-color="#00e676"></canvas></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px"><div class="asset-cell"><div class="asset-icon" style="background:#2a1a30;color:#ffb300;font-size:11px;font-weight:700;border-radius:6px">B</div><div><div class="asset-ticker" style="font-size:12px">BNB</div><div class="asset-type">BNB</div></div></div></td>
+              <td><span class="badge badge-purple">BSC</span></td>
+              <td><span class="mono">$580</span></td>
+              <td><span class="mono">$612</span></td>
+              <td><span class="badge badge-up">▲ $32.00</span></td>
+              <td><span class="mono muted">2</span></td>
+              <td><span class="mono">$1,224.00</span></td>
+              <td><canvas class="sparkline-canvas" id="csp-4" width="80" height="36" data-values="580,590,595,600,605,608,612" data-color="#00e676"></canvas></td>
+            </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
 
-  </div>{# /left-col #}
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Portfolio Value History</div>
+        <div class="card-subtitle">Last 30 days</div>
+      </div>
+      <div class="card-body">
+        <div class="chart-h280"><canvas id="cryptoChart"></canvas></div>
+      </div>
+    </div>
+
+  </div>
 
   <div class="right-col">
 
-    {# My crypto holdings #}
     <div class="card">
       <div class="card-header">
-        <div class="card-title">My Holdings</div>
-        <span class="badge badge-blue">{{ held_count|default:"4" }} coins</span>
-      </div>
-      <div class="card-body" style="padding-top:8px">
-        {% for h in holdings %}
-        <div class="alert-item">
-          <div class="asset-icon" style="background:{{ h.bg }};color:{{ h.fg }};width:32px;height:32px;border-radius:8px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ h.symbol|first }}</div>
-          <div style="flex:1">
-            <div style="display:flex;justify-content:space-between">
-              <div class="alert-name">{{ h.symbol }}</div>
-              <span class="mono" style="font-size:13px">${{ h.value }}</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;margin-top:2px">
-              <div class="alert-meta">{{ h.qty }} coins @ ${{ h.avg }}</div>
-              <span class="badge {% if h.pos %}badge-up{% else %}badge-down{% endif %}" style="font-size:10px">{% if h.pos %}▲{% else %}▼{% endif %} {{ h.pct }}%</span>
-            </div>
-          </div>
-        </div>
-        {% empty %}
-        <div class="alert-item">
-          <div class="asset-icon" style="background:#1a2a1a;color:#00e676;width:32px;height:32px;border-radius:8px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">₿</div>
-          <div style="flex:1"><div style="display:flex;justify-content:space-between"><div class="alert-name">BTC</div><span class="mono" style="font-size:13px">$4,160</span></div><div style="display:flex;justify-content:space-between;margin-top:2px"><div class="alert-meta">0.05 coins @ $77,000</div><span class="badge badge-up" style="font-size:10px">▲ 8.1%</span></div></div>
-        </div>
-        <div class="alert-item">
-          <div class="asset-icon" style="background:#1a1a2e;color:#7c83ff;width:32px;height:32px;border-radius:8px;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center">Ξ</div>
-          <div style="flex:1"><div style="display:flex;justify-content:space-between"><div class="alert-name">ETH</div><span class="mono" style="font-size:13px">$1,479</span></div><div style="display:flex;justify-content:space-between;margin-top:2px"><div class="alert-meta">0.7 coins @ $3,200</div><span class="badge badge-down" style="font-size:10px">▼ 33.9%</span></div></div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
-    {# Dominance #}
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">BTC Dominance</div>
-        <span class="mono" style="font-size:13px">{{ btc_dominance|default:"62.4" }}%</span>
+        <div class="card-title">By Asset</div>
+        <span class="muted" style="font-size:12px">by value</span>
       </div>
       <div class="card-body">
         <div class="donut-wrap" style="height:160px">
-          <canvas id="dominanceChart"></canvas>
+          <canvas id="allocationDonut"></canvas>
           <div class="donut-center">
-            <div class="donut-total" style="font-size:16px">{{ btc_dominance|default:"62.4" }}%</div>
-            <div class="donut-label">BTC</div>
+            <div class="donut-total" style="font-size:16px">${{ portfolio_value_short|default:"6.8K" }}</div>
+            <div class="donut-label">Total</div>
           </div>
         </div>
         <div class="legend" style="margin-top:12px">
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#00e676"></div><div class="legend-name">Bitcoin</div></div><div class="legend-pct">62.4%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Ethereum</div></div><div class="legend-pct">17.8%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Others</div></div><div class="legend-pct">19.8%</div></div>
+          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#00e676"></div><div class="legend-name">Bitcoin</div></div><div class="legend-pct">61%</div></div>
+          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Ethereum</div></div><div class="legend-pct">22%</div></div>
+          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#4fc3f7"></div><div class="legend-name">Solana</div></div><div class="legend-pct">12%</div></div>
+          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Other</div></div><div class="legend-pct">5%</div></div>
         </div>
       </div>
     </div>
 
-    {# Quick convert #}
     <div class="card">
-      <div class="card-header"><div class="card-title">Quick Convert</div></div>
-      <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;align-items:center;gap:8px">
-          <input type="number" id="convertAmt" value="1" style="flex:1;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none">
-          <select id="convertFrom" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none">
-            <option>BTC</option><option>ETH</option><option>SOL</option>
-          </select>
+      <div class="card-header"><div class="card-title">Market Search</div></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+        <input type="text" id="marketSearchInput" placeholder="e.g. bitcoin, solana…"
+               style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none;width:100%">
+        <button class="btn btn-ghost" style="width:100%;justify-content:center">🔍 Search Crypto</button>
+        <div id="marketResults" style="display:flex;flex-direction:column;gap:8px">
+          {% for res in market_results %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div>
+              <div style="font-size:13px;font-weight:700">{{ res.symbol }}</div>
+              <div class="muted" style="font-size:11px;margin-top:2px">{{ res.name }}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="mono" style="font-size:14px">${{ res.price }}</div>
+              <span class="badge {% if res.pos %}badge-up{% else %}badge-down{% endif %}" style="font-size:10px">{{ res.change }}</span>
+            </div>
+          </div>
+          {% empty %}
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div><div style="font-size:13px;font-weight:700">ADA</div><div class="muted" style="font-size:11px;margin-top:2px">Cardano</div></div>
+            <div style="text-align:right"><div class="mono" style="font-size:14px">$0.72</div><span class="badge badge-up" style="font-size:10px">+1.2%</span></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+            <div><div style="font-size:13px;font-weight:700">DOT</div><div class="muted" style="font-size:11px;margin-top:2px">Polkadot</div></div>
+            <div style="text-align:right"><div class="mono" style="font-size:14px">$7.14</div><span class="badge badge-down" style="font-size:10px">−0.8%</span></div>
+          </div>
+          {% endfor %}
         </div>
-        <div style="text-align:center;color:var(--text-muted);font-size:18px">⇅</div>
-        <div style="background:var(--surface2);border:1px solid var(--border);padding:12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:18px;text-align:center" id="convertResult">
-          $83,200.00 USD
-        </div>
-        <div class="qs-row"><span class="qs-label">Last updated</span><span class="qs-val muted">2 min ago</span></div>
       </div>
     </div>
 
-  </div>{# /right-col #}
+    <div class="card">
+      <div class="card-header"><div class="card-title">Quick Stats</div></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:13px;padding-top:14px">
+        <div class="qs-row"><span class="qs-label">Best performer</span><span class="qs-val up">{{ best_coin|default:"BTC" }}</span></div>
+        <div class="qs-row"><span class="qs-label">Worst performer</span><span class="qs-val down">{{ worst_coin|default:"ETH" }}</span></div>
+        <div class="qs-row"><span class="qs-label">Total coins</span><span class="qs-val">{{ coin_count|default:"4" }}</span></div>
+        <div class="qs-row"><span class="qs-label">Last price update</span><span class="qs-val muted">2 min ago</span></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 {% endblock %}
@@ -220,47 +233,28 @@
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
-
-  /* sparklines */
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
-    const vals  = c.dataset.values.split(",").map(Number);
-    const color = c.dataset.color || "#00e676";
-    initSparkline(c.id, vals, color);
+    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
   });
 
-  /* crypto line chart */
   const cc = document.getElementById("cryptoChart");
   if (cc) {
+    const labels = Array.from({length:30},(_,i)=>{const d=new Date("2026-04-15");d.setDate(d.getDate()+i);return d.toLocaleDateString("en",{month:"short",day:"numeric"});});
+    const vals = [6200,6350,6100,6500,6600,6450,6700,6650,6400,6550,6800,6720,6900,7000,6950,6750,6850,6920,7050,6980,7100,7020,6900,6980,6920,7000,7100,6980,6840,6840];
     const g = cc.getContext("2d").createLinearGradient(0,0,0,280);
     g.addColorStop(0,"rgba(124,131,255,0.18)"); g.addColorStop(1,"rgba(124,131,255,0)");
-    const labels = Array.from({length:30},(_,i)=>{const d=new Date("2026-04-15");d.setDate(d.getDate()+i);return d.toLocaleDateString("en",{month:"short",day:"numeric"});});
-    const vals = [1980,2050,1920,2100,2200,2150,2300,2280,2100,2250,2380,2320,2400,2500,2480,2350,2420,2480,2550,2490,2600,2520,2450,2510,2480,2520,2580,2490,2510,2112];
     new Chart(cc.getContext("2d"),{type:"line",data:{labels,datasets:[{data:vals,borderColor:"#7c83ff",borderWidth:2,fill:true,backgroundColor:g,tension:0.4,pointRadius:0,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`  $${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},maxTicksLimit:7}},y:{grid:{color:"rgba(255,255,255,0.04)"},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},callback:v=>"$"+v.toLocaleString()}}}}});
   }
 
-  /* dominance donut */
-  const dc = document.getElementById("dominanceChart");
-  if (dc) new Chart(dc.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[62.4,17.8,19.8],backgroundColor:["#00e676","#7c83ff","#ffb300"],borderColor:"#111418",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false}}}});
+  const ad = document.getElementById("allocationDonut");
+  if (ad) new Chart(ad.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[61,22,12,5],backgroundColor:["#00e676","#7c83ff","#4fc3f7","#ffb300"],borderColor:"#111418",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false}}}});
 
-  /* search filter */
   document.getElementById("cryptoSearch")?.addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll("#cryptoTable tbody tr").forEach(tr => {
       tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
     });
   });
-
-  /* quick convert */
-  const prices = {BTC:83200, ETH:2112, SOL:148};
-  function updateConvert() {
-    const amt  = parseFloat(document.getElementById("convertAmt").value) || 0;
-    const coin = document.getElementById("convertFrom").value;
-    const usd  = (amt * (prices[coin] || 0)).toLocaleString("en",{minimumFractionDigits:2,maximumFractionDigits:2});
-    document.getElementById("convertResult").textContent = "$" + usd + " USD";
-  }
-  document.getElementById("convertAmt")?.addEventListener("input", updateConvert);
-  document.getElementById("convertFrom")?.addEventListener("change", updateConvert);
-
 });
 </script>
 {% endblock %}

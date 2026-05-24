@@ -9,4 +9,5 @@ class PortfolioView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Portfolio'
         context['content'] = 'PORTFOLIO'
+        context['active_nav'] = 'portfolio'
         return context

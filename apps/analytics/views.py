@@ -9,4 +9,5 @@ class AnalyticsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Analytics'
         context['content'] = 'ANALYTICS'
+        context['active_nav'] = 'analytics'
         return context

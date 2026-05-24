@@ -9,4 +9,5 @@ class AlertsView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Alerts'
         context['content'] = 'ALERTS'
+        context['active_nav'] = 'alerts'
         return context

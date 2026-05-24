@@ -9,4 +9,5 @@ class HistoryView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'History'
         context['content'] = 'HISTORY'
+        context['active_nav'] = 'history'
         return context
