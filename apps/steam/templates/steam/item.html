@@ -6,10 +6,10 @@
   <link rel="stylesheet" href="{% static 'css/portfolio.css' %}">
 {% endblock %}
 
-{% block page_title %}{{ asset.symbol }}{% endblock %}
+{% block page_title %}{{ asset.symbol|truncatechars:40 }}{% endblock %}
 
 {% block page_meta %}
-  <a href="{% url list_url_name %}">{{ list_label }}</a> → {{ asset.name }}
+  <a href="{% url list_url_name %}">{{ list_label }}</a> → {{ asset.name|truncatechars:60 }}
 {% endblock %}
 
 {% block topbar_actions %}

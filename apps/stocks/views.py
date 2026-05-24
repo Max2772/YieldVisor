@@ -1,5 +1,12 @@
+from __future__ import annotations
+
+from typing import Any
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
+
+from apps.core.mixins import AssetDetailMixin
+from apps.portfolio.types import AssetType
 
 
 class StockMarket(LoginRequiredMixin, TemplateView):
@@ -12,12 +19,28 @@ class StockMarket(LoginRequiredMixin, TemplateView):
         return context
 
 
-class StockView(LoginRequiredMixin, TemplateView):
-    """Страница отдельной бумаги (позже)."""
-    template_name = 'stocks/stock.html'
+class StockView(AssetDetailMixin, TemplateView):
+    """Страница отдельной бумаги — данные из InvestAPI."""
 
-    def get_context_data(self, **kwargs):
+    template_name = 'stocks/stock.html'
+    asset_type = AssetType.STOCK
+    list_url_name = 'stocks:market'
+    list_label = 'Stocks'
+    active_nav = 'stocks'
+    asset_type_label = 'Stock'
+
+    def get_asset_params(self, **kwargs: Any) -> dict[str, Any]:
+        ticker = kwargs['ticker'].strip().upper()
+        return {
+            'asset_name': ticker,
+            'display_symbol': ticker,
+        }
+
+    def get_hero_meta(self, **kwargs: Any) -> str:
+        ticker = kwargs['ticker'].strip().upper()
+        return f"Ticker: {ticker}"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Stock'
-        context['active_nav'] = 'stocks'
+        context['asset_type_emoji'] = '📈'
         return context

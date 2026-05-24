@@ -1,0 +1,49 @@
+{% extends "base_app.html" %}
+{% load static %}
+
+{% block css %}
+  {{ block.super }}
+  <link rel="stylesheet" href="{% static 'css/errors.css' %}">
+{% endblock %}
+
+{% block page_title %}Not Found{% endblock %}
+
+{% block page_meta %}
+  <a href="{% url list_url_name %}">{{ list_label }}</a> → Not found
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url list_url_name %}" class="btn btn-ghost">← {{ list_label }}</a>
+{% endblock %}
+
+{% block page_content %}
+  <div class="error-page anim-1">
+    <div class="error-card">
+      <div class="error-code">404</div>
+
+      <h1 class="error-title">
+        {% if api_unavailable %}
+          Data unavailable
+        {% else %}
+          Asset not found
+        {% endif %}
+      </h1>
+
+      <p class="error-text">
+        {% if api_unavailable %}
+          Could not load market data for this {{ category|lower|default:"asset" }}.
+          Try again in a few minutes.
+        {% else %}
+          <strong>{{ symbol }}</strong> was not found in
+          {{ category|default:"this market" }}.
+          Check the ticker, coin id, or exact Steam market name.
+        {% endif %}
+      </p>
+
+      <div class="error-actions">
+        <a href="{% url list_url_name %}" class="btn btn-primary">Back to {{ list_label }}</a>
+        <a href="{% url 'portfolio:portfolio' %}" class="btn btn-ghost">Portfolio</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

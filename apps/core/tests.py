@@ -1,10 +1,12 @@
 import asyncio
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from django.core.cache import cache
-from django.test import SimpleTestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, override_settings
 
+from apps.core.services.asset_detail import build_asset_detail_context
+from apps.stocks.views import StockView
 from apps.core.services.invest_api import (
     InvestAPIClient,
     InvestAPIError,
@@ -146,6 +148,67 @@ class InvestAPIClientTests(SimpleTestCase):
         self.assertFalse(positive)
         self.assertEqual(delta, "0.96%")
         self.assertNotIn("-", delta)
+
+    @override_settings(INVEST_API_BASE_URL="https://api.example.com", TICKER_CHANGE_DAYS=7)
+    def test_build_asset_detail_context(self):
+        async def fake_quote(*args, **kwargs):
+            from apps.core.services.invest_api import _parse_quote
+
+            return _parse_quote(
+                {
+                    "asset_type": "stock",
+                    "name": "AMD",
+                    "price": 467.51,
+                    "currency": "USD",
+                    "full_name": "Advanced Micro Devices, Inc.",
+                }
+            )
+
+        async def fake_history(*args, **kwargs):
+            from apps.core.services.invest_api import _parse_history
+
+            return _parse_history(
+                {
+                    "asset_type": "stock",
+                    "name": "AMD",
+                    "points": [
+                        {"timestamp": "2026-05-18", "price": 420.99},
+                        {"timestamp": "2026-05-22", "price": 467.51},
+                    ],
+                }
+            )
+
+        with patch(
+            "apps.core.services.asset_detail.get_quote",
+            side_effect=fake_quote,
+        ), patch(
+            "apps.core.services.asset_detail.get_history",
+            side_effect=fake_history,
+        ):
+            ctx = build_asset_detail_context(
+                AssetType.STOCK,
+                "AMD",
+                display_symbol="AMD",
+                days=7,
+            )
+
+        self.assertIsNotNone(ctx)
+        self.assertEqual(ctx["asset"]["symbol"], "AMD")
+        self.assertEqual(len(ctx["chart"]["prices"]), 2)
+        self.assertTrue(ctx["asset"]["change_delta"])
+
+    def test_render_asset_not_found(self):
+        from django.contrib.auth.models import AnonymousUser
+
+        request = RequestFactory().get("/stocks/FAKE/")
+        request.user = AnonymousUser()
+        view = StockView()
+        response = view._render_asset_not_found(
+            request,
+            {"display_symbol": "FAKE"},
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertIn(b"Asset not found", response.content)
 
     @override_settings(INVEST_API_BASE_URL="https://api.example.com")
     def test_raises_on_http_error(self):

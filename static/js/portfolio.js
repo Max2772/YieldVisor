@@ -19,14 +19,25 @@ function initPriceChart() {
 
   const ctx = canvas.getContext("2d");
 
-  const dates = buildDateLabels("2026-02-20", 28);
+  const chartEl = document.getElementById("asset-chart-data");
+  let dates;
+  let prices;
+  const avgBuy = [];
 
-  // В Django: data придёт из API или data-атрибута canvas
-  // const prices = JSON.parse(canvas.dataset.prices);
-  // const avgBuy = parseFloat(canvas.dataset.avgBuy);
-  const offsets = [0,12,-8,20,15,5,25,18,-5,30,35,22,40,50,42,38,45,55,60,52,70,58,65,75,68,80,74,76];
-  const prices  = offsets.map((v) => +(710 + v * 1.4).toFixed(2));
-  const avgBuy  = new Array(28).fill(714.18);
+  if (chartEl) {
+    const payload = JSON.parse(chartEl.textContent);
+    prices = payload.prices || [];
+    dates = payload.labels || [];
+  } else {
+    dates = buildDateLabels("2026-02-20", 28);
+    const offsets = [0,12,-8,20,15,5,25,18,-5,30,35,22,40,50,42,38,45,55,60,52,70,58,65,75,68,80,74,76];
+    prices = offsets.map((v) => +(710 + v * 1.4).toFixed(2));
+    avgBuy.push(...new Array(28).fill(714.18));
+  }
+
+  if (!prices.length) return;
+
+  const symbol = canvas.dataset.symbol || "Price";
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 240);
   gradient.addColorStop(0, "rgba(0, 230, 118, 0.15)");
@@ -38,7 +49,7 @@ function initPriceChart() {
       labels: dates,
       datasets: [
         {
-          label: "NVDA Price",
+          label: symbol,
           data: prices,
           borderColor: "#00e676",
           borderWidth: 2,
@@ -50,16 +61,18 @@ function initPriceChart() {
           pointHoverBackgroundColor: "#00e676",
           pointHoverBorderColor: "#0a0c0f",
         },
-        {
-          label: "Avg Buy",
-          data: avgBuy,
-          borderColor: "rgba(255, 179, 0, 0.6)",
-          borderWidth: 1.5,
-          borderDash: [6, 3],
-          fill: false,
-          tension: 0,
-          pointRadius: 0,
-        },
+        ...(avgBuy.length
+          ? [{
+              label: "Avg Buy",
+              data: avgBuy,
+              borderColor: "rgba(255, 179, 0, 0.6)",
+              borderWidth: 1.5,
+              borderDash: [6, 3],
+              fill: false,
+              tension: 0,
+              pointRadius: 0,
+            }]
+          : []),
       ],
     },
     options: {
@@ -110,7 +123,7 @@ function initPriceChart() {
 /* ── P&L bar chart ───────────────────────────────────────────────────── */
 function initPnlChart() {
   const canvas = document.getElementById("pnlChart");
-  if (!canvas) return;
+  if (!canvas || !canvas.offsetParent) return;
 
   const ctx = canvas.getContext("2d");
 

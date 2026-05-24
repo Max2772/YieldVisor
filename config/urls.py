@@ -31,7 +31,6 @@ urlpatterns = [
     path('stocks/', include('apps.stocks.urls')),
     path('crypto/', include('apps.crypto.urls')),
     path('steam/', include('apps.steam.urls')),
-
 ]
 
 if settings.DEBUG:

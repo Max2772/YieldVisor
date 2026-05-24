@@ -1,0 +1,101 @@
+{# Общая разметка карточки актива (данные из InvestAPI). #}
+
+<div class="asset-hero anim-1">
+  <div class="asset-hero-icon">{{ asset.icon }}</div>
+
+  <div style="flex:1">
+    <div class="serif" style="font-size:24px;letter-spacing:-0.4px;">
+      {{ asset.name }}
+    </div>
+    <div class="hero-meta">
+      {% if hero_meta %}{{ hero_meta }}{% endif %}
+      {% if asset.subtitle %}{% if hero_meta %} · {% endif %}{{ asset.subtitle }}{% endif %}
+    </div>
+    <div class="hero-type-pill">{{ asset_type_emoji|default:"📊" }} {{ asset.asset_type }}</div>
+  </div>
+
+  <div class="hero-metrics">
+    <div class="hero-metric">
+      <div class="hm-label">Current Price</div>
+      <div class="hm-val">${{ asset.current_price }}</div>
+      {% if asset.change_delta %}
+      <div class="hm-sub {% if asset.change_positive %}up{% else %}down{% endif %}">
+        {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_delta }} ({{ history_days }}d)
+      </div>
+      {% endif %}
+    </div>
+    {% if asset.period_low %}
+    <div class="hero-metric">
+      <div class="hm-label">{{ history_days }}d Range</div>
+      <div class="hm-val" style="font-size:15px">${{ asset.period_low }} — ${{ asset.period_high }}</div>
+    </div>
+    {% endif %}
+    <div class="hero-metric">
+      <div class="hm-label">Source</div>
+      <div class="hm-val" style="font-size:14px">{{ asset.source }}</div>
+      {% if asset.cached_at %}
+      <div class="hm-sub muted">Updated {{ asset.cached_at|slice:":19" }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-main anim-2">
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">Price History</div>
+        <div class="card-subtitle">{{ asset.symbol }} · last {{ history_days }} days</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div style="height:260px;position:relative;">
+        {% if chart.prices %}
+        {{ chart|json_script:"asset-chart-data" }}
+        <canvas id="priceChart" data-symbol="{{ asset.symbol }}"></canvas>
+        {% else %}
+        <p class="muted" style="padding:24px">No history data available.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="right-stack">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Market Data</div></div>
+      <div class="card-body" style="padding-top:4px;">
+        <div class="km-row">
+          <div class="km-left"><div class="km-label">Symbol</div><div class="km-val">{{ asset.symbol }}</div></div>
+        </div>
+        <div class="km-row">
+          <div class="km-left"><div class="km-label">Currency</div><div class="km-val">{{ asset.currency }}</div></div>
+        </div>
+        {% if asset.app_id %}
+        <div class="km-row">
+          <div class="km-left"><div class="km-label">Steam App ID</div><div class="km-val">{{ asset.app_id }}</div></div>
+        </div>
+        {% endif %}
+        {% if last_volume %}
+        <div class="km-row">
+          <div class="km-left"><div class="km-label">Last Volume</div><div class="km-val">{{ last_volume }}</div></div>
+        </div>
+        {% endif %}
+        {% if asset.period_low %}
+        <div class="km-row">
+          <div class="km-left">
+            <div class="km-label">Period low / high</div>
+            <div class="km-val">${{ asset.period_low }} — ${{ asset.period_high }}</div>
+          </div>
+        </div>
+        {% if asset.range_pct is not None %}
+        <div class="prog-wrap" style="margin-top:12px">
+          <div class="prog-track">
+            <div class="prog-fill" style="width:{{ asset.range_pct }}%"></div>
+          </div>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
