@@ -11,6 +11,17 @@ from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
 from apps.portfolio.types import AssetType
 
+ALLOCATION_COLORS = (
+    "#4fc3f7",
+    "#00e676",
+    "#ffb300",
+    "#7c83ff",
+    "#ff4d6d",
+    "#e040fb",
+    "#ff9100",
+    "#69f0ae",
+)
+
 
 def _format_money(value: Decimal) -> str:
     q = value.quantize(Decimal("0.01"))
@@ -55,10 +66,51 @@ def _display_ticker(position: Portfolio) -> str:
     return position.asset_name.upper()
 
 
-def _sector_label(position: Portfolio) -> str:
+def _meta_label(position: Portfolio) -> str:
     if position.asset_type == AssetType.STEAM and position.app_id:
         return f"App {position.app_id}"
     return "—"
+
+
+def _format_value_short(total_value: Decimal) -> str:
+    if total_value >= Decimal("1000000"):
+        return f"{total_value / Decimal('1000000'):.1f}M"
+    if total_value >= Decimal("1000"):
+        return f"{total_value / Decimal('1000'):.1f}K"
+    return f"{total_value:.0f}"
+
+
+def _build_value_allocation(
+    items: list[dict[str, Any]],
+    total_value: Decimal,
+) -> list[dict[str, Any]]:
+    """Доли портфеля по стоимости позиций (для donut chart)."""
+    if total_value <= 0:
+        return []
+
+    valued = [
+        (row["ticker"], row["_total_raw"])
+        for row in items
+        if row.get("_total_raw") is not None
+    ]
+    valued.sort(key=lambda pair: pair[1], reverse=True)
+    if not valued:
+        return []
+
+    allocation: list[dict[str, Any]] = []
+    for index, (label, amount) in enumerate(valued):
+        pct = int((amount / total_value) * 100)
+        allocation.append({
+            "label": label,
+            "pct": max(pct, 1) if amount > 0 else 0,
+            "color": ALLOCATION_COLORS[index % len(ALLOCATION_COLORS)],
+        })
+
+    remainder = 100 - sum(slice_["pct"] for slice_ in allocation)
+    if remainder and allocation:
+        allocation[0]["pct"] += remainder
+
+    return allocation
 
 
 def _fetch_one(
@@ -109,7 +161,7 @@ def _build_item_row(
             "ticker": ticker,
             "name": position.asset_name,
             "detail_url": _detail_url(position),
-            "sector": _sector_label(position),
+            "meta": _meta_label(position),
             "avg_buy": _format_money(position.avg_buy_price),
             "market_price": "—",
             "pnl": "—",
@@ -127,7 +179,7 @@ def _build_item_row(
         "ticker": ticker,
         "name": position.asset_name,
         "detail_url": _detail_url(position),
-        "sector": _sector_label(position),
+        "meta": _meta_label(position),
         "avg_buy": _format_money(position.avg_buy_price),
         "market_price": format_ticker_price(price).lstrip("$"),
         "pnl": _format_money(abs(pnl_value)),
@@ -145,10 +197,12 @@ def _build_item_row(
 def _empty_summary() -> dict[str, Any]:
     return {
         "portfolio_value": "0",
+        "portfolio_value_short": "0",
         "position_count": 0,
         "unrealised_pnl": "0",
         "pnl_pos": True,
         "pnl_pct": "0",
+        "allocation": [],
     }
 
 
@@ -176,6 +230,8 @@ def build_holdings(user, asset_type: str) -> tuple[list[dict[str, Any]], dict[st
         else:
             cost_basis += position.cost_basis()
 
+    allocation = _build_value_allocation(items, total_value)
+
     for row in items:
         row.pop("_total_raw", None)
         row.pop("_pnl_raw", None)
@@ -188,8 +244,10 @@ def build_holdings(user, asset_type: str) -> tuple[list[dict[str, Any]], dict[st
 
     return items, {
         "portfolio_value": dollars,
+        "portfolio_value_short": _format_value_short(total_value),
         "position_count": len(positions),
         "unrealised_pnl": _format_money(abs(total_pnl)),
         "pnl_pos": total_pnl >= 0,
         "pnl_pct": f"{pnl_pct:.1f}",
+        "allocation": allocation,
     }

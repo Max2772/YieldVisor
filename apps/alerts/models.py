@@ -32,9 +32,10 @@ class Alert(models.Model):
 
     class Meta:
         db_table = "alerts"
+        verbose_name = 'Алерт'
+        verbose_name_plural = 'Алерты'
         ordering = ["-created_at"]
         indexes  = [
-            # Celery проверяет только активные алерты — этот индекс ускоряет запрос
             models.Index(
                 fields=["is_active", "asset_type", "asset_name"],
                 name="idx_alert_active_asset",

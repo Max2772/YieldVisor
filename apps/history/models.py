@@ -2,7 +2,8 @@ from decimal import Decimal
 
 from django.db import models
 
-from apps.portfolio.models import User, Portfolio, AssetType
+from apps.portfolio.models import Portfolio, User
+from apps.portfolio.types import AssetType
 
 
 class HistoryOperation(models.TextChoices):
@@ -33,6 +34,8 @@ class History(models.Model):
 
     class Meta:
         db_table = "history"
+        verbose_name = "История"
+        verbose_name_plural = "Истории"
 
         ordering = ["-created_at"]
         indexes  = [

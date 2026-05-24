@@ -35,6 +35,9 @@ class Portfolio(models.Model):
 
     class Meta:
         db_table = "portfolios"
+        verbose_name = "Портфолио"
+        verbose_name_plural = "Портфолио"
+
         ordering = ["asset_type", "asset_name"]
         constraints = [
             # Для Steam: уникальность по (user, type, name, app_id)

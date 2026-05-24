@@ -58,19 +58,12 @@
         <div style="display:flex;align-items:center;gap:10px">
           <input type="text" id="stocksSearch" placeholder="Search ticker…"
                  style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none;width:180px">
-          <div class="tabs">
-            <div class="tab active">All</div>
-            <div class="tab">Tech</div>
-            <div class="tab">Finance</div>
-            <div class="tab">ETF</div>
-          </div>
         </div>
       </div>
       <div class="card-body" style="padding:0">
         <table class="assets-table" id="stocksTable">
           <thead><tr>
             <th style="padding-left:24px">Stock</th>
-            <th>Sector</th>
             <th>Avg Buy</th>
             <th>Market Price</th>
             <th>P&amp;L</th>
@@ -79,7 +72,7 @@
             <th>7D</th>
           </tr></thead>
           <tbody>
-            {% include "includes/holdings_rows.html" %}
+            {% include "includes/holdings_rows_stocks.html" %}
           </tbody>
         </table>
       </div>
@@ -101,22 +94,29 @@
 
     <div class="card">
       <div class="card-header">
-        <div class="card-title">By Sector</div>
+        <div class="card-title">By Holding</div>
         <span class="muted" style="font-size:12px">by value</span>
       </div>
       <div class="card-body">
         <div class="donut-wrap" style="height:160px">
-          <canvas id="sectorDonut"></canvas>
+          <canvas id="holdingsDonut"></canvas>
           <div class="donut-center">
-            <div class="donut-total" style="font-size:16px">${{ portfolio_value_short|default:"14.2K" }}</div>
+            <div class="donut-total" style="font-size:16px">${{ portfolio_value_short|default:"0" }}</div>
             <div class="donut-label">Total</div>
           </div>
         </div>
         <div class="legend" style="margin-top:12px">
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#4fc3f7"></div><div class="legend-name">Technology</div></div><div class="legend-pct">58%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#00e676"></div><div class="legend-name">Consumer</div></div><div class="legend-pct">22%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Finance</div></div><div class="legend-pct">12%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Other</div></div><div class="legend-pct">8%</div></div>
+          {% for slice in allocation %}
+          <div class="legend-item">
+            <div class="legend-left">
+              <div class="legend-dot" style="background:{{ slice.color }}"></div>
+              <div class="legend-name">{{ slice.label }}</div>
+            </div>
+            <div class="legend-pct">{{ slice.pct }}%</div>
+          </div>
+          {% empty %}
+          <div class="muted" style="font-size:12px;text-align:center;padding:8px 0">No holdings to display</div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -166,6 +166,8 @@
   </div>
 </div>
 
+{{ allocation|json_script:"holdings-allocation-data" }}
+
 {% endblock %}
 
 {% block js %}
@@ -188,8 +190,30 @@ document.addEventListener("DOMContentLoaded", () => {
     new Chart(sc.getContext("2d"),{type:"line",data:{labels,datasets:[{data:vals,borderColor:"#00e676",borderWidth:2,fill:true,backgroundColor:g,tension:0.4,pointRadius:0,pointHoverRadius:5}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`  $${c.parsed.y.toLocaleString()}`}}},scales:{x:{grid:{display:false},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},maxTicksLimit:7}},y:{grid:{color:"rgba(255,255,255,0.04)"},border:{display:false},ticks:{color:"#4b5563",font:{family:"DM Mono",size:11},callback:v=>"$"+v.toLocaleString()}}}}});
   }
 
-  const sd = document.getElementById("sectorDonut");
-  if (sd) new Chart(sd.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[58,22,12,8],backgroundColor:["#4fc3f7","#00e676","#ffb300","#7c83ff"],borderColor:"#111418",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false}}}});
+  const hd = document.getElementById("holdingsDonut");
+  if (hd) {
+    const allocEl = document.getElementById("holdings-allocation-data");
+    const slices = allocEl ? JSON.parse(allocEl.textContent) : [];
+    if (slices.length) {
+      new Chart(hd.getContext("2d"), {
+        type: "doughnut",
+        data: {
+          datasets: [{
+            data: slices.map(s => s.pct),
+            backgroundColor: slices.map(s => s.color),
+            borderColor: "#111418",
+            borderWidth: 3,
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: "72%",
+          plugins: { legend: { display: false } },
+        },
+      });
+    }
+  }
 
   document.getElementById("stocksSearch")?.addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
