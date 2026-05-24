@@ -126,7 +126,7 @@
       <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
         <input type="text" id="marketSearchInput" placeholder="e.g. NVDA, AAPL…"
                style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 14px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:13px;outline:none;width:100%">
-        <button class="btn btn-ghost" style="width:100%;justify-content:center">🔍 Search Stocks</button>
+        <button type="button" id="marketSearchBtn" class="btn btn-ghost" style="width:100%;justify-content:center">🔍 Search Stocks</button>
         <div id="marketResults" style="display:flex;flex-direction:column;gap:8px">
           {% for res in market_results %}
           <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
@@ -169,9 +169,12 @@
 {% endblock %}
 
 {% block js %}
+{{ block.super }}
+<script src="{% static 'js/market_search.js' %}"></script>
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
+  initMarketSearch({ type: "stock", baseUrl: "{% url 'stocks:market' %}" });
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
     initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
   });
