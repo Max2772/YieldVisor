@@ -1,15 +1,13 @@
 {% extends "base_app.html" %}
 {% load static %}
 
-{# ── CSS страницы ── #}
 {% block css %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
-{# ── Top Bar ── #}
 {% block page_title %}
-  Good morning, <em>{{ request.user.first_name|default:"Max" }}</em> 👋
+  Good morning{% if request.user.first_name %}, <em>{{ request.user.first_name }}</em>{% endif %} 👋
 {% endblock %}
 
 {% block page_meta %}
@@ -18,62 +16,60 @@
 
 {% block topbar_actions %}
   <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
-  <button class="btn btn-ghost">⟳ Refresh</button>
-  <a href="#" class="btn btn-primary">+ Add Asset</a>
+  <button class="btn btn-ghost" onclick="location.reload()">⟳ Refresh</button>
+  <a href="{% url 'stocks:market' %}" class="btn btn-primary">+ Add Asset</a>
 {% endblock %}
 
-{# ── Page Content ── #}
 {% block page_content %}
-    {# ── Карточки-метрики ── #}
     <div class="stats-grid">
       <div class="stat-card c-green anim-1">
         <div class="stat-label">Total Value</div>
         <div class="stat-value">
-          ${{ total_value|default:"14,256" }}<span class="cents">.48</span>
+          ${{ total_value_dollars }}<span class="cents">.{{ total_value_cents }}</span>
         </div>
-        <span class="badge badge-up">▲ +3.24% today</span>
+        {% if value_change %}
+        <span class="badge {% if value_change_positive %}badge-up{% else %}badge-down{% endif %}">{{ value_change }} period</span>
+        {% else %}
+        <span class="badge badge-blue">{{ assets_count }} asset{{ assets_count|pluralize }}</span>
+        {% endif %}
       </div>
 
       <div class="stat-card c-red anim-2">
         <div class="stat-label">Total P&amp;L</div>
-        <div class="stat-value down">
-          −${{ total_pnl|default:"892" }}<span class="cents">.30</span>
+        <div class="stat-value {% if total_pnl_pos %}up{% else %}down{% endif %}">
+          {% if total_pnl_pos %}+{% else %}−{% endif %}${{ total_pnl }}
         </div>
-        <span class="badge badge-down">▼ −5.88% all time</span>
+        <span class="badge {% if total_pnl_pos %}badge-up{% else %}badge-down{% endif %}">
+          {% if total_pnl_pos %}+{% else %}−{% endif %}{{ total_pnl_pct }}% all time
+        </span>
       </div>
 
       <div class="stat-card c-amber anim-3">
         <div class="stat-label">Active Alerts</div>
-        <div class="stat-value">{{ alerts_count|default:"3" }}</div>
-        <span class="badge badge-warn">⏳ 2 near target</span>
+        <div class="stat-value">{{ alerts_count }}</div>
+        {% if alerts_near_target %}
+        <span class="badge badge-warn">⏳ {{ alerts_near_target }} near target</span>
+        {% else %}
+        <span class="badge badge-warn">Price alerts</span>
+        {% endif %}
       </div>
 
       <div class="stat-card c-blue anim-4">
         <div class="stat-label">Assets Tracked</div>
-        <div class="stat-value">{{ assets_count|default:"12" }}</div>
-        <span class="badge badge-blue">3 types</span>
+        <div class="stat-value">{{ assets_count }}</div>
+        <span class="badge badge-blue">{{ asset_types_count }} type{{ asset_types_count|pluralize }}</span>
       </div>
     </div>
 
-    {# ── Основная сетка контента ── #}
     <div class="content-grid">
 
-      {# Левая колонка #}
       <div class="left-col">
 
-        {# График портфолио #}
         <div class="card anim-5">
           <div class="card-header">
             <div>
               <div class="card-title">Portfolio Value</div>
               <div class="card-subtitle">Total performance over time</div>
-            </div>
-            <div class="tabs">
-              <div class="tab">1W</div>
-              <div class="tab active">1M</div>
-              <div class="tab">3M</div>
-              <div class="tab">1Y</div>
-              <div class="tab">ALL</div>
             </div>
           </div>
           <div class="card-body">
@@ -83,44 +79,38 @@
           </div>
         </div>
 
-        {# Таблица активов #}
         <div class="card anim-6">
           <div class="card-header">
             <div>
               <div class="card-title">Assets</div>
               <div class="card-subtitle">Your current holdings</div>
             </div>
-            <div class="tabs">
-              <div class="tab active">All</div>
-              <div class="tab">Stocks</div>
-              <div class="tab">Crypto</div>
-              <div class="tab">Steam</div>
-            </div>
           </div>
-          <div class="card-body">
-            <table class="assets-table">
+          <div class="card-body" style="padding:0">
+            <table class="assets-table" id="portfolioAssetsTable">
               <thead>
                 <tr>
-                  <th>Asset</th>
+                  <th style="padding-left:24px">Asset</th>
                   <th>Price</th>
                   <th>Holdings</th>
                   <th>Value</th>
                   <th>P&amp;L</th>
+                  <th>7D</th>
                 </tr>
               </thead>
               <tbody>
                 {% for asset in assets %}
                 <tr>
-                  <td>
-                    <div class="asset-cell">
-                      <div class="asset-icon" style="background:{{ asset.bg_color }};color:{{ asset.text_color }}">
+                  <td style="padding-left:24px">
+                    <a href="{{ asset.detail_url }}" class="asset-cell" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit">
+                      <div class="asset-icon" style="background:{{ asset.bg_color }};color:{{ asset.text_color }};font-size:11px;font-weight:700;border-radius:6px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center">
                         {{ asset.icon }}
                       </div>
                       <div>
                         <div class="asset-ticker">{{ asset.ticker }}</div>
                         <div class="asset-type">{{ asset.asset_type|upper }}{% if asset.app_name %} · {{ asset.app_name }}{% endif %}</div>
                       </div>
-                    </div>
+                    </a>
                   </td>
                   <td><span class="mono">${{ asset.current_price }}</span></td>
                   <td><span class="mono muted">{{ asset.quantity }}</span></td>
@@ -131,10 +121,6 @@
                     </span>
                   </td>
                   <td>
-                    {#
-                      sparkline-canvas: данные передаются через data-атрибут,
-                      dashboard.js читает их и рисует линию.
-                    #}
                     <canvas class="sparkline-canvas"
                             id="sp-{{ asset.id }}"
                             width="80" height="36"
@@ -144,38 +130,12 @@
                   </td>
                 </tr>
                 {% empty %}
-                {# Fallback пока нет данных из Django #}
                 <tr>
-                  <td><div class="asset-cell"><div class="asset-icon" style="background:#1a2e40;color:#4fc3f7">N</div><div><div class="asset-ticker">NVDA</div><div class="asset-type">STOCK</div></div></div></td>
-                  <td><span class="mono">$874.15</span></td>
-                  <td><span class="mono muted">3.00</span></td>
-                  <td><span class="mono">$2,622.45</span></td>
-                  <td><span class="badge badge-up">▲ +22.4%</span></td>
-                  <td><canvas id="sp1" width="80" height="36" data-values="710,730,780,750,800,820,874" data-color="#00e676"></canvas></td>
-                </tr>
-                <tr>
-                  <td><div class="asset-cell"><div class="asset-icon" style="background:#2a1a1a;color:#ff4d6d">T</div><div><div class="asset-ticker">TSLA</div><div class="asset-type">STOCK</div></div></div></td>
-                  <td><span class="mono">$405.99</span></td>
-                  <td><span class="mono muted">1.00</span></td>
-                  <td><span class="mono">$405.99</span></td>
-                  <td><span class="badge badge-up">▲ +15.9%</span></td>
-                  <td><canvas id="sp2" width="80" height="36" data-values="390,400,410,395,420,408,406" data-color="#00e676"></canvas></td>
-                </tr>
-                <tr>
-                  <td><div class="asset-cell"><div class="asset-icon" style="background:#1a1a2e;color:#7c83ff">Ξ</div><div><div class="asset-ticker">ETH</div><div class="asset-type">CRYPTO</div></div></div></td>
-                  <td><span class="mono">$2,112.49</span></td>
-                  <td><span class="mono muted">0.7</span></td>
-                  <td><span class="mono">$1,478.74</span></td>
-                  <td><span class="badge badge-down">▼ −33.9%</span></td>
-                  <td><canvas id="sp3" width="80" height="36" data-values="2400,2300,2200,2350,2100,2080,2112" data-color="#ff4d6d"></canvas></td>
-                </tr>
-                <tr>
-                  <td><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676">₿</div><div><div class="asset-ticker">BTC</div><div class="asset-type">CRYPTO</div></div></div></td>
-                  <td><span class="mono">$83,200</span></td>
-                  <td><span class="mono muted">0.05</span></td>
-                  <td><span class="mono">$4,160.00</span></td>
-                  <td><span class="badge badge-up">▲ +8.1%</span></td>
-                  <td><canvas id="sp4" width="80" height="36" data-values="79000,80500,82000,81000,83500,82800,83200" data-color="#00e676"></canvas></td>
+                  <td colspan="6" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
+                    No assets yet. Add holdings from <a href="{% url 'stocks:market' %}">Stocks</a>,
+                    <a href="{% url 'crypto:crypto' %}">Crypto</a>, or
+                    <a href="{% url 'steam:steam' %}">Steam</a>.
+                  </td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -183,59 +143,52 @@
           </div>
         </div>
 
-      </div>{# /left-col #}
+      </div>
 
-      {# Правая колонка #}
       <div class="right-col">
 
-        {# Donut chart: распределение по типам #}
         <div class="card anim-5">
           <div class="card-header">
             <div class="card-title">Allocation</div>
-            <span class="muted" style="font-size:12px">by value</span>
+            <span class="muted" style="font-size:12px">by asset type</span>
           </div>
           <div class="card-body">
             <div class="donut-wrap">
               <canvas id="donutChart"></canvas>
               <div class="donut-center">
-                <div class="donut-total">${{ total_value_short|default:"14.2K" }}</div>
+                <div class="donut-total">${{ total_value_short }}</div>
                 <div class="donut-label">Total</div>
               </div>
             </div>
 
+            {% if type_allocation %}
             <div class="bar-strip">
-              <div style="width:50%;background:#4fc3f7"></div>
-              <div style="width:29%;background:#7c83ff"></div>
-              <div style="width:14%;background:#00e676"></div>
-              <div style="width:7%; background:#ffb300"></div>
+              {% for slice in type_allocation %}
+              <div style="width:{{ slice.pct }}%;background:{{ slice.color }}"></div>
+              {% endfor %}
             </div>
+            {% endif %}
 
             <div class="legend">
+              {% for slice in type_allocation %}
               <div class="legend-item">
-                <div class="legend-left"><div class="legend-dot" style="background:#4fc3f7"></div><div class="legend-name">Stocks</div></div>
-                <div class="legend-pct">50%</div>
+                <div class="legend-left">
+                  <div class="legend-dot" style="background:{{ slice.color }}"></div>
+                  <div class="legend-name">{{ slice.label }}</div>
+                </div>
+                <div class="legend-pct">{{ slice.pct }}%</div>
               </div>
-              <div class="legend-item">
-                <div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Crypto</div></div>
-                <div class="legend-pct">29%</div>
-              </div>
-              <div class="legend-item">
-                <div class="legend-left"><div class="legend-dot" style="background:#00e676"></div><div class="legend-name">BTC</div></div>
-                <div class="legend-pct">14%</div>
-              </div>
-              <div class="legend-item">
-                <div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Steam</div></div>
-                <div class="legend-pct">7%</div>
-              </div>
+              {% empty %}
+              <div class="muted" style="font-size:12px;text-align:center;padding:8px 0">No allocation data</div>
+              {% endfor %}
             </div>
           </div>
         </div>
 
-        {# Активные алерты #}
         <div class="card anim-6">
           <div class="card-header">
             <div class="card-title">Active Alerts</div>
-            <a href="#" class="btn btn-primary" style="padding:5px 12px;font-size:12px;">+ New</a>
+            <a href="{% url 'alerts:alerts' %}" class="btn btn-primary" style="padding:5px 12px;font-size:12px;">+ New</a>
           </div>
           <div class="card-body" style="padding-top:8px;">
             {% for alert in alerts %}
@@ -255,52 +208,40 @@
               </div>
             </div>
             {% empty %}
-            {# Fallback #}
-            <div class="alert-item">
-              <div class="alert-dot pending"></div>
-              <div style="flex:1">
-                <div class="alert-name">BTC ≥ $100,000</div>
-                <div class="alert-meta">Current: $83,200 · 83% there</div>
-                <div class="alert-prog"><div class="alert-prog-fill" style="width:83%;background:var(--amber)"></div></div>
-              </div>
-            </div>
-            <div class="alert-item">
-              <div class="alert-dot pending"></div>
-              <div style="flex:1">
-                <div class="alert-name">ETH ≤ $2,000</div>
-                <div class="alert-meta">Current: $2,112 · Close!</div>
-                <div class="alert-prog"><div class="alert-prog-fill" style="width:94%;background:var(--purple)"></div></div>
-              </div>
-            </div>
-            <div class="alert-item">
-              <div class="alert-dot triggered"></div>
-              <div>
-                <div class="alert-name up">AMD &gt; $200 ✓</div>
-                <div class="alert-meta">Triggered · $202.05 · 2h ago</div>
-              </div>
+            <div class="muted" style="font-size:12px;text-align:center;padding:16px 0">
+              No alerts. <a href="{% url 'alerts:alerts' %}">Create one</a>
             </div>
             {% endfor %}
           </div>
         </div>
 
-        {# Quick stats #}
         <div class="card">
           <div class="card-header"><div class="card-title">Quick Stats</div></div>
           <div class="card-body" style="padding-top:14px;display:flex;flex-direction:column;gap:13px;">
-            <div class="qs-row"><span class="qs-label">Best asset</span>    <span class="qs-val up">{{ best_asset|default:"NVDA +22.4%" }}</span></div>
-            <div class="qs-row"><span class="qs-label">Worst asset</span>   <span class="qs-val down">{{ worst_asset|default:"ETH −33.9%" }}</span></div>
-            <div class="qs-row"><span class="qs-label">Assets tracked</span><span class="qs-val">{{ assets_count|default:"12" }}</span></div>
-            <div class="qs-row"><span class="qs-label">Last updated</span>  <span class="qs-val muted">{{ last_updated|default:"2 min ago" }}</span></div>
+            <div class="qs-row"><span class="qs-label">Best asset</span><span class="qs-val up">{{ best_asset }}</span></div>
+            <div class="qs-row"><span class="qs-label">Worst asset</span><span class="qs-val down">{{ worst_asset }}</span></div>
+            <div class="qs-row"><span class="qs-label">Assets tracked</span><span class="qs-val">{{ assets_count }}</span></div>
+            <div class="qs-row"><span class="qs-label">Last updated</span><span class="qs-val muted">{{ last_updated }}</span></div>
           </div>
         </div>
 
-      </div>{# /right-col #}
+      </div>
 
-    </div>{# /content-grid #}
+    </div>
 {% endblock %}
 
-
-{# ── JS ── #}
 {% block js %}
-  <script src="{% static 'js/dashboard.js' %}"></script>
+{{ block.super }}
+{% include "includes/market_page_charts.html" with chart_canvas_id="portfolioChart" donut_id="donutChart" chart_line_color="#00e676" chart_fill_start="rgba(0,230,118,0.18)" chart_fill_end="rgba(0,230,118,0)" %}
+<script>
+"use strict";
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".sparkline-canvas").forEach(c => {
+    const values = c.dataset.values.split(",").map(Number);
+    if (values.length && values.some(v => v > 0)) {
+      initSparkline(c.id, values, c.dataset.color || "#00e676");
+    }
+  });
+});
+</script>
 {% endblock %}
