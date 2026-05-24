@@ -10,11 +10,7 @@ from apps.core.services.invest_api import (
     get_quote,
     period_change_pct,
 )
-from apps.core.services.ticker import (
-    build_ticker_items,
-    build_ticker_items_async,
-    format_ticker_price,
-)
+from apps.core.services.ticker import build_ticker_items, format_ticker_price
 
 __all__ = [
     "InvestAPIClient",
@@ -24,7 +20,6 @@ __all__ = [
     "PriceNotFoundError",
     "PriceQuote",
     "build_ticker_items",
-    "build_ticker_items_async",
     "format_ticker_price",
     "get_history",
     "get_price",

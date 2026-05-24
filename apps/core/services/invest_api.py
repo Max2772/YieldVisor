@@ -5,7 +5,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 from urllib.parse import quote
 
-import aiohttp
+import httpx
 from django.conf import settings
 from django.core.cache import cache
 
@@ -108,49 +108,45 @@ def period_change_pct(points: tuple[PriceHistoryPoint, ...]) -> Decimal | None:
 
 
 class InvestAPIClient:
-    """Асинхронный клиент InvestAPI (aiohttp) с кэшем Django."""
+    """Синхронный клиент InvestAPI (httpx) с кэшем Django."""
 
     def __init__(
         self,
         base_url: str | None = None,
         timeout: float | None = None,
         cache_ttl: int | None = None,
-        session: aiohttp.ClientSession | None = None,
+        client: httpx.Client | None = None,
     ) -> None:
         self.base_url = (base_url or settings.INVEST_API_BASE_URL).rstrip("/")
         self.timeout = timeout if timeout is not None else settings.INVEST_API_TIMEOUT
         self.cache_ttl = cache_ttl if cache_ttl is not None else settings.INVEST_API_CACHE_TTL
-        self._session = session
-        self._owns_session = session is None
+        self._client = client
+        self._owns_client = client is None
 
-    async def __aenter__(self) -> InvestAPIClient:
-        if self._session is None:
-            self._session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout),
-            )
-            self._owns_session = True
+    def __enter__(self) -> InvestAPIClient:
+        if self._client is None:
+            self._client = httpx.Client(timeout=self.timeout)
+            self._owns_client = True
         return self
 
-    async def __aexit__(self, *args: object) -> None:
-        await self.close()
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
-    async def close(self) -> None:
-        if self._owns_session and self._session is not None:
-            await self._session.close()
-            self._session = None
+    def close(self) -> None:
+        if self._owns_client and self._client is not None:
+            self._client.close()
+            self._client = None
 
     def _cache_key(self, path: str) -> str:
         return f"invest_api:{path}"
 
-    async def _get_session(self) -> aiohttp.ClientSession:
-        if self._session is None:
-            self._session = aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=self.timeout),
-            )
-            self._owns_session = True
-        return self._session
+    def _get_client(self) -> httpx.Client:
+        if self._client is None:
+            self._client = httpx.Client(timeout=self.timeout)
+            self._owns_client = True
+        return self._client
 
-    async def _fetch_json(
+    def _fetch_json(
         self,
         path: str,
         *,
@@ -165,52 +161,52 @@ class InvestAPIClient:
             return cached
 
         url = f"{self.base_url}/{path}"
-        session = await self._get_session()
+        http = self._get_client()
         try:
-            async with session.get(url, params=params) as response:
-                if response.status == 404:
-                    raise PriceNotFoundError(f"Asset not found: {path}")
-                if response.status >= 400:
-                    body = await response.text()
-                    raise InvestAPIError(
-                        f"InvestAPI returned {response.status} for {path}: {body[:200]}"
-                    )
-                try:
-                    data = await response.json()
-                except aiohttp.ContentTypeError as exc:
-                    raise InvestAPIError(f"Invalid JSON from {url}") from exc
-        except aiohttp.ClientError as exc:
+            response = http.get(url, params=params)
+            if response.status_code == 404:
+                raise PriceNotFoundError(f"Asset not found: {path}")
+            if response.status_code >= 400:
+                body = response.text
+                raise InvestAPIError(
+                    f"InvestAPI returned {response.status_code} for {path}: {body[:200]}"
+                )
+            try:
+                data = response.json()
+            except ValueError as exc:
+                raise InvestAPIError(f"Invalid JSON from {url}") from exc
+        except httpx.HTTPError as exc:
             raise InvestAPIError(f"Request failed: {url}") from exc
 
         cache.set(cache_key, data, self.cache_ttl)
         return data
 
-    async def get_stock(self, ticker: str) -> PriceQuote:
+    def get_stock(self, ticker: str) -> PriceQuote:
         ticker = ticker.strip().upper()
-        return _parse_quote(await self._fetch_json(f"stock/{ticker}"))
+        return _parse_quote(self._fetch_json(f"stock/{ticker}"))
 
-    async def get_crypto(self, coin: str) -> PriceQuote:
+    def get_crypto(self, coin: str) -> PriceQuote:
         coin = coin.strip().lower()
-        return _parse_quote(await self._fetch_json(f"crypto/{coin}"))
+        return _parse_quote(self._fetch_json(f"crypto/{coin}"))
 
-    async def get_steam(self, app_id: int, market_name: str) -> PriceQuote:
+    def get_steam(self, app_id: int, market_name: str) -> PriceQuote:
         name = market_name.strip()
         encoded = quote(name, safe="")
-        return _parse_quote(await self._fetch_json(f"steam/{app_id}/{encoded}"))
+        return _parse_quote(self._fetch_json(f"steam/{app_id}/{encoded}"))
 
-    async def get_stock_history(self, ticker: str, *, days: int = 7) -> PriceHistory:
+    def get_stock_history(self, ticker: str, *, days: int = 7) -> PriceHistory:
         ticker = ticker.strip().upper()
         return _parse_history(
-            await self._fetch_json(f"stock/{ticker}/history", params={"days": days})
+            self._fetch_json(f"stock/{ticker}/history", params={"days": days})
         )
 
-    async def get_crypto_history(self, coin: str, *, days: int = 7) -> PriceHistory:
+    def get_crypto_history(self, coin: str, *, days: int = 7) -> PriceHistory:
         coin = coin.strip().lower()
         return _parse_history(
-            await self._fetch_json(f"crypto/{coin}/history", params={"days": days})
+            self._fetch_json(f"crypto/{coin}/history", params={"days": days})
         )
 
-    async def get_steam_history(
+    def get_steam_history(
         self,
         app_id: int,
         market_name: str,
@@ -220,13 +216,13 @@ class InvestAPIClient:
         name = market_name.strip()
         encoded = quote(name, safe="")
         return _parse_history(
-            await self._fetch_json(
+            self._fetch_json(
                 f"steam/{app_id}/{encoded}/history",
                 params={"days": days},
             )
         )
 
-    async def fetch_history(
+    def fetch_history(
         self,
         asset_type: str,
         asset_name: str,
@@ -235,33 +231,33 @@ class InvestAPIClient:
         days: int = 7,
     ) -> PriceHistory:
         if asset_type == AssetType.STOCK:
-            return await self.get_stock_history(asset_name, days=days)
+            return self.get_stock_history(asset_name, days=days)
         if asset_type == AssetType.CRYPTO:
-            return await self.get_crypto_history(asset_name, days=days)
+            return self.get_crypto_history(asset_name, days=days)
         if asset_type == AssetType.STEAM:
             if app_id is None:
                 raise InvestAPIError("app_id is required for Steam assets")
-            return await self.get_steam_history(app_id, asset_name, days=days)
+            return self.get_steam_history(app_id, asset_name, days=days)
         raise InvestAPIError(f"Unknown asset type: {asset_type!r}")
 
-    async def fetch(
+    def fetch(
         self,
         asset_type: str,
         asset_name: str,
         app_id: int | None = None,
     ) -> PriceQuote:
         if asset_type == AssetType.STOCK:
-            return await self.get_stock(asset_name)
+            return self.get_stock(asset_name)
         if asset_type == AssetType.CRYPTO:
-            return await self.get_crypto(asset_name)
+            return self.get_crypto(asset_name)
         if asset_type == AssetType.STEAM:
             if app_id is None:
                 raise InvestAPIError("app_id is required for Steam assets")
-            return await self.get_steam(app_id, asset_name)
+            return self.get_steam(app_id, asset_name)
         raise InvestAPIError(f"Unknown asset type: {asset_type!r}")
 
 
-async def get_quote(
+def get_quote(
     asset_type: str,
     asset_name: str,
     app_id: int | None = None,
@@ -271,22 +267,22 @@ async def get_quote(
     """Возвращает котировку или None, если актив не найден."""
     if client is not None:
         try:
-            return await client.fetch(asset_type, asset_name, app_id)
+            return client.fetch(asset_type, asset_name, app_id)
         except PriceNotFoundError:
             return None
         except InvestAPIError:
             raise
 
-    async with InvestAPIClient() as api:
+    with InvestAPIClient() as api:
         try:
-            return await api.fetch(asset_type, asset_name, app_id)
+            return api.fetch(asset_type, asset_name, app_id)
         except PriceNotFoundError:
             return None
         except InvestAPIError:
             raise
 
 
-async def get_price(
+def get_price(
     asset_type: str,
     asset_name: str,
     app_id: int | None = None,
@@ -294,11 +290,11 @@ async def get_price(
     client: InvestAPIClient | None = None,
 ) -> Decimal | None:
     """Текущая цена актива или None, если не найден."""
-    quote = await get_quote(asset_type, asset_name, app_id, client=client)
+    quote = get_quote(asset_type, asset_name, app_id, client=client)
     return quote.price if quote else None
 
 
-async def get_history(
+def get_history(
     asset_type: str,
     asset_name: str,
     app_id: int | None = None,
@@ -309,15 +305,15 @@ async def get_history(
     """История цен или None, если актив не найден."""
     if client is not None:
         try:
-            return await client.fetch_history(asset_type, asset_name, app_id, days=days)
+            return client.fetch_history(asset_type, asset_name, app_id, days=days)
         except PriceNotFoundError:
             return None
         except InvestAPIError:
             raise
 
-    async with InvestAPIClient() as api:
+    with InvestAPIClient() as api:
         try:
-            return await api.fetch_history(asset_type, asset_name, app_id, days=days)
+            return api.fetch_history(asset_type, asset_name, app_id, days=days)
         except PriceNotFoundError:
             return None
         except InvestAPIError:

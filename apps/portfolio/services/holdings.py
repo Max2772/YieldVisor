@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from typing import Any
 
 from django.urls import reverse
 
-from apps.core.async_utils import run_async
 from apps.core.services.invest_api import InvestAPIClient, get_history, get_price
 from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
@@ -62,35 +61,39 @@ def _sector_label(position: Portfolio) -> str:
     return "—"
 
 
-async def _fetch_market_data(
-    positions: list[Portfolio],
-) -> list[tuple[Portfolio, Decimal | None, str]]:
-    async with InvestAPIClient() as client:
-
-        async def fetch_one(position: Portfolio) -> tuple[Portfolio, Decimal | None, str]:
-            price = await get_price(
+def _fetch_one(
+    position: Portfolio,
+    client: InvestAPIClient,
+) -> tuple[Portfolio, Decimal | None, str]:
+    price = get_price(
+        position.asset_type,
+        position.asset_name,
+        position.app_id,
+        client=client,
+    )
+    sparkline = ""
+    if price is not None:
+        try:
+            history = get_history(
                 position.asset_type,
                 position.asset_name,
                 position.app_id,
+                days=7,
                 client=client,
             )
-            sparkline = ""
-            if price is not None:
-                try:
-                    history = await get_history(
-                        position.asset_type,
-                        position.asset_name,
-                        position.app_id,
-                        days=7,
-                        client=client,
-                    )
-                    if history and history.points:
-                        sparkline = ",".join(str(float(p.price)) for p in history.points)
-                except Exception:
-                    pass
-            return position, price, sparkline
+            if history and history.points:
+                sparkline = ",".join(str(float(p.price)) for p in history.points)
+        except Exception:
+            pass
+    return position, price, sparkline
 
-        return list(await asyncio.gather(*[fetch_one(p) for p in positions]))
+
+def _fetch_market_data(
+    positions: list[Portfolio],
+) -> list[tuple[Portfolio, Decimal | None, str]]:
+    with InvestAPIClient() as client:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            return list(executor.map(lambda p: _fetch_one(p, client), positions))
 
 
 def _build_item_row(
@@ -156,7 +159,7 @@ def build_holdings(user, asset_type: str) -> tuple[list[dict[str, Any]], dict[st
     if not positions:
         return [], _empty_summary()
 
-    market_rows = run_async(_fetch_market_data(positions))
+    market_rows = _fetch_market_data(positions)
 
     items: list[dict[str, Any]] = []
     total_value = Decimal("0")

@@ -6,7 +6,6 @@ from typing import Any
 
 from django.conf import settings
 
-from apps.core.async_utils import run_async
 from apps.core.services.invest_api import (
     InvestAPIError,
     PriceHistory,
@@ -46,18 +45,18 @@ def _range_position(current: Decimal, low: Decimal, high: Decimal) -> int:
     return max(0, min(100, int(pct)))
 
 
-async def _fetch_quote_and_history(
+def _fetch_quote_and_history(
     asset_type: str,
     asset_name: str,
     *,
     app_id: int | None,
     days: int,
 ) -> tuple[PriceQuote, PriceHistory | None] | None:
-    quote = await get_quote(asset_type, asset_name, app_id)
+    quote = get_quote(asset_type, asset_name, app_id)
     if quote is None:
         return None
     try:
-        history = await get_history(asset_type, asset_name, app_id, days=days)
+        history = get_history(asset_type, asset_name, app_id, days=days)
     except InvestAPIError:
         history = None
     return quote, history
@@ -80,13 +79,11 @@ def build_asset_detail_context(
     history_days = days if days is not None else settings.TICKER_CHANGE_DAYS
 
     try:
-        result = run_async(
-            _fetch_quote_and_history(
-                asset_type,
-                asset_name,
-                app_id=app_id,
-                days=history_days,
-            )
+        result = _fetch_quote_and_history(
+            asset_type,
+            asset_name,
+            app_id=app_id,
+            days=history_days,
         )
     except InvestAPIError:
         raise

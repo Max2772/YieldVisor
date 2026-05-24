@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import asyncio
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
 
 from apps.core.constants import HOMEPAGE_TICKERS, TickerSpec
-from apps.core.async_utils import run_async
 from apps.core.services.invest_api import (
     InvestAPIClient,
     InvestAPIError,
@@ -37,7 +36,7 @@ def format_change_delta(pct: Decimal) -> tuple[str, bool]:
     return f"{value}%", False
 
 
-async def _fetch_ticker_item(
+def _fetch_ticker_item(
     spec: TickerSpec,
     order: int,
     client: InvestAPIClient,
@@ -45,7 +44,7 @@ async def _fetch_ticker_item(
     days = settings.TICKER_CHANGE_DAYS
 
     try:
-        history = await get_history(
+        history = get_history(
             spec["asset_type"],
             spec["asset_name"],
             spec.get("app_id"),
@@ -64,7 +63,7 @@ async def _fetch_ticker_item(
 
     if price is None:
         try:
-            price = await get_price(
+            price = get_price(
                 spec["asset_type"],
                 spec["asset_name"],
                 spec.get("app_id"),
@@ -92,16 +91,20 @@ async def _fetch_ticker_item(
     return item
 
 
-async def build_ticker_items_async() -> list[dict[str, Any]]:
-    """Параллельная загрузка через asyncio.gather и общую aiohttp-сессию."""
-    async with InvestAPIClient() as client:
-        results = await asyncio.gather(
-            *[
-                _fetch_ticker_item(spec, order, client)
+def build_ticker_items() -> list[dict[str, Any]]:
+    """Параллельная загрузка тикеров через общий httpx-клиент."""
+    with InvestAPIClient() as client:
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            futures = {
+                executor.submit(_fetch_ticker_item, spec, order, client): order
                 for order, spec in enumerate(HOMEPAGE_TICKERS)
-            ],
-            return_exceptions=True,
-        )
+            }
+            results: list[dict[str, Any] | BaseException] = []
+            for future in as_completed(futures):
+                try:
+                    results.append(future.result())
+                except Exception as exc:
+                    results.append(exc)
 
     items: list[dict[str, Any]] = []
     for result in results:
@@ -110,11 +113,3 @@ async def build_ticker_items_async() -> list[dict[str, Any]]:
 
     items.sort(key=lambda x: x.pop("_order", 0))
     return items
-
-
-def build_ticker_items() -> list[dict[str, Any]]:
-    """
-    Синхронная обёртка для Django views.
-    Один event loop на загрузку всего тикера.
-    """
-    return run_async(build_ticker_items_async())
