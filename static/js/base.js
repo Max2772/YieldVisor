@@ -19,7 +19,9 @@ function assetIconImageError(img) {
   el.classList.add("asset-icon--letters");
   el.replaceChildren();
   el.textContent = el.dataset.iconText || "?";
-  if (el.dataset.iconBg) el.style.background = el.dataset.iconBg;
+  if (!el.classList.contains("asset-icon--hero") && el.dataset.iconBg) {
+    el.style.background = el.dataset.iconBg;
+  }
   if (el.dataset.iconFg) el.style.color = el.dataset.iconFg;
 }
 

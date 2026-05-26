@@ -1,11 +1,13 @@
 {% if logo_url %}
-<div class="asset-icon asset-icon--logo"
+<div class="asset-icon asset-icon--logo{% if hero %} asset-icon--hero{% endif %}"
      data-icon-text="{{ icon_text }}"
-     data-icon-bg="{{ icon_bg }}"
+     data-icon-bg="{% if hero %}{% else %}{{ icon_bg }}{% endif %}"
      data-icon-fg="{{ icon_fg }}">
-  <img src="{{ logo_url }}" alt="{{ ticker }}" class="asset-logo" width="32" height="32" loading="lazy"
-       onerror="assetIconImageError(this)">
+  <img src="{{ logo_url }}" alt="{{ ticker }}" class="asset-logo"
+       width="{% if hero %}96{% else %}32{% endif %}" height="{% if hero %}96{% else %}32{% endif %}"
+       loading="lazy" onerror="assetIconImageError(this)">
 </div>
 {% else %}
-<div class="asset-icon asset-icon--letters" style="background:{{ icon_bg }};color:{{ icon_fg }}">{{ icon_text }}</div>
+<div class="asset-icon asset-icon--letters{% if hero %} asset-icon--hero{% endif %}"
+     style="{% if not hero %}background:{{ icon_bg }};{% endif %}color:{{ icon_fg }}">{{ icon_text }}</div>
 {% endif %}

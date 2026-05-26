@@ -126,8 +126,8 @@
 .asset-icon--logo {
   position:   relative;
   display:    block;
-  min-width:  32px;
-  height:     32px;
+  min-width:  36px;
+  height:     36px;
   padding:    0;
   overflow:   hidden;
   background: var(--surface2);
@@ -140,6 +140,11 @@
   object-fit: contain;
 }
 
+/* Steam My Inventory: PNG-логотипы без серой подложки */
+#steamTable .asset-icon--logo {
+  background: transparent;
+}
+
 .asset-icon--letters {
   font-size:   11px;
   font-weight: 700;
@@ -149,8 +154,8 @@
 
 .asset-logo--sm {
   display:       block;
-  width:         28px;
-  height:        28px;
+  width:         36px;
+  height:        36px;
   flex-shrink:   0;
   object-fit:    contain;
   border-radius: 6px;

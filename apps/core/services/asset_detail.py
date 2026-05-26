@@ -14,6 +14,7 @@ from apps.core.services.invest_api import (
     get_quote,
     period_change_pct,
 )
+from apps.core.services.asset_display import asset_icon_context
 from apps.core.services.ticker import format_change_delta, format_ticker_price
 from apps.portfolio.types import AssetType
 
@@ -128,10 +129,15 @@ def build_asset_detail_context(
         "source": quote.source or "—",
         "cached_at": quote.cached_at,
         "asset_type": asset_type_label or asset_type.title(),
-        "icon": (display_symbol[:1] or "?").upper(),
         "change_delta": change_delta,
         "change_positive": change_positive,
         "app_id": quote.app_id or app_id,
+        **asset_icon_context(
+            asset_type,
+            display_label=display_symbol,
+            asset_name=asset_name,
+            app_id=quote.app_id or app_id,
+        ),
     }
 
     if period_low is not None and period_high is not None:

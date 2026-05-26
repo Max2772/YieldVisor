@@ -1,7 +1,9 @@
 {# Общая разметка карточки актива (данные из InvestAPI). #}
 
 <div class="asset-hero anim-1">
-  <div class="asset-hero-icon">{{ asset.icon }}</div>
+  <div class="asset-hero-icon">
+    {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.symbol icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg hero=True %}
+  </div>
 
   <div style="flex:1">
     <div class="serif" style="font-size:24px;letter-spacing:-0.4px;">
@@ -11,7 +13,7 @@
       {% if hero_meta %}{{ hero_meta }}{% endif %}
       {% if asset.subtitle %}{% if hero_meta %} · {% endif %}{{ asset.subtitle }}{% endif %}
     </div>
-    <div class="hero-type-pill">{{ asset_type_emoji|default:"📊" }} {{ asset.asset_type }}</div>
+    <div class="hero-type-pill">{{ asset.asset_type }}</div>
   </div>
 
   <div class="hero-metrics">

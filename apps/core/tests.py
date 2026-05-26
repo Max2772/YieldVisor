@@ -184,6 +184,8 @@ class InvestAPIClientTests(SimpleTestCase):
 
         self.assertIsNotNone(ctx)
         self.assertEqual(ctx["asset"]["symbol"], "AMD")
+        self.assertIn("logo_url", ctx["asset"])
+        self.assertTrue(ctx["asset"]["logo_url"])
         self.assertEqual(len(ctx["chart"]["prices"]), 2)
         self.assertTrue(ctx["asset"]["change_delta"])
 

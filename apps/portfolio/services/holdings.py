@@ -6,8 +6,7 @@ from typing import Any
 
 from django.urls import reverse
 
-from apps.core.services.asset_display import asset_subtitle
-from apps.core.services.asset_logos import asset_logo_url, crypto_icon_slug
+from apps.core.services.asset_display import asset_icon_context, asset_subtitle
 from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistory,
@@ -62,14 +61,6 @@ def _detail_url(position: Portfolio) -> str:
     return "#"
 
 
-def _icon_colors(asset_type: str) -> tuple[str, str]:
-    if asset_type == AssetType.STOCK:
-        return "#1a2e40", "#4fc3f7"
-    if asset_type == AssetType.CRYPTO:
-        return "#1a2a1a", "#00e676"
-    return "#1a2040", "#7c83ff"
-
-
 def _display_ticker(position: Portfolio) -> str:
     if position.asset_type == AssetType.STEAM:
         return position.asset_name
@@ -80,14 +71,6 @@ def _meta_label(position: Portfolio) -> str:
     if position.asset_type == AssetType.STEAM and position.app_id:
         return steam_app_label(position.app_id)
     return "—"
-
-
-def _icon_text(position: Portfolio, ticker: str) -> str:
-    if position.asset_type == AssetType.STEAM and position.app_id:
-        label = steam_app_label(position.app_id)
-        if label != "—":
-            return label[:2]
-    return ticker[:2].upper()
 
 
 def _format_value_short(total_value: Decimal) -> str:
@@ -193,32 +176,19 @@ def _build_item_row(
     sparkline: str,
     display_name: str = "",
 ) -> dict[str, Any]:
-    icon_bg, icon_fg = _icon_colors(position.asset_type)
     ticker = _display_ticker(position)
-    icon_text = _icon_text(position, ticker)
     subtitle = display_name
-    crypto_symbol = (
-        crypto_icon_slug(position.asset_name)
-        if position.asset_type == AssetType.CRYPTO
-        else None
-    )
-    logo_url = asset_logo_url(
+    row_base = asset_icon_context(
         position.asset_type,
-        ticker=ticker,
+        display_label=ticker,
         asset_name=position.asset_name,
         app_id=position.app_id,
-        crypto_symbol=crypto_symbol,
     )
-
-    row_base = {
-        "logo_url": logo_url,
-    }
 
     if price is None:
         return {
             **row_base,
             "ticker": ticker,
-            "icon_text": icon_text,
             "name": subtitle,
             "detail_url": _detail_url(position),
             "meta": _meta_label(position),
@@ -231,8 +201,6 @@ def _build_item_row(
             "qty": _format_qty(position.quantity),
             "total": _format_money(position.cost_basis()),
             "sparkline": "0",
-            "icon_bg": icon_bg,
-            "icon_fg": icon_fg,
         }
 
     pnl_value = position.pnl(price)
@@ -241,7 +209,6 @@ def _build_item_row(
     return {
         **row_base,
         "ticker": ticker,
-        "icon_text": icon_text,
         "name": subtitle,
         "detail_url": _detail_url(position),
         "meta": _meta_label(position),
@@ -254,8 +221,6 @@ def _build_item_row(
         "qty": _format_qty(position.quantity),
         "total": _format_money(total),
         "sparkline": sparkline or "0",
-        "icon_bg": icon_bg,
-        "icon_fg": icon_fg,
         "_total_raw": total,
         "_pnl_raw": pnl_value,
     }
