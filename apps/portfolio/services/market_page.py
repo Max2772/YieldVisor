@@ -175,7 +175,7 @@ def build_market_search_results(asset_type: str) -> list[dict[str, Any]]:
                             asset_type,
                             entry["asset_name"],
                             app_id=entry["app_id"],
-                            symbol=entry["asset_name"][:24],
+                            symbol=entry["asset_name"],
                             client=client,
                         )
                     )
@@ -230,7 +230,7 @@ def _compute_performers(
 
     for position in positions:
         ticker = (
-            position.asset_name[:20]
+            position.asset_name
             if position.asset_type == AssetType.STEAM
             else position.asset_name.upper()
         )

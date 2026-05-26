@@ -62,7 +62,7 @@ def _icon_colors(asset_type: str) -> tuple[str, str]:
 
 def _display_ticker(position: Portfolio) -> str:
     if position.asset_type == AssetType.STEAM:
-        return position.asset_name[:20]
+        return position.asset_name
     return position.asset_name.upper()
 
 
