@@ -28,6 +28,7 @@ class PriceQuote:
     currency: str
     source: str | None = None
     full_name: str | None = None
+    symbol: str | None = None
     app_id: int | None = None
     cached_at: str | None = None
 
@@ -46,6 +47,7 @@ class PriceHistory:
     points: tuple[PriceHistoryPoint, ...]
     interval: str | None = None
     full_name: str | None = None
+    symbol: str | None = None
     app_id: int | None = None
     source: str | None = None
     cached_at: str | None = None
@@ -66,6 +68,7 @@ def _parse_quote(data: dict[str, Any]) -> PriceQuote:
         currency=data.get("currency", "USD"),
         source=data.get("source"),
         full_name=data.get("full_name"),
+        symbol=data.get("symbol"),
         app_id=data.get("app_id"),
         cached_at=data.get("cached_at"),
     )
@@ -91,6 +94,7 @@ def _parse_history(data: dict[str, Any]) -> PriceHistory:
         points=tuple(points),
         interval=data.get("interval"),
         full_name=data.get("full_name"),
+        symbol=data.get("symbol"),
         app_id=data.get("app_id"),
         source=data.get("source"),
         cached_at=data.get("cached_at"),

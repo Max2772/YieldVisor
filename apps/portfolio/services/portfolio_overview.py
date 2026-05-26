@@ -241,8 +241,8 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
     }
     cached_times: list[Any] = []
 
-    for position, price, sparkline, display_name in market_rows:
-        row = _build_item_row(position, price, sparkline, display_name)
+    for position, price, sparkline, full_name, crypto_symbol in market_rows:
+        row = _build_item_row(position, price, sparkline, full_name, crypto_symbol)
         asset = _to_portfolio_asset(position, row)
         assets.append(asset)
 

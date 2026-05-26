@@ -202,6 +202,7 @@ class InvestAPIClientTests(SimpleTestCase):
                     "price": 62000,
                     "currency": "USD",
                     "full_name": "Bitcoin",
+                    "symbol": "BTC",
                 }
             )
 

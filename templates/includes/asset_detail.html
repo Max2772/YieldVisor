@@ -84,6 +84,11 @@
         <div class="km-row">
           <div class="km-left"><div class="km-label">Symbol</div><div class="km-val">{{ asset.market_symbol }}</div></div>
         </div>
+        {% if asset.name %}
+        <div class="km-row">
+          <div class="km-left"><div class="km-label">Full Name</div><div class="km-val">{{ asset.name }}</div></div>
+        </div>
+        {% endif %}
         <div class="km-row">
           <div class="km-left"><div class="km-label">Currency</div><div class="km-val">{{ asset.currency }}</div></div>
         </div>
@@ -107,7 +112,7 @@
         {% if asset.range_pct is not None %}
         <div class="prog-wrap" style="margin-top:12px">
           <div class="prog-track">
-            <div class="prog-fill" style="width:{{ asset.range_pct }}%"></div>
+            <div class="prog-fill" style="width: {{ asset.range_pct }}%;"></div>
           </div>
         </div>
         {% endif %}

@@ -238,6 +238,14 @@ def _compute_performers(
     positions: list[Portfolio],
     items: list[dict[str, Any]],
 ) -> tuple[dict[str, str] | None, dict[str, str] | None]:
+    return _compute_performers_with_asset_type(positions, items, positions[0].asset_type if positions else "")
+
+
+def _compute_performers_with_asset_type(
+    positions: list[Portfolio],
+    items: list[dict[str, Any]],
+    asset_type: str,
+) -> tuple[dict[str, str] | None, dict[str, str] | None]:
     by_ticker = {row["ticker"]: row for row in items}
     ranked: list[tuple[Decimal, dict[str, Any]]] = []
 
@@ -268,7 +276,10 @@ def _compute_performers(
 
     def pack(row: dict[str, Any], pct: Decimal) -> dict[str, str]:
         sign = "+" if pct >= 0 else "−"
-        return {"label": row["ticker"], "change": f"{sign}{abs(pct):.1f}%"}
+        label = row["ticker"]
+        if asset_type == AssetType.CRYPTO:
+            label = row.get("full_name") or row["ticker"]
+        return {"label": label, "change": f"{sign}{abs(pct):.1f}%"}
 
     return pack(best_row, best_pct), pack(worst_row, worst_pct)
 
@@ -302,7 +313,11 @@ def build_market_page_context(
         positions_qs = positions_qs.filter(app_id=steam_app_id)
     positions = list(positions_qs.order_by("asset_name"))
 
-    best, worst = _compute_performers(positions, items)
+    best, worst = _compute_performers_with_asset_type(
+        positions,
+        items,
+        asset_type,
+    )
 
     cached_times: list[datetime] = []
     with InvestAPIClient() as client:

@@ -46,6 +46,7 @@ def asset_icon_context(
     *,
     display_label: str,
     asset_name: str = "",
+    crypto_symbol: str | None = None,
     app_id: int | None = None,
 ) -> dict[str, str]:
     """Возвращает контекст для asset_icon.html (logo + fallback)."""
@@ -55,9 +56,14 @@ def asset_icon_context(
         asset_type, ("#1a2040", "#7c83ff")
     )
 
-    crypto_symbol = (
-        crypto_icon_slug(name) if asset_type == AssetType.CRYPTO else None
-    )
+    if asset_type == AssetType.CRYPTO:
+        resolved_crypto_symbol = (
+            crypto_symbol.strip() if crypto_symbol else None
+        )
+        if not resolved_crypto_symbol:
+            resolved_crypto_symbol = crypto_icon_slug(name)
+    else:
+        resolved_crypto_symbol = None
 
     return {
         "logo_url": asset_logo_url(
@@ -65,7 +71,7 @@ def asset_icon_context(
             ticker=display_label,
             asset_name=name,
             app_id=app_id,
-            crypto_symbol=crypto_symbol,
+            crypto_symbol=resolved_crypto_symbol,
         ),
         "icon_text": asset_icon_text(asset_type, display_label, app_id=app_id),
         "icon_bg": icon_bg,

@@ -90,7 +90,7 @@ def _build_value_allocation(
         return []
 
     valued = [
-        (row["ticker"], row["_total_raw"])
+        (row.get("allocation_label") or row["ticker"], row["_total_raw"])
         for row in items
         if row.get("_total_raw") is not None
     ]
@@ -117,7 +117,7 @@ def _build_value_allocation(
 def _fetch_one(
     position: Portfolio,
     client: InvestAPIClient,
-) -> tuple[Portfolio, Decimal | None, str, str]:
+) -> tuple[Portfolio, Decimal | None, str, str, str]:
     quote: PriceQuote | None = None
     history: PriceHistory | None = None
     try:
@@ -159,12 +159,19 @@ def _fetch_one(
         asset_type=position.asset_type,
         app_id=position.app_id,
     )
-    return position, price, sparkline, subtitle
+
+    full_name = subtitle
+    crypto_symbol = ""
+    if position.asset_type == AssetType.CRYPTO and quote:
+        full_name = quote.full_name or quote.name or subtitle
+        crypto_symbol = (quote.symbol or "").upper()
+
+    return position, price, sparkline, full_name, crypto_symbol
 
 
 def _fetch_market_data(
     positions: list[Portfolio],
-) -> list[tuple[Portfolio, Decimal | None, str, str]]:
+) -> list[tuple[Portfolio, Decimal | None, str, str, str]]:
     with InvestAPIClient() as client:
         with ThreadPoolExecutor(max_workers=4) as executor:
             return list(executor.map(lambda p: _fetch_one(p, client), positions))
@@ -174,22 +181,32 @@ def _build_item_row(
     position: Portfolio,
     price: Decimal | None,
     sparkline: str,
-    display_name: str = "",
+    full_name: str = "",
+    crypto_symbol: str = "",
 ) -> dict[str, Any]:
     ticker = _display_ticker(position)
-    subtitle = display_name
+    if position.asset_type == AssetType.CRYPTO:
+        name_value = crypto_symbol or ticker
+        allocation_label = full_name
+    else:
+        name_value = full_name
+        allocation_label = ticker
+
     row_base = asset_icon_context(
         position.asset_type,
         display_label=ticker,
         asset_name=position.asset_name,
         app_id=position.app_id,
+        crypto_symbol=crypto_symbol if position.asset_type == AssetType.CRYPTO else None,
     )
 
     if price is None:
         return {
             **row_base,
             "ticker": ticker,
-            "name": subtitle,
+            "name": name_value,
+            "full_name": full_name,
+            "allocation_label": allocation_label,
             "detail_url": _detail_url(position),
             "meta": _meta_label(position),
             "avg_buy": _format_money(position.avg_buy_price),
@@ -209,7 +226,9 @@ def _build_item_row(
     return {
         **row_base,
         "ticker": ticker,
-        "name": subtitle,
+        "name": name_value,
+        "full_name": full_name,
+        "allocation_label": allocation_label,
         "detail_url": _detail_url(position),
         "meta": _meta_label(position),
         "avg_buy": _format_money(position.avg_buy_price),
@@ -258,8 +277,8 @@ def build_holdings(
     total_pnl = Decimal("0")
     cost_basis = Decimal("0")
 
-    for position, price, sparkline, display_name in market_rows:
-        row = _build_item_row(position, price, sparkline, display_name)
+    for position, price, sparkline, full_name, crypto_symbol in market_rows:
+        row = _build_item_row(position, price, sparkline, full_name, crypto_symbol)
         items.append(row)
         if "_total_raw" in row:
             total_value += row["_total_raw"]

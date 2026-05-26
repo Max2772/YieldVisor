@@ -152,26 +152,42 @@ def build_asset_detail_context(
         last_volume = _format_volume(points[-1].volume)
 
     display_name = quote.full_name or quote.name
-    if asset_type == AssetType.CRYPTO and display_symbol.upper() != quote.name.upper():
-        subtitle = quote.name
+    quote_symbol = quote.symbol or display_symbol
+
+    market_symbol: str
+    hero_title: str
+    hero_subtitle: str
+    subtitle: str = ""
+
+    if asset_type == AssetType.CRYPTO:
+        # Для crypto используем symbol из API (например BTC/ETH/BNB),
+        # а не переданный из URL slug.
+        market_symbol = quote_symbol.upper()
+        hero_title = _hero_title(asset_type, display_name, market_symbol)
+        hero_subtitle = _hero_subtitle(
+            asset_type,
+            market_symbol=market_symbol,
+            hero_meta=hero_meta or "",
+            subtitle="",
+            display_symbol=market_symbol,
+        )
     else:
         subtitle = quote.name if display_name != quote.name else ""
+        if asset_type == AssetType.STOCK and subtitle.upper() == display_symbol.upper():
+            subtitle = ""
 
-    if asset_type == AssetType.STOCK and subtitle.upper() == display_symbol.upper():
-        subtitle = ""
-
-    market_symbol = _market_symbol(asset_type, asset_name, display_symbol)
-    hero_title = _hero_title(asset_type, display_name, display_symbol)
-    hero_subtitle = _hero_subtitle(
-        asset_type,
-        market_symbol=market_symbol,
-        hero_meta=hero_meta or "",
-        subtitle=subtitle,
-        display_symbol=display_symbol,
-    )
+        market_symbol = _market_symbol(asset_type, asset_name, display_symbol)
+        hero_title = _hero_title(asset_type, display_name, display_symbol)
+        hero_subtitle = _hero_subtitle(
+            asset_type,
+            market_symbol=market_symbol,
+            hero_meta=hero_meta or "",
+            subtitle=subtitle,
+            display_symbol=display_symbol,
+        )
 
     asset: dict[str, Any] = {
-        "symbol": display_symbol,
+        "symbol": market_symbol if asset_type == AssetType.CRYPTO else display_symbol,
         "market_symbol": market_symbol,
         "name": display_name,
         "hero_title": hero_title,
@@ -187,11 +203,13 @@ def build_asset_detail_context(
         "change_positive": change_positive,
         "app_id": quote.app_id or app_id,
         "has_holding": False,
+        "coin_name": quote.name if asset_type == AssetType.CRYPTO else "",
         **asset_icon_context(
             asset_type,
-            display_label=display_symbol,
+            display_label=market_symbol if asset_type == AssetType.CRYPTO else display_symbol,
             asset_name=asset_name,
             app_id=quote.app_id or app_id,
+            crypto_symbol=quote.symbol if asset_type == AssetType.CRYPTO else None,
         ),
     }
 
