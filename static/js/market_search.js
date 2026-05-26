@@ -30,7 +30,10 @@ function initMarketSearch(config) {
       const select = config.appSelectId
         ? document.getElementById(config.appSelectId)
         : null;
-      const appId = (select?.value || "730").trim();
+      let appId = (select?.value || "730").trim();
+      if (appId === "all") {
+        appId = "730";
+      }
       return `${baseUrl}${appId}/${encodeURIComponent(q)}/`;
     }
     return null;

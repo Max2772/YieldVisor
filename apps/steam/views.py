@@ -7,12 +7,11 @@ from django.views.generic import TemplateView
 
 from apps.core.mixins import AssetDetailMixin, AssetMarketMixin
 from apps.portfolio.types import AssetType
-
-STEAM_APP_LABELS = {
-    730: 'Counter-Strike 2',
-    570: 'Dota 2',
-    440: 'Team Fortress 2',
-}
+from apps.steam.constants import (
+    STEAM_APP_FULL_LABELS,
+    STEAM_APPS,
+    resolve_steam_app_filter,
+)
 
 
 class SteamView(AssetMarketMixin, TemplateView):
@@ -20,9 +19,15 @@ class SteamView(AssetMarketMixin, TemplateView):
     asset_type = AssetType.STEAM
     active_nav = 'steam'
 
+    def get_market_page_options(self) -> dict[str, Any]:
+        return {"app_id": resolve_steam_app_filter(self.request.GET.get("app"))}
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Steam'
+        app_filter = resolve_steam_app_filter(self.request.GET.get("app"))
+        context["title"] = "Steam"
+        context["steam_apps"] = STEAM_APPS
+        context["selected_app_filter"] = app_filter
         return context
 
 
@@ -46,7 +51,7 @@ class SteamItemView(AssetDetailMixin, TemplateView):
 
     def get_hero_meta(self, **kwargs: Any) -> str:
         app_id = kwargs['app_id']
-        game = STEAM_APP_LABELS.get(app_id, f'App {app_id}')
+        game = STEAM_APP_FULL_LABELS.get(app_id, f'App {app_id}')
         return f"{game} · App ID {app_id}"
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:

@@ -22,9 +22,18 @@ class AssetMarketMixin(LoginRequiredMixin, TemplateView):
     asset_type: str = ""
     active_nav: str = ""
 
+    def get_market_page_options(self) -> dict[str, Any]:
+        return {}
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context.update(build_market_page_context(self.request.user, self.asset_type))
+        context.update(
+            build_market_page_context(
+                self.request.user,
+                self.asset_type,
+                **self.get_market_page_options(),
+            )
+        )
         context["active_nav"] = self.active_nav
         return context
 

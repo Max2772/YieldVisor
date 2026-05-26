@@ -137,7 +137,11 @@ def _fetch_market_result(
     }
 
 
-def build_market_search_results(asset_type: str) -> list[dict[str, Any]]:
+def build_market_search_results(
+    asset_type: str,
+    *,
+    app_id: int | None = None,
+) -> list[dict[str, Any]]:
     catalog = catalog_for_asset_type(asset_type)
     if not catalog:
         return []
@@ -146,6 +150,12 @@ def build_market_search_results(asset_type: str) -> list[dict[str, Any]]:
         with ThreadPoolExecutor(max_workers=4) as executor:
             futures = []
             for entry in catalog:
+                if (
+                    asset_type == AssetType.STEAM
+                    and app_id is not None
+                    and entry.get("app_id") != app_id
+                ):
+                    continue
                 if asset_type == AssetType.STOCK:
                     futures.append(
                         executor.submit(
@@ -276,11 +286,18 @@ def _best_item_total(
     return "—"
 
 
-def build_market_page_context(user, asset_type: str) -> dict[str, Any]:
-    items, summary = build_holdings(user, asset_type)
-    positions = list(
-        Portfolio.objects.filter(user=user, asset_type=asset_type).order_by("asset_name")
-    )
+def build_market_page_context(
+    user,
+    asset_type: str,
+    *,
+    app_id: int | None = None,
+) -> dict[str, Any]:
+    steam_app_id = app_id if asset_type == AssetType.STEAM else None
+    items, summary = build_holdings(user, asset_type, app_id=steam_app_id)
+    positions_qs = Portfolio.objects.filter(user=user, asset_type=asset_type)
+    if steam_app_id is not None:
+        positions_qs = positions_qs.filter(app_id=steam_app_id)
+    positions = list(positions_qs.order_by("asset_name"))
 
     best, worst = _compute_performers(positions, items)
 
@@ -299,7 +316,7 @@ def build_market_page_context(user, asset_type: str) -> dict[str, Any]:
                 if parsed:
                     cached_times.append(parsed)
 
-    market_results = build_market_search_results(asset_type)
+    market_results = build_market_search_results(asset_type, app_id=steam_app_id)
 
     try:
         total_value = Decimal(summary["portfolio_value"].replace(",", ""))

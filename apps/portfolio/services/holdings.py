@@ -10,6 +10,7 @@ from apps.core.services.invest_api import InvestAPIClient, get_history, get_pric
 from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
 from apps.portfolio.types import AssetType
+from apps.steam.constants import steam_app_label
 
 ALLOCATION_COLORS = (
     "#4fc3f7",
@@ -68,8 +69,16 @@ def _display_ticker(position: Portfolio) -> str:
 
 def _meta_label(position: Portfolio) -> str:
     if position.asset_type == AssetType.STEAM and position.app_id:
-        return f"App {position.app_id}"
+        return steam_app_label(position.app_id)
     return "—"
+
+
+def _icon_text(position: Portfolio, ticker: str) -> str:
+    if position.asset_type == AssetType.STEAM and position.app_id:
+        label = steam_app_label(position.app_id)
+        if label != "—":
+            return label[:2]
+    return ticker[:2].upper()
 
 
 def _format_value_short(total_value: Decimal) -> str:
@@ -155,10 +164,12 @@ def _build_item_row(
 ) -> dict[str, Any]:
     icon_bg, icon_fg = _icon_colors(position.asset_type)
     ticker = _display_ticker(position)
+    icon_text = _icon_text(position, ticker)
 
     if price is None:
         return {
             "ticker": ticker,
+            "icon_text": icon_text,
             "name": position.asset_name,
             "detail_url": _detail_url(position),
             "meta": _meta_label(position),
@@ -177,6 +188,7 @@ def _build_item_row(
     total = position.current_value(price)
     return {
         "ticker": ticker,
+        "icon_text": icon_text,
         "name": position.asset_name,
         "detail_url": _detail_url(position),
         "meta": _meta_label(position),
@@ -206,10 +218,16 @@ def _empty_summary() -> dict[str, Any]:
     }
 
 
-def build_holdings(user, asset_type: str) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    positions = list(
-        Portfolio.objects.filter(user=user, asset_type=asset_type).order_by("asset_name")
-    )
+def build_holdings(
+    user,
+    asset_type: str,
+    *,
+    app_id: int | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    positions_qs = Portfolio.objects.filter(user=user, asset_type=asset_type)
+    if asset_type == AssetType.STEAM and app_id is not None:
+        positions_qs = positions_qs.filter(app_id=app_id)
+    positions = list(positions_qs.order_by("asset_name"))
     if not positions:
         return [], _empty_summary()
 

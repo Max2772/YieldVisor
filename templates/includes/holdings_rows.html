@@ -2,7 +2,7 @@
 <tr>
   <td style="padding-left:24px">
     <a href="{{ item.detail_url }}" class="asset-cell" style="display:flex;align-items:center;gap:10px">
-      <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center">{{ item.ticker|slice:":2" }}</div>
+      <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center">{{ item.icon_text|default:item.ticker|slice:":2" }}</div>
       <div>
         <div class="asset-ticker asset-ticker--wrap" style="font-size:12px">{{ item.ticker }}</div>
         {% if item.name and item.name != item.ticker %}
@@ -11,7 +11,9 @@
       </div>
     </a>
   </td>
+  {% if show_meta_column|default:True %}
   <td><span class="badge badge-blue">{{ item.meta }}</span></td>
+  {% endif %}
   <td><span class="mono">${{ item.avg_buy }}</span></td>
   <td><span class="mono">${{ item.market_price }}</span></td>
   <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
@@ -21,7 +23,7 @@
 </tr>
 {% empty %}
 <tr>
-  <td colspan="8" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
+  <td colspan="{% if show_meta_column|default:True %}8{% else %}7{% endif %}" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
     No holdings yet. Open an asset page and click <strong>+ Add</strong>.
   </td>
 </tr>

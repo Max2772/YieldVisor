@@ -59,7 +59,6 @@
         <table class="assets-table" id="cryptoTable">
           <thead><tr>
             <th style="padding-left:24px">Coin</th>
-            <th>Network</th>
             <th>Avg Buy</th>
             <th>Market Price</th>
             <th>P&amp;L</th>
@@ -67,7 +66,7 @@
             <th>Total Value</th>
           </tr></thead>
           <tbody>
-            {% include "includes/holdings_rows.html" %}
+            {% include "includes/holdings_rows.html" with show_meta_column=False %}
           </tbody>
         </table>
       </div>

@@ -12,9 +12,10 @@
 {% block topbar_actions %}
   <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
   <select id="appSelect" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
-    <option value="730">CS2</option>
-    <option value="570">Dota 2</option>
-    <option value="440">TF2</option>
+    <option value="all"{% if not selected_app_filter %} selected{% endif %}>All</option>
+    {% for app_id, label in steam_apps.items %}
+    <option value="{{ app_id }}"{% if selected_app_filter == app_id %} selected{% endif %}>{{ label }}</option>
+    {% endfor %}
   </select>
   <button class="btn btn-ghost" onclick="location.reload()">⟳ Refresh</button>
 {% endblock %}
@@ -70,9 +71,10 @@
             <th>P&amp;L</th>
             <th>Qty</th>
             <th>Total Value</th>
+            <th></th>
           </tr></thead>
           <tbody>
-            {% include "includes/holdings_rows.html" %}
+            {% include "includes/holdings_rows.html" with show_meta_column=True %}
           </tbody>
         </table>
       </div>
@@ -132,6 +134,11 @@ document.addEventListener("DOMContentLoaded", () => {
     type: "steam",
     baseUrl: "{% url 'steam:steam' %}",
     appSelectId: "appSelect",
+  });
+  document.getElementById("appSelect")?.addEventListener("change", (e) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("app", e.target.value);
+    window.location.assign(url.toString());
   });
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
     initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
