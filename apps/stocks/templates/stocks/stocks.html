@@ -12,7 +12,7 @@
 {% block page_meta %}US equities &amp; ETFs · live quotes{% endblock %}
 
 {% block topbar_actions %}
-    <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+    {% include "includes/date_badge.html" %}
     <button class="btn btn-ghost" onclick="location.reload()">⟳ Refresh</button>
 {% endblock %}
 

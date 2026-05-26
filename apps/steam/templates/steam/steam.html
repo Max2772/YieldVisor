@@ -10,7 +10,7 @@
 {% block page_meta %}CS2 skins &amp; items · Steam Community Market{% endblock %}
 
 {% block topbar_actions %}
-  <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+  {% include "includes/date_badge.html" %}
   <select id="appSelect" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
     <option value="all"{% if not selected_app_filter %} selected{% endif %}>All</option>
     {% for app_id, label in steam_apps.items %}

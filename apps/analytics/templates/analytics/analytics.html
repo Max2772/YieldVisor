@@ -11,7 +11,7 @@
 {% block page_meta %}Deep dive into your portfolio performance{% endblock %}
 
 {% block topbar_actions %}
-  <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+  {% include "includes/date_badge.html" %}
   <div class="tabs">
     <div class="tab">1W</div>
     <div class="tab active">1M</div>
@@ -264,6 +264,7 @@
 {% endblock %}
 
 {% block js %}
+{{ block.super }}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {

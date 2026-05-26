@@ -10,7 +10,7 @@
 {% block page_meta %}Price notifications for your tracked assets{% endblock %}
 
 {% block topbar_actions %}
-  <span class="date-badge mono">{% now "D, d M Y · H:i" %}</span>
+  {% include "includes/date_badge.html" %}
   <button class="btn btn-ghost" id="openModalBtn">+ New Alert</button>
 {% endblock %}
 
@@ -232,6 +232,7 @@
 {% endblock %}
 
 {% block js %}
+{{ block.super }}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
