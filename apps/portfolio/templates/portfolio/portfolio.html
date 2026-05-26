@@ -100,12 +100,10 @@
               </thead>
               <tbody>
                 {% for asset in assets %}
-                <tr>
+                <tr data-asset-type="{{ asset.asset_type }}">
                   <td style="padding-left:24px">
                     <a href="{{ asset.detail_url }}" class="asset-cell" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit">
-                      <div class="asset-icon" style="background:{{ asset.bg_color }};color:{{ asset.text_color }};font-size:11px;font-weight:700;border-radius:6px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center">
-                        {{ asset.icon }}
-                      </div>
+                      {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.ticker icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg %}
                       <div>
                         <div class="asset-ticker">{{ asset.ticker }}</div>
                         <div class="asset-type">{{ asset.asset_type|upper }}{% if asset.app_name %} · {{ asset.app_name }}{% endif %}</div>

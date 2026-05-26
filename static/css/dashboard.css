@@ -140,8 +140,9 @@
   object-fit: contain;
 }
 
-/* Steam My Inventory: PNG-логотипы без серой подложки */
-#steamTable .asset-icon--logo {
+/* Steam: PNG-логотипы без серой подложки */
+#steamTable .asset-icon--logo,
+#portfolioAssetsTable tr[data-asset-type="steam"] .asset-icon--logo {
   background: transparent;
 }
 
