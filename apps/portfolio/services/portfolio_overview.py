@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.utils.timesince import timesince
 
 from apps.alerts.models import Alert
-from apps.core.services.invest_api import InvestAPIClient, get_price, get_quote
+from apps.core.services.invest_api import InvestAPIClient, get_price
 from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.holdings import (
@@ -18,9 +18,9 @@ from apps.portfolio.services.holdings import (
 )
 from apps.portfolio.services.market_page import (
     _build_portfolio_chart,
+    _collect_cached_times,
     _compute_performers,
     _format_last_update,
-    _parse_cached_at,
     _split_money_display,
 )
 from apps.portfolio.types import AssetType
@@ -262,17 +262,7 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
 
     with InvestAPIClient() as client:
         portfolio_chart = _build_portfolio_chart(positions, client)
-        for position in positions:
-            quote = get_quote(
-                position.asset_type,
-                position.asset_name,
-                position.app_id,
-                client=client,
-            )
-            if quote and quote.cached_at:
-                parsed = _parse_cached_at(quote.cached_at)
-                if parsed:
-                    cached_times.append(parsed)
+        cached_times.extend(_collect_cached_times(positions, client))
 
     alerts, alerts_count, alerts_near = _build_alerts(user)
 

@@ -74,6 +74,31 @@ def _parse_quote(data: dict[str, Any]) -> PriceQuote:
     )
 
 
+def _crypto_quote_lookup_keys(row: dict[str, Any]) -> list[str]:
+    """Ключи для поиска: slug, тикер, full_name (как в URL)."""
+    keys: list[str] = []
+    for field in ("name", "symbol", "full_name"):
+        value = row.get(field)
+        if value and str(value).strip():
+            keys.append(str(value).strip().lower())
+    return list(dict.fromkeys(keys))
+
+
+def _parse_crypto_quotes(data: dict[str, Any]) -> dict[str, PriceQuote]:
+    """Парсит ответ crypto/{coin} или crypto/{coin1,coin2,...}."""
+    rows = data.get("coins")
+    if rows is None and "price" in data:
+        rows = [data]
+    quotes: dict[str, PriceQuote] = {}
+    for row in rows or []:
+        if "price" not in row:
+            continue
+        quote = _parse_quote(row)
+        for key in _crypto_quote_lookup_keys(row):
+            quotes[key] = quote
+    return quotes
+
+
 def _parse_history(data: dict[str, Any]) -> PriceHistory:
     raw_points = data.get("points") or []
     points: list[PriceHistoryPoint] = []
@@ -189,9 +214,30 @@ class InvestAPIClient:
         ticker = ticker.strip().upper()
         return _parse_quote(self._fetch_json(f"stock/{ticker}"))
 
+    def get_crypto_quotes(self, coins: list[str]) -> dict[str, PriceQuote]:
+        normalized = [
+            coin.strip().lower()
+            for coin in coins
+            if coin and coin.strip()
+        ]
+        if not normalized:
+            return {}
+        unique = list(dict.fromkeys(normalized))
+        quotes = _parse_crypto_quotes(
+            self._fetch_json(f"crypto/{','.join(unique)}")
+        )
+        if not quotes:
+            raise PriceNotFoundError(f"Asset not found: crypto/{','.join(unique)}")
+        return quotes
+
     def get_crypto(self, coin: str) -> PriceQuote:
         coin = coin.strip().lower()
-        return _parse_quote(self._fetch_json(f"crypto/{coin}"))
+        quotes = self.get_crypto_quotes([coin])
+        if coin in quotes:
+            return quotes[coin]
+        if len(quotes) == 1:
+            return next(iter(quotes.values()))
+        raise PriceNotFoundError(f"Asset not found: crypto/{coin}")
 
     def get_steam(self, app_id: int, market_name: str) -> PriceQuote:
         name = market_name.strip()
@@ -259,6 +305,30 @@ class InvestAPIClient:
                 raise InvestAPIError("app_id is required for Steam assets")
             return self.get_steam(app_id, asset_name)
         raise InvestAPIError(f"Unknown asset type: {asset_type!r}")
+
+
+def get_crypto_quotes(
+    coins: list[str],
+    *,
+    client: InvestAPIClient | None = None,
+) -> dict[str, PriceQuote]:
+    """Котировки нескольких монет одним запросом (ключ — slug name)."""
+    if not coins:
+        return {}
+
+    def _fetch(api: InvestAPIClient) -> dict[str, PriceQuote]:
+        try:
+            return api.get_crypto_quotes(coins)
+        except PriceNotFoundError:
+            return {}
+        except InvestAPIError:
+            raise
+
+    if client is not None:
+        return _fetch(client)
+
+    with InvestAPIClient() as api:
+        return _fetch(api)
 
 
 def get_quote(

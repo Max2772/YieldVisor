@@ -10,10 +10,13 @@ from apps.core.constants import HOMEPAGE_TICKERS, TickerSpec
 from apps.core.services.invest_api import (
     InvestAPIClient,
     InvestAPIError,
+    PriceQuote,
+    get_crypto_quotes,
     get_history,
     get_price,
     period_change_pct,
 )
+from apps.portfolio.types import AssetType
 
 
 def format_ticker_price(price: Decimal) -> str:
@@ -40,6 +43,8 @@ def _fetch_ticker_item(
     spec: TickerSpec,
     order: int,
     client: InvestAPIClient,
+    *,
+    crypto_quotes: dict[str, PriceQuote] | None = None,
 ) -> dict[str, Any] | None:
     days = settings.TICKER_CHANGE_DAYS
 
@@ -62,15 +67,19 @@ def _fetch_ticker_item(
         change_pct = period_change_pct(history.points)
 
     if price is None:
-        try:
-            price = get_price(
-                spec["asset_type"],
-                spec["asset_name"],
-                spec.get("app_id"),
-                client=client,
-            )
-        except InvestAPIError:
-            return None
+        if spec["asset_type"] == AssetType.CRYPTO and crypto_quotes is not None:
+            quote = crypto_quotes.get(spec["asset_name"].strip().lower())
+            price = quote.price if quote else None
+        else:
+            try:
+                price = get_price(
+                    spec["asset_type"],
+                    spec["asset_name"],
+                    spec.get("app_id"),
+                    client=client,
+                )
+            except InvestAPIError:
+                return None
 
     if price is None:
         return None
@@ -94,9 +103,27 @@ def _fetch_ticker_item(
 def build_ticker_items() -> list[dict[str, Any]]:
     """Параллельная загрузка тикеров через общий httpx-клиент."""
     with InvestAPIClient() as client:
+        crypto_names = [
+            spec["asset_name"]
+            for spec in HOMEPAGE_TICKERS
+            if spec["asset_type"] == AssetType.CRYPTO
+        ]
+        crypto_quotes: dict[str, PriceQuote] = {}
+        if crypto_names:
+            try:
+                crypto_quotes = get_crypto_quotes(crypto_names, client=client)
+            except InvestAPIError:
+                pass
+
         with ThreadPoolExecutor(max_workers=8) as executor:
             futures = {
-                executor.submit(_fetch_ticker_item, spec, order, client): order
+                executor.submit(
+                    _fetch_ticker_item,
+                    spec,
+                    order,
+                    client,
+                    crypto_quotes=crypto_quotes,
+                ): order
                 for order, spec in enumerate(HOMEPAGE_TICKERS)
             }
             results: list[dict[str, Any] | BaseException] = []

@@ -16,6 +16,8 @@ from apps.core.services.asset_logos import asset_logo_url
 from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistoryPoint,
+    PriceQuote,
+    get_crypto_quotes,
     get_history,
     get_quote,
     period_change_pct,
@@ -60,6 +62,44 @@ def _format_last_update(cached_times: list[datetime]) -> str:
     return f"{timesince(latest)} ago"
 
 
+def _collect_cached_times(
+    positions: list[Portfolio],
+    client: InvestAPIClient,
+) -> list[datetime]:
+    times: list[datetime] = []
+    crypto_names = [
+        position.asset_name
+        for position in positions
+        if position.asset_type == AssetType.CRYPTO
+    ]
+    crypto_quotes: dict[str, PriceQuote] = {}
+    if crypto_names:
+        try:
+            crypto_quotes = get_crypto_quotes(crypto_names, client=client)
+        except Exception:
+            pass
+
+    for position in positions:
+        quote: PriceQuote | None = None
+        if position.asset_type == AssetType.CRYPTO:
+            quote = crypto_quotes.get(position.asset_name.strip().lower())
+        else:
+            try:
+                quote = get_quote(
+                    position.asset_type,
+                    position.asset_name,
+                    position.app_id,
+                    client=client,
+                )
+            except Exception:
+                pass
+        if quote and quote.cached_at:
+            parsed = _parse_cached_at(quote.cached_at)
+            if parsed:
+                times.append(parsed)
+    return times
+
+
 def _detail_url_for(
     asset_type: str,
     asset_name: str,
@@ -96,19 +136,11 @@ def _fetch_market_result(
     except Exception:
         history = None
 
-    quote = None
-    try:
-        quote = get_quote(asset_type, asset_name, app_id, client=client)
-    except Exception:
-        pass
-
-    if quote is None and (history is None or not history.points):
+    if history is None or not history.points:
         return None
 
-    price = quote.price if quote else history.points[-1].price
-    change_pct: Decimal | None = None
-    if history and history.points:
-        change_pct = period_change_pct(history.points)
+    price = history.points[-1].price
+    change_pct = period_change_pct(history.points)
 
     change = "—"
     pos = True
@@ -116,7 +148,7 @@ def _fetch_market_result(
         change, pos = format_change_delta(change_pct)
 
     subtitle = asset_subtitle(
-        quote,
+        None,
         history,
         symbol=symbol,
         asset_type=asset_type,
@@ -322,17 +354,9 @@ def build_market_page_context(
     cached_times: list[datetime] = []
     with InvestAPIClient() as client:
         portfolio_chart = _build_portfolio_chart(positions, client)
-        for position in positions:
-            quote = get_quote(
-                position.asset_type,
-                position.asset_name,
-                position.app_id,
-                client=client,
-            )
-            if quote and quote.cached_at:
-                parsed = _parse_cached_at(quote.cached_at)
-                if parsed:
-                    cached_times.append(parsed)
+        cached_times.extend(
+            _collect_cached_times(positions, client),
+        )
 
     market_results = build_market_search_results(asset_type, app_id=steam_app_id)
 

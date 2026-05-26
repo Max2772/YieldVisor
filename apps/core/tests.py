@@ -63,10 +63,14 @@ class InvestAPIClientTests(SimpleTestCase):
     def test_uses_cache_on_second_call(self):
         mock_response = _mock_httpx_response(
             json_data={
-                "asset_type": "crypto",
-                "name": "solana",
-                "price": 82.28,
-                "currency": "USD",
+                "coins": [
+                    {
+                        "asset_type": "crypto",
+                        "name": "solana",
+                        "price": 82.28,
+                        "currency": "USD",
+                    }
+                ]
             }
         )
         mock_client = MagicMock()
@@ -77,6 +81,71 @@ class InvestAPIClientTests(SimpleTestCase):
         client.get_crypto("solana")
 
         self.assertEqual(mock_client.get.call_count, 1)
+
+    @override_settings(INVEST_API_BASE_URL="https://api.example.com")
+    def test_get_crypto_quotes_batch(self):
+        mock_response = _mock_httpx_response(
+            json_data={
+                "coins": [
+                    {
+                        "asset_type": "crypto",
+                        "name": "bitcoin",
+                        "price": 62000,
+                        "currency": "USD",
+                        "symbol": "BTC",
+                    },
+                    {
+                        "asset_type": "crypto",
+                        "name": "ethereum",
+                        "price": 2100,
+                        "currency": "USD",
+                        "symbol": "ETH",
+                    },
+                ]
+            }
+        )
+        mock_client = MagicMock()
+        mock_client.get.return_value = mock_response
+
+        quotes = InvestAPIClient(client=mock_client).get_crypto_quotes(
+            ["bitcoin", "ethereum"]
+        )
+
+        self.assertEqual(len(quotes), 2)
+        self.assertEqual(quotes["bitcoin"].price, Decimal("62000"))
+        self.assertEqual(quotes["ethereum"].symbol, "ETH")
+        called_url = mock_client.get.call_args[0][0]
+        self.assertEqual(
+            called_url,
+            "https://api.example.com/crypto/bitcoin,ethereum",
+        )
+
+    @override_settings(INVEST_API_BASE_URL="https://api.example.com")
+    def test_get_crypto_resolves_symbol_alias(self):
+        mock_response = _mock_httpx_response(
+            json_data={
+                "coins": [
+                    {
+                        "asset_type": "crypto",
+                        "name": "the-open-network",
+                        "symbol": "TON",
+                        "full_name": "Toncoin",
+                        "price": 1.99,
+                        "currency": "USD",
+                    }
+                ]
+            }
+        )
+        mock_client = MagicMock()
+        mock_client.get.return_value = mock_response
+
+        client = InvestAPIClient(client=mock_client)
+        by_symbol = client.get_crypto("TON")
+        by_full_name = client.get_crypto("Toncoin")
+
+        self.assertEqual(by_symbol.name, "the-open-network")
+        self.assertEqual(by_symbol.symbol, "TON")
+        self.assertEqual(by_full_name.price, Decimal("1.99"))
 
     @override_settings(INVEST_API_BASE_URL="https://api.example.com")
     def test_get_price_returns_none_on_404(self):

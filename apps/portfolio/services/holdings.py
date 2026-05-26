@@ -11,8 +11,8 @@ from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistory,
     PriceQuote,
+    get_crypto_quotes,
     get_history,
-    get_price,
     get_quote,
 )
 from apps.core.services.ticker import format_ticker_price
@@ -117,25 +117,25 @@ def _build_value_allocation(
 def _fetch_one(
     position: Portfolio,
     client: InvestAPIClient,
+    *,
+    crypto_quotes: dict[str, PriceQuote] | None = None,
 ) -> tuple[Portfolio, Decimal | None, str, str, str]:
     quote: PriceQuote | None = None
     history: PriceHistory | None = None
-    try:
-        quote = get_quote(
-            position.asset_type,
-            position.asset_name,
-            position.app_id,
-            client=client,
-        )
-    except Exception:
-        pass
+    if position.asset_type == AssetType.CRYPTO and crypto_quotes is not None:
+        quote = crypto_quotes.get(position.asset_name.strip().lower())
+    else:
+        try:
+            quote = get_quote(
+                position.asset_type,
+                position.asset_name,
+                position.app_id,
+                client=client,
+            )
+        except Exception:
+            pass
 
-    price = quote.price if quote else get_price(
-        position.asset_type,
-        position.asset_name,
-        position.app_id,
-        client=client,
-    )
+    price = quote.price if quote else None
 
     sparkline = ""
     if price is not None:
@@ -173,8 +173,29 @@ def _fetch_market_data(
     positions: list[Portfolio],
 ) -> list[tuple[Portfolio, Decimal | None, str, str, str]]:
     with InvestAPIClient() as client:
+        crypto_quotes: dict[str, PriceQuote] = {}
+        crypto_names = [
+            position.asset_name
+            for position in positions
+            if position.asset_type == AssetType.CRYPTO
+        ]
+        if crypto_names:
+            try:
+                crypto_quotes = get_crypto_quotes(crypto_names, client=client)
+            except Exception:
+                pass
+
         with ThreadPoolExecutor(max_workers=4) as executor:
-            return list(executor.map(lambda p: _fetch_one(p, client), positions))
+            return list(
+                executor.map(
+                    lambda p: _fetch_one(
+                        p,
+                        client,
+                        crypto_quotes=crypto_quotes,
+                    ),
+                    positions,
+                )
+            )
 
 
 def _build_item_row(
