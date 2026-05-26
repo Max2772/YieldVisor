@@ -95,7 +95,7 @@ def crypto_logo_url(asset_name: str, *, symbol: str | None = None) -> str:
     if cached is not None:
         return cached
     symbol_upper = slug.upper()
-    if symbol_upper in ("ETH", "TRX"):
+    if symbol_upper in ("ETH", "TRX", "XRP"):
         return _set_cached(key, FALLBACK_CRYPTO_ICON_URL.format(symbol=symbol_upper.lower()))
     return _set_cached(key, CRYPTO_ICON_URL.format(symbol=symbol_upper))
 
