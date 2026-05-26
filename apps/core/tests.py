@@ -5,6 +5,13 @@ from django.core.cache import cache
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
 from apps.core.services.asset_detail import build_asset_detail_context
+from apps.core.services.asset_logos import (
+    _cache_key,
+    _parse_steam_logo_from_html,
+    crypto_logo_url,
+    steam_logo_url,
+    stock_logo_url,
+)
 from apps.stocks.views import StockView
 from apps.core.services.invest_api import (
     InvestAPIClient,
@@ -201,3 +208,43 @@ class InvestAPIClientTests(SimpleTestCase):
 
         with self.assertRaises(InvestAPIError):
             InvestAPIClient(client=mock_client).get_stock("NVDA")
+
+
+class AssetLogoTests(SimpleTestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_steam_cache_key_is_memcached_safe(self):
+        key = _cache_key("steam", "730", "AK-47 | Redline (Field-Tested)")
+        self.assertNotIn(" ", key)
+        self.assertNotIn("|", key)
+        self.assertTrue(key.startswith("asset_logo.steam.730."))
+
+    def test_stock_logo_url_is_cached(self):
+        url = stock_logo_url("tsla")
+        self.assertIn("TSLA", url)
+        self.assertEqual(url, stock_logo_url("TSLA"))
+
+    def test_crypto_logo_url_uses_catalog_symbol(self):
+        url = crypto_logo_url("bitcoin")
+        self.assertIn("/btc.svg", url)
+        self.assertEqual(url, crypto_logo_url("bitcoin"))
+
+    def test_parse_steam_logo_from_html(self):
+        html = (
+            '<img src="https://community.steamstatic.com/economy/image/'
+            'i0CoZ81Ui0m-9KwlBY1L_18myuGuq1wfhWSaZgMttyVfPaERSR0Wqmu7LAocGJKz2lu_XsnXwtmkJjSU91dh8bj35VTqVBP4io_frHcVuPaoafU1JqiVWWSVkux15OQ8Giiylk0k5mvTnIqpd3PCaQIhWMYkE_lK7EcNeCKW-w">'
+        )
+        logo = _parse_steam_logo_from_html(html)
+        self.assertTrue(logo.startswith("https://community.steamstatic.com/economy/image/"))
+
+    @patch("apps.core.services.asset_logos._fetch_steam_logo_from_market")
+    def test_steam_logo_url_caches_result(self, fetch_mock):
+        fetch_mock.return_value = (
+            "https://community.steamstatic.com/economy/image/example"
+        )
+        url = steam_logo_url(730, "Glove Case")
+        self.assertEqual(url, fetch_mock.return_value)
+        fetch_mock.assert_called_once()
+        self.assertEqual(steam_logo_url(730, "Glove Case"), url)
+        fetch_mock.assert_called_once()

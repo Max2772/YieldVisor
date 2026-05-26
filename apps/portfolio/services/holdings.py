@@ -7,6 +7,7 @@ from typing import Any
 from django.urls import reverse
 
 from apps.core.services.asset_display import asset_subtitle
+from apps.core.services.asset_logos import asset_logo_url, crypto_icon_slug
 from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistory,
@@ -196,9 +197,26 @@ def _build_item_row(
     ticker = _display_ticker(position)
     icon_text = _icon_text(position, ticker)
     subtitle = display_name
+    crypto_symbol = (
+        crypto_icon_slug(position.asset_name)
+        if position.asset_type == AssetType.CRYPTO
+        else None
+    )
+    logo_url = asset_logo_url(
+        position.asset_type,
+        ticker=ticker,
+        asset_name=position.asset_name,
+        app_id=position.app_id,
+        crypto_symbol=crypto_symbol,
+    )
+
+    row_base = {
+        "logo_url": logo_url,
+    }
 
     if price is None:
         return {
+            **row_base,
             "ticker": ticker,
             "icon_text": icon_text,
             "name": subtitle,
@@ -218,6 +236,7 @@ def _build_item_row(
     pnl_value = position.pnl(price)
     total = position.current_value(price)
     return {
+        **row_base,
         "ticker": ticker,
         "icon_text": icon_text,
         "name": subtitle,

@@ -1,11 +1,16 @@
 {% for res in market_results %}
 <a href="{{ res.detail_url }}" style="text-decoration:none;color:inherit">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
-    <div>
+    <div style="display:flex;align-items:center;gap:10px">
+      {% if res.logo_url %}
+      <img src="{{ res.logo_url }}" alt="{{ res.symbol }}" class="asset-logo asset-logo--sm" width="28" height="28" loading="lazy">
+      {% endif %}
+      <div>
       <div style="font-size:13px;font-weight:700">{{ res.symbol }}</div>
       {% if res.name %}
       <div class="muted" style="font-size:11px;margin-top:2px">{{ res.name }}</div>
       {% endif %}
+      </div>
     </div>
     <div style="text-align:right">
       <div class="mono" style="font-size:14px">${{ res.price }}</div>

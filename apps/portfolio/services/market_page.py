@@ -12,6 +12,7 @@ from django.utils.timesince import timesince
 from apps.core.market_catalog import PORTFOLIO_CHART_DAYS, catalog_for_asset_type
 from apps.core.services.asset_detail import _chart_label
 from apps.core.services.asset_display import asset_subtitle
+from apps.core.services.asset_logos import asset_logo_url
 from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistoryPoint,
@@ -125,6 +126,13 @@ def _fetch_market_result(
     return {
         "symbol": symbol,
         "name": subtitle,
+        "logo_url": asset_logo_url(
+            asset_type,
+            ticker=symbol,
+            asset_name=asset_name,
+            app_id=app_id,
+            crypto_symbol=symbol if asset_type == AssetType.CRYPTO else None,
+        ),
         "price": format_ticker_price(price).lstrip("$"),
         "change": change,
         "pos": pos,

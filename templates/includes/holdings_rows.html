@@ -2,7 +2,7 @@
 <tr>
   <td style="padding-left:24px">
     <a href="{{ item.detail_url }}" class="asset-cell" style="display:flex;align-items:center;gap:10px">
-      <div class="asset-icon" style="background:{{ item.icon_bg }};color:{{ item.icon_fg }};font-size:11px;font-weight:700;border-radius:6px;min-width:32px;height:32px;display:flex;align-items:center;justify-content:center">{{ item.icon_text|default:item.ticker|slice:":2" }}</div>
+      {% include "includes/asset_icon.html" with logo_url=item.logo_url ticker=item.ticker icon_text=item.icon_text icon_bg=item.icon_bg icon_fg=item.icon_fg %}
       <div>
         <div class="asset-ticker asset-ticker--wrap" style="font-size:12px">{{ item.ticker }}</div>
         {% if item.name and item.name != item.ticker %}

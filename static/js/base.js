@@ -11,6 +11,18 @@
 
 "use strict";
 
+/** Заменяет иконку-картинку на буквы, если logo_url не загрузился. */
+function assetIconImageError(img) {
+  const el = img.closest(".asset-icon");
+  if (!el) return;
+  el.classList.remove("asset-icon--logo");
+  el.classList.add("asset-icon--letters");
+  el.replaceChildren();
+  el.textContent = el.dataset.iconText || "?";
+  if (el.dataset.iconBg) el.style.background = el.dataset.iconBg;
+  if (el.dataset.iconFg) el.style.color = el.dataset.iconFg;
+}
+
 /* ── Tab groups ──────────────────────────────────────────────────────── */
 /**
  * Автоматически навешивает переключение active-класса

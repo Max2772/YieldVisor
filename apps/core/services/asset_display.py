@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from apps.core.services.asset_logos import stock_logo_url
 from apps.core.services.invest_api import PriceHistory, PriceQuote
 from apps.portfolio.types import AssetType
 from apps.steam.constants import steam_app_label
+
+__all__ = ["asset_subtitle", "stock_logo_url"]
 
 
 def asset_subtitle(

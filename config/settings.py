@@ -161,6 +161,8 @@ INVEST_API_BASE_URL = os.environ.get(
 )
 INVEST_API_TIMEOUT = float(os.environ.get("INVEST_API_TIMEOUT", "15"))
 INVEST_API_CACHE_TTL = int(os.environ.get("INVEST_API_CACHE_TTL", "300"))
+ASSET_LOGO_CACHE_TTL = int(os.environ.get("ASSET_LOGO_CACHE_TTL", str(60 * 60 * 24 * 365)))
+STEAM_LOGO_FETCH_TIMEOUT = float(os.environ.get("STEAM_LOGO_FETCH_TIMEOUT", "12"))
 
 TICKER_CHANGE_DAYS = int(os.environ.get("TICKER_CHANGE_DAYS", "30"))
 
