@@ -16,8 +16,8 @@ PARQET_STOCK_LOGO_URL = "https://assets.parqet.com/logos/symbol/{symbol}?format=
 CRYPTO_ICON_URL = (
     "https://cdn.jsdelivr.net/gh/madenix/Crypto-logo-cdn@main/Logos/{symbol}.svg"
 )
-FALLBACK_ETH_ICON_URL = (
-    "https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/eth.svg"
+FALLBACK_CRYPTO_ICON_URL = (
+    "https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/{symbol}.svg"
 )
 STEAM_LISTING_URL = "https://steamcommunity.com/market/listings/{app_id}/{name}"
 STEAM_ECONOMY_IMAGE_RE = re.compile(
@@ -96,7 +96,7 @@ def crypto_logo_url(asset_name: str, *, symbol: str | None = None) -> str:
         return cached
     symbol_upper = slug.upper()
     if symbol_upper in ("ETH", "TRX"):
-        return _set_cached(key, FALLBACK_ETH_ICON_URL)
+        return _set_cached(key, FALLBACK_CRYPTO_ICON_URL.format(symbol=symbol_upper.lower()))
     return _set_cached(key, CRYPTO_ICON_URL.format(symbol=symbol_upper))
 
 
