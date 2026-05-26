@@ -14,7 +14,10 @@ from apps.portfolio.types import AssetType
 
 PARQET_STOCK_LOGO_URL = "https://assets.parqet.com/logos/symbol/{symbol}?format=png"
 CRYPTO_ICON_URL = (
-    "https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/{slug}.svg"
+    "https://cdn.jsdelivr.net/gh/madenix/Crypto-logo-cdn@main/Logos/{symbol}.svg"
+)
+FALLBACK_ETH_ICON_URL = (
+    "https://cdn.jsdelivr.net/npm/cryptocurrency-icons@0.18.1/svg/color/eth.svg"
 )
 STEAM_LISTING_URL = "https://steamcommunity.com/market/listings/{app_id}/{name}"
 STEAM_ECONOMY_IMAGE_RE = re.compile(
@@ -91,7 +94,10 @@ def crypto_logo_url(asset_name: str, *, symbol: str | None = None) -> str:
     cached = _get_cached(key)
     if cached is not None:
         return cached
-    return _set_cached(key, CRYPTO_ICON_URL.format(slug=slug))
+    symbol_upper = slug.upper()
+    if symbol_upper in ("ETH", "TRX"):
+        return _set_cached(key, FALLBACK_ETH_ICON_URL)
+    return _set_cached(key, CRYPTO_ICON_URL.format(symbol=symbol_upper))
 
 
 def _parse_steam_logo_from_html(html: str) -> str:
