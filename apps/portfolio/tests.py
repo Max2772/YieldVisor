@@ -6,7 +6,7 @@ from django.test import TestCase
 from apps.history.models import History, HistoryOperation
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
-from apps.portfolio.services.holdings import build_holdings
+from apps.portfolio.services.holdings import _build_item_row, build_holdings
 from apps.portfolio.types import AssetType
 
 User = get_user_model()
@@ -80,3 +80,16 @@ class BuildHoldingsTests(TestCase):
         labels = {s["label"] for s in summary["allocation"]}
         self.assertEqual(labels, {"NVDA", "AMD"})
         self.assertEqual(sum(s["pct"] for s in summary["allocation"]), 100)
+
+    def test_item_row_includes_pnl_pct(self):
+        position = add_holding(
+            self.user,
+            asset_type=AssetType.STOCK,
+            asset_name="AMD",
+            app_id=None,
+            quantity=Decimal("2"),
+            buy_price=Decimal("100"),
+        )
+        row = _build_item_row(position, Decimal("110"), "100,105,110")
+        self.assertEqual(row["pnl_pct"], "10.0")
+        self.assertTrue(row["pnl_pct_pos"])

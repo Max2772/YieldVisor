@@ -11,19 +11,26 @@
       </div>
     </a>
   </td>
-  {% if show_meta_column|default:True %}
+  {% if show_meta_column is not False %}
   <td><span class="badge badge-blue">{{ item.meta }}</span></td>
   {% endif %}
   <td><span class="mono">${{ item.avg_buy }}</span></td>
   <td><span class="mono">${{ item.market_price }}</span></td>
   <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
+  <td>
+    {% if item.pnl_pct == "—" %}
+    <span class="mono muted">—</span>
+    {% else %}
+    <span class="badge {% if item.pnl_pct_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pct_pos %}▲{% else %}▼{% endif %} {{ item.pnl_pct }}%</span>
+    {% endif %}
+  </td>
   <td><span class="mono muted">{{ item.qty }}</span></td>
   <td><span class="mono">${{ item.total }}</span></td>
   <td><canvas class="sparkline-canvas" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas></td>
 </tr>
 {% empty %}
 <tr>
-  <td colspan="{% if show_meta_column|default:True %}8{% else %}7{% endif %}" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
+  <td colspan="{% if show_meta_column is not False %}9{% else %}8{% endif %}" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
     No holdings yet. Open an asset page and click <strong>+ Add</strong>.
   </td>
 </tr>

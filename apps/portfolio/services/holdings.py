@@ -226,6 +226,8 @@ def _build_item_row(
             "market_price": "—",
             "pnl": "—",
             "pnl_pos": True,
+            "pnl_pct": "—",
+            "pnl_pct_pos": True,
             "qty": _format_qty(position.quantity),
             "total": _format_money(position.cost_basis()),
             "sparkline": "0",
@@ -234,6 +236,7 @@ def _build_item_row(
         }
 
     pnl_value = position.pnl(price)
+    pnl_pct = position.pnl_pct(price)
     total = position.current_value(price)
     return {
         **row_base,
@@ -246,6 +249,8 @@ def _build_item_row(
         "market_price": format_ticker_price(price).lstrip("$"),
         "pnl": _format_money(abs(pnl_value)),
         "pnl_pos": pnl_value >= 0,
+        "pnl_pct": f"{pnl_pct:.1f}",
+        "pnl_pct_pos": pnl_pct >= 0,
         "qty": _format_qty(position.quantity),
         "total": _format_money(total),
         "sparkline": sparkline or "0",
