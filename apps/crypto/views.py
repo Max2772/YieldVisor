@@ -36,9 +36,6 @@ class CryptoCoinView(AssetDetailMixin, TemplateView):
             'display_symbol': coin.upper(),
         }
 
-    def get_hero_meta(self, **kwargs: Any) -> str:
-        return "Cryptocurrency"
-
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         return context

@@ -6,13 +6,10 @@
   </div>
 
   <div style="flex:1">
-    <div class="serif" style="font-size:24px;letter-spacing:-0.4px;">
-      {{ asset.name }}
-    </div>
-    <div class="hero-meta">
-      {% if hero_meta %}{{ hero_meta }}{% endif %}
-      {% if asset.subtitle %}{% if hero_meta %} · {% endif %}{{ asset.subtitle }}{% endif %}
-    </div>
+    <div class="hero-title serif">{{ asset.hero_title }}</div>
+    {% if asset.hero_subtitle %}
+    <div class="hero-meta">{{ asset.hero_subtitle }}</div>
+    {% endif %}
     <div class="hero-type-pill">{{ asset.asset_type }}</div>
   </div>
 
@@ -20,10 +17,28 @@
     <div class="hero-metric">
       <div class="hm-label">Current Price</div>
       <div class="hm-val">${{ asset.current_price }}</div>
-      {% if asset.change_delta %}
-      <div class="hm-sub {% if asset.change_positive %}up{% else %}down{% endif %}">
-        {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_delta }} ({{ history_days }}d)
+    </div>
+    {% if asset.change_delta %}
+    <div class="hero-metric">
+      <div class="hm-label">Change</div>
+      <div class="hm-val {% if asset.change_positive %}up{% else %}down{% endif %}" style="font-size:18px">
+        {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_delta }}
       </div>
+      <div class="hm-sub muted">{{ history_days }}d</div>
+    </div>
+    {% endif %}
+    <div class="hero-metric">
+      <div class="hm-label">P&amp;L</div>
+      {% if asset.has_holding %}
+      <div class="hm-val {% if asset.holding_pnl_positive %}up{% else %}down{% endif %}" style="font-size:18px">
+        {% if asset.holding_pnl_positive %}+{% else %}−{% endif %}${{ asset.holding_pnl }}
+      </div>
+      <div class="hm-sub {% if asset.holding_pnl_positive %}up{% else %}down{% endif %}">
+        {% if asset.holding_pnl_positive %}▲{% else %}▼{% endif %} {{ asset.holding_pnl_pct }}%
+      </div>
+      {% else %}
+      <div class="hm-val muted" style="font-size:18px">—</div>
+      <div class="hm-sub muted">Not in portfolio</div>
       {% endif %}
     </div>
     {% if asset.period_low %}
@@ -47,14 +62,14 @@
     <div class="card-header">
       <div>
         <div class="card-title">Price History</div>
-        <div class="card-subtitle">{{ asset.symbol }} · last {{ history_days }} days</div>
+        <div class="card-subtitle">{{ asset.market_symbol }} · last {{ history_days }} days</div>
       </div>
     </div>
     <div class="card-body">
       <div style="height:260px;position:relative;">
         {% if chart.prices %}
         {{ chart|json_script:"asset-chart-data" }}
-        <canvas id="priceChart" data-symbol="{{ asset.symbol }}"></canvas>
+        <canvas id="priceChart" data-symbol="{{ asset.market_symbol }}"></canvas>
         {% else %}
         <p class="muted" style="padding:24px">No history data available.</p>
         {% endif %}
@@ -67,7 +82,7 @@
       <div class="card-header"><div class="card-title">Market Data</div></div>
       <div class="card-body" style="padding-top:4px;">
         <div class="km-row">
-          <div class="km-left"><div class="km-label">Symbol</div><div class="km-val">{{ asset.symbol }}</div></div>
+          <div class="km-left"><div class="km-label">Symbol</div><div class="km-val">{{ asset.market_symbol }}</div></div>
         </div>
         <div class="km-row">
           <div class="km-left"><div class="km-label">Currency</div><div class="km-val">{{ asset.currency }}</div></div>

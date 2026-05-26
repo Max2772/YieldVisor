@@ -13,6 +13,7 @@ from apps.core.services.invest_api import InvestAPIError
 from apps.portfolio.forms import AddHoldingForm
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
+from apps.portfolio.services.holdings import _format_money
 from apps.portfolio.services.market_page import build_market_page_context
 
 
@@ -143,6 +144,23 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
         context["add_form"] = form
         return self.render_to_response(context)
 
+    def _apply_holding_metrics(
+        self,
+        asset: dict[str, Any],
+        position: Portfolio | None,
+    ) -> None:
+        price_raw = asset.get("price_raw")
+        if position is None or price_raw is None:
+            asset["has_holding"] = False
+            return
+
+        pnl_value = position.pnl(price_raw)
+        pnl_pct = position.pnl_pct(price_raw)
+        asset["has_holding"] = True
+        asset["holding_pnl"] = _format_money(abs(pnl_value))
+        asset["holding_pnl_positive"] = pnl_value >= 0
+        asset["holding_pnl_pct"] = f"{pnl_pct:.1f}"
+
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
         context.update(self._asset_detail)
@@ -151,5 +169,9 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
         context["list_label"] = self.list_label
         context["list_url_name"] = self.list_url_name
         context["portfolio_position"] = self._get_portfolio_position(self._asset_params)
+        self._apply_holding_metrics(
+            context["asset"],
+            context["portfolio_position"],
+        )
         context.setdefault("add_form", AddHoldingForm())
         return context

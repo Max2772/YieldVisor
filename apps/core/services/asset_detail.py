@@ -15,6 +15,7 @@ from apps.core.services.invest_api import (
     period_change_pct,
 )
 from apps.core.services.asset_display import asset_icon_context
+from apps.core.services.asset_logos import crypto_icon_slug
 from apps.core.services.ticker import format_change_delta, format_ticker_price
 from apps.portfolio.types import AssetType
 
@@ -37,6 +38,42 @@ def _chart_label(timestamp: str) -> str:
         return dt.strftime("%d %b")
     except ValueError:
         return raw
+
+
+def _market_symbol(
+    asset_type: str,
+    asset_name: str,
+    display_symbol: str,
+) -> str:
+    if asset_type == AssetType.CRYPTO:
+        slug = crypto_icon_slug(asset_name)
+        return slug.upper() if slug else display_symbol
+    return display_symbol
+
+
+def _hero_title(
+    asset_type: str,
+    display_name: str,
+    display_symbol: str,
+) -> str:
+    if asset_type == AssetType.CRYPTO:
+        return (display_name or display_symbol).upper()
+    return display_name or display_symbol
+
+
+def _hero_subtitle(
+    asset_type: str,
+    *,
+    market_symbol: str,
+    hero_meta: str,
+    subtitle: str,
+    display_symbol: str,
+) -> str:
+    if asset_type == AssetType.CRYPTO:
+        return market_symbol
+    if hero_meta:
+        return hero_meta
+    return subtitle
 
 
 def _range_position(current: Decimal, low: Decimal, high: Decimal) -> int:
@@ -120,11 +157,28 @@ def build_asset_detail_context(
     else:
         subtitle = quote.name if display_name != quote.name else ""
 
+    if asset_type == AssetType.STOCK and subtitle.upper() == display_symbol.upper():
+        subtitle = ""
+
+    market_symbol = _market_symbol(asset_type, asset_name, display_symbol)
+    hero_title = _hero_title(asset_type, display_name, display_symbol)
+    hero_subtitle = _hero_subtitle(
+        asset_type,
+        market_symbol=market_symbol,
+        hero_meta=hero_meta or "",
+        subtitle=subtitle,
+        display_symbol=display_symbol,
+    )
+
     asset: dict[str, Any] = {
         "symbol": display_symbol,
+        "market_symbol": market_symbol,
         "name": display_name,
+        "hero_title": hero_title,
+        "hero_subtitle": hero_subtitle,
         "subtitle": subtitle,
         "current_price": format_ticker_price(quote.price).lstrip("$"),
+        "price_raw": quote.price,
         "currency": quote.currency,
         "source": quote.source or "—",
         "cached_at": quote.cached_at,
@@ -132,6 +186,7 @@ def build_asset_detail_context(
         "change_delta": change_delta,
         "change_positive": change_positive,
         "app_id": quote.app_id or app_id,
+        "has_holding": False,
         **asset_icon_context(
             asset_type,
             display_label=display_symbol,

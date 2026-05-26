@@ -188,6 +188,41 @@ class InvestAPIClientTests(SimpleTestCase):
         self.assertTrue(ctx["asset"]["logo_url"])
         self.assertEqual(len(ctx["chart"]["prices"]), 2)
         self.assertTrue(ctx["asset"]["change_delta"])
+        self.assertEqual(ctx["asset"]["market_symbol"], "AMD")
+
+    @override_settings(INVEST_API_BASE_URL="https://api.example.com", TICKER_CHANGE_DAYS=7)
+    def test_build_asset_detail_context_crypto_symbol(self):
+        def fake_quote(*args, **kwargs):
+            from apps.core.services.invest_api import _parse_quote
+
+            return _parse_quote(
+                {
+                    "asset_type": "crypto",
+                    "name": "bitcoin",
+                    "price": 62000,
+                    "currency": "USD",
+                    "full_name": "Bitcoin",
+                }
+            )
+
+        with patch(
+            "apps.core.services.asset_detail.get_quote",
+            side_effect=fake_quote,
+        ), patch(
+            "apps.core.services.asset_detail.get_history",
+            return_value=None,
+        ):
+            ctx = build_asset_detail_context(
+                AssetType.CRYPTO,
+                "bitcoin",
+                display_symbol="BITCOIN",
+                days=7,
+            )
+
+        self.assertIsNotNone(ctx)
+        self.assertEqual(ctx["asset"]["market_symbol"], "BTC")
+        self.assertEqual(ctx["asset"]["hero_title"], "BITCOIN")
+        self.assertEqual(ctx["asset"]["hero_subtitle"], "BTC")
 
     def test_render_asset_not_found(self):
         from django.contrib.auth.models import AnonymousUser

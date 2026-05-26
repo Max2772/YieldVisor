@@ -38,7 +38,7 @@ class StockView(AssetDetailMixin, TemplateView):
 
     def get_hero_meta(self, **kwargs: Any) -> str:
         ticker = kwargs['ticker'].strip().upper()
-        return f"Ticker: {ticker}"
+        return ticker
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

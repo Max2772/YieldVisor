@@ -39,7 +39,7 @@ class SteamItemView(AssetDetailMixin, TemplateView):
     list_url_name = 'steam:steam'
     list_label = 'Steam'
     active_nav = 'steam'
-    asset_type_label = 'Steam Item'
+    asset_type_label = 'Steam'
 
     def get_asset_params(self, **kwargs: Any) -> dict[str, Any]:
         market_hash_name = unquote(kwargs['market_hash_name']).strip()

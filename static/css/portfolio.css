@@ -60,10 +60,25 @@
   background:  transparent;
 }
 
+.hero-title {
+  font-size:      24px;
+  letter-spacing: -0.4px;
+  line-height:    1.2;
+}
+
 .hero-meta {
-  font-size:  14px;
-  color:      var(--text-muted);
-  margin-top: 4px;
+  font-size:      14px;
+  color:          var(--text-muted);
+  margin-top:     4px;
+  font-family:    var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.hero-metrics {
+  display:   flex;
+  flex-wrap: wrap;
+  gap:       24px 32px;
+  justify-content: flex-end;
 }
 
 .hero-type-pill {
@@ -81,8 +96,6 @@
   font-weight:     600;
 }
 
-/* Hero metric group */
-.hero-metrics { display: flex; gap: 32px; }
 .hero-metric  { text-align: right; }
 
 .hm-label {
