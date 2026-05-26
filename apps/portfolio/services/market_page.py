@@ -11,6 +11,7 @@ from django.utils.timesince import timesince
 
 from apps.core.market_catalog import PORTFOLIO_CHART_DAYS, catalog_for_asset_type
 from apps.core.services.asset_detail import _chart_label
+from apps.core.services.asset_display import asset_subtitle
 from apps.core.services.invest_api import (
     InvestAPIClient,
     PriceHistoryPoint,
@@ -113,19 +114,13 @@ def _fetch_market_result(
     if change_pct is not None:
         change, pos = format_change_delta(change_pct)
 
-    display_name = ""
-    if quote and quote.full_name:
-        display_name = quote.full_name
-    elif quote:
-        display_name = quote.name
-    elif history and history.full_name:
-        display_name = history.full_name
-    elif history:
-        display_name = history.name
-
-    subtitle = display_name if display_name and display_name != symbol else ""
-    if asset_type == AssetType.STEAM and app_id:
-        subtitle = subtitle or f"App {app_id}"
+    subtitle = asset_subtitle(
+        quote,
+        history,
+        symbol=symbol,
+        asset_type=asset_type,
+        app_id=app_id,
+    )
 
     return {
         "symbol": symbol,

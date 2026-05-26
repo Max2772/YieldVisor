@@ -6,7 +6,15 @@ from typing import Any
 
 from django.urls import reverse
 
-from apps.core.services.invest_api import InvestAPIClient, get_history, get_price
+from apps.core.services.asset_display import asset_subtitle
+from apps.core.services.invest_api import (
+    InvestAPIClient,
+    PriceHistory,
+    PriceQuote,
+    get_history,
+    get_price,
+    get_quote,
+)
 from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
 from apps.portfolio.types import AssetType
@@ -125,13 +133,26 @@ def _build_value_allocation(
 def _fetch_one(
     position: Portfolio,
     client: InvestAPIClient,
-) -> tuple[Portfolio, Decimal | None, str]:
-    price = get_price(
+) -> tuple[Portfolio, Decimal | None, str, str]:
+    quote: PriceQuote | None = None
+    history: PriceHistory | None = None
+    try:
+        quote = get_quote(
+            position.asset_type,
+            position.asset_name,
+            position.app_id,
+            client=client,
+        )
+    except Exception:
+        pass
+
+    price = quote.price if quote else get_price(
         position.asset_type,
         position.asset_name,
         position.app_id,
         client=client,
     )
+
     sparkline = ""
     if price is not None:
         try:
@@ -146,12 +167,20 @@ def _fetch_one(
                 sparkline = ",".join(str(float(p.price)) for p in history.points)
         except Exception:
             pass
-    return position, price, sparkline
+
+    subtitle = asset_subtitle(
+        quote,
+        history,
+        symbol=_display_ticker(position),
+        asset_type=position.asset_type,
+        app_id=position.app_id,
+    )
+    return position, price, sparkline, subtitle
 
 
 def _fetch_market_data(
     positions: list[Portfolio],
-) -> list[tuple[Portfolio, Decimal | None, str]]:
+) -> list[tuple[Portfolio, Decimal | None, str, str]]:
     with InvestAPIClient() as client:
         with ThreadPoolExecutor(max_workers=4) as executor:
             return list(executor.map(lambda p: _fetch_one(p, client), positions))
@@ -161,16 +190,18 @@ def _build_item_row(
     position: Portfolio,
     price: Decimal | None,
     sparkline: str,
+    display_name: str = "",
 ) -> dict[str, Any]:
     icon_bg, icon_fg = _icon_colors(position.asset_type)
     ticker = _display_ticker(position)
     icon_text = _icon_text(position, ticker)
+    subtitle = display_name
 
     if price is None:
         return {
             "ticker": ticker,
             "icon_text": icon_text,
-            "name": position.asset_name,
+            "name": subtitle,
             "detail_url": _detail_url(position),
             "meta": _meta_label(position),
             "avg_buy": _format_money(position.avg_buy_price),
@@ -189,7 +220,7 @@ def _build_item_row(
     return {
         "ticker": ticker,
         "icon_text": icon_text,
-        "name": position.asset_name,
+        "name": subtitle,
         "detail_url": _detail_url(position),
         "meta": _meta_label(position),
         "avg_buy": _format_money(position.avg_buy_price),
@@ -238,8 +269,8 @@ def build_holdings(
     total_pnl = Decimal("0")
     cost_basis = Decimal("0")
 
-    for position, price, sparkline in market_rows:
-        row = _build_item_row(position, price, sparkline)
+    for position, price, sparkline, display_name in market_rows:
+        row = _build_item_row(position, price, sparkline, display_name)
         items.append(row)
         if "_total_raw" in row:
             total_value += row["_total_raw"]
