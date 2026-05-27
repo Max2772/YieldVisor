@@ -78,6 +78,47 @@
   height:   280px;
 }
 
+/* Portfolio value history — period switcher (market pages) */
+.chart-period-toolbar {
+  display:         flex;
+  flex-wrap:       wrap;
+  justify-content: flex-end;
+  align-items:     center;
+  gap:             6px;
+  max-width:       min(100%, 340px);
+}
+
+.chart-period-btn {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  min-width:       44px;
+  padding:         8px 14px;
+  border-radius:   var(--radius-sm);
+  border:          1px solid var(--border-light);
+  background:      var(--surface2);
+  color:           var(--text-dim);
+  font-family:     var(--font-sans);
+  font-size:       13px;
+  font-weight:     700;
+  letter-spacing:  0.35px;
+  cursor:          pointer;
+  transition:      background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.chart-period-btn:hover {
+  color:        var(--text);
+  border-color: var(--border);
+  background:   var(--surface);
+}
+
+.chart-period-btn.active {
+  background:   var(--green-dim);
+  color:        var(--green);
+  border-color: rgba(0, 230, 118, 0.35);
+  box-shadow:   0 0 0 1px rgba(0, 230, 118, 0.08);
+}
+
 /* ── Assets table ─────────────────────────── */
 .assets-table {
   width:           100%;

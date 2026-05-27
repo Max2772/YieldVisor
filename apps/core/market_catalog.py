@@ -7,6 +7,9 @@ from apps.portfolio.types import AssetType
 
 MARKET_SEARCH_SAMPLE_SIZE = 2
 PORTFOLIO_CHART_DAYS = 30
+PORTFOLIO_CHART_MAX_DAYS = 1825
+# InvestAPI crypto history is capped at ~365 days.
+PORTFOLIO_CHART_MAX_DAYS_CRYPTO = 365
 
 
 class StockCatalogEntry(TypedDict):

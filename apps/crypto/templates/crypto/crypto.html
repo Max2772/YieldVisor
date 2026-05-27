@@ -74,15 +74,7 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Portfolio Value History</div>
-        <div class="card-subtitle">Last {{ portfolio_chart.labels|length }} days</div>
-      </div>
-      <div class="card-body">
-        <div class="chart-h280"><canvas id="cryptoChart"></canvas></div>
-      </div>
-    </div>
+    {% include "includes/market_value_history_card.html" with chart_title="Portfolio Value History" chart_canvas_id="cryptoChart" %}
 
   </div>
 

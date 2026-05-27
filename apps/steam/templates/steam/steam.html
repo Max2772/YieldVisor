@@ -81,15 +81,7 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">Inventory Value History</div>
-        <div class="card-subtitle">Last {{ portfolio_chart.labels|length }} days</div>
-      </div>
-      <div class="card-body">
-        <div class="chart-h280"><canvas id="steamChart"></canvas></div>
-      </div>
-    </div>
+    {% include "includes/market_value_history_card.html" with chart_title="Inventory Value History" chart_canvas_id="steamChart" %}
 
   </div>
 

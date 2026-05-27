@@ -6,14 +6,72 @@
 document.addEventListener("DOMContentLoaded", () => {
   const chartEl = document.getElementById("{{ chart_canvas_id }}");
   const chartDataEl = document.getElementById("portfolio-chart-data");
+
+  const PERIOD_LABELS = {
+    7: "Last 7 days",
+    30: "Last 30 days",
+    365: "Last year",
+    1825: "Last 5 years",
+  };
+
+  function chartLabel(timestamp) {
+    const raw = (timestamp || "").slice(0, 10);
+    const dt = new Date(`${raw}T00:00:00`);
+    if (Number.isNaN(dt.getTime())) return raw;
+    return dt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });
+  }
+
+  function parseChartDate(timestamp) {
+    return new Date(`${(timestamp || "").slice(0, 10)}T00:00:00`);
+  }
+
+  function filterPoints(points, days, cap) {
+    if (!points.length) return [];
+    const span = Math.min(days, cap);
+    const lastDate = parseChartDate(points[points.length - 1].t);
+    const cutoff = new Date(lastDate);
+    cutoff.setDate(cutoff.getDate() - span);
+    const filtered = points.filter((point) => parseChartDate(point.t) >= cutoff);
+    return filtered.length ? filtered : points;
+  }
+
+  function seriesFromPoints(points) {
+    return {
+      labels: points.map((point) => chartLabel(point.t)),
+      values: points.map((point) => point.v),
+    };
+  }
+
   if (chartEl && chartDataEl) {
-    const { labels, values } = JSON.parse(chartDataEl.textContent);
+    const payload = JSON.parse(chartDataEl.textContent);
+    const points = payload.points;
+    const periodBar = document.querySelector(
+      `.chart-period-toolbar[data-chart-id="{{ chart_canvas_id }}"]`,
+    );
+    const periodCap = Number(periodBar?.dataset.periodCap || 1825);
+    const subtitleEl = document.getElementById("{{ chart_canvas_id }}-subtitle");
+
+    let labels;
+    let values;
+    if (points?.length && periodBar) {
+      const initialDays = Number(
+        periodBar.querySelector(".chart-period-btn.active")?.dataset.days || "30",
+      );
+      ({ labels, values } = seriesFromPoints(
+        filterPoints(points, initialDays, periodCap),
+      ));
+    } else {
+      labels = payload.labels || [];
+      values = payload.values || [];
+    }
+
     if (values.length) {
       const ctx = chartEl.getContext("2d");
       const gradient = ctx.createLinearGradient(0, 0, 0, 280);
       gradient.addColorStop(0, "{{ chart_fill_start }}");
       gradient.addColorStop(1, "{{ chart_fill_end }}");
-      new Chart(ctx, {
+
+      const chart = new Chart(ctx, {
         type: "line",
         data: {
           labels,
@@ -23,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
             borderWidth: 2,
             fill: true,
             backgroundColor: gradient,
-            tension: 0.4,
+            tension: 0.25,
             pointRadius: 0,
             pointHoverRadius: 5,
           }],
@@ -62,6 +120,33 @@ document.addEventListener("DOMContentLoaded", () => {
           },
         },
       });
+
+      if (points?.length && periodBar) {
+        periodBar.querySelectorAll(".chart-period-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            periodBar.querySelectorAll(".chart-period-btn").forEach((b) => {
+              b.classList.remove("active");
+            });
+            btn.classList.add("active");
+
+            const days = Number(btn.dataset.days);
+            const sliced = filterPoints(points, days, periodCap);
+            const next = seriesFromPoints(sliced);
+            chart.data.labels = next.labels;
+            chart.data.datasets[0].data = next.values;
+            chart.update();
+
+            if (subtitleEl) {
+              const span = Math.min(days, periodCap);
+              if (span === 365 && periodCap < 1825) {
+                subtitleEl.textContent = "Last year (max range)";
+              } else {
+                subtitleEl.textContent = PERIOD_LABELS[days] || `Last ${days} days`;
+              }
+            }
+          });
+        });
+      }
     }
   }
 

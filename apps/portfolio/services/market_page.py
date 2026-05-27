@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import bisect
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from decimal import Decimal
@@ -9,7 +10,12 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.timesince import timesince
 
-from apps.core.market_catalog import PORTFOLIO_CHART_DAYS, catalog_for_asset_type
+from apps.core.market_catalog import (
+    PORTFOLIO_CHART_DAYS,
+    PORTFOLIO_CHART_MAX_DAYS,
+    PORTFOLIO_CHART_MAX_DAYS_CRYPTO,
+    catalog_for_asset_type,
+)
 from apps.core.services.asset_detail import _chart_label
 from apps.core.services.asset_display import asset_subtitle
 from apps.core.services.asset_logos import asset_logo_url
@@ -228,6 +234,55 @@ def build_market_search_results(
             return [row for future in futures if (row := future.result())]
 
 
+def _history_day_key(timestamp: str) -> str:
+    return timestamp[:10] if timestamp else ""
+
+
+def _contrib_by_day_sorted(
+    qty: Decimal,
+    points: list[PriceHistoryPoint],
+) -> list[tuple[str, float]]:
+    """One (calendar day → position value) per day; last observation wins that day."""
+    by_day: dict[str, float] = {}
+    for p in points:
+        d = _history_day_key(p.timestamp)
+        if not d:
+            continue
+        by_day[d] = float(qty * p.price)
+    return sorted(by_day.items(), key=lambda pair: pair[0])
+
+
+def _value_on_or_before(
+    sorted_day_values: list[tuple[str, float]],
+    day: str,
+) -> float | None:
+    days = [pair[0] for pair in sorted_day_values]
+    i = bisect.bisect_right(days, day) - 1
+    if i < 0:
+        return None
+    return sorted_day_values[i][1]
+
+
+def _merge_portfolio_history_by_day(
+    series: list[tuple[Decimal, list[PriceHistoryPoint]]],
+) -> list[tuple[str, float]]:
+    """Align holdings by calendar date; forward-fill each line so totals are not index-misaligned."""
+    per_asset = [_contrib_by_day_sorted(qty, pts) for qty, pts in series]
+    event_days = sorted({d for pairs in per_asset for d, _ in pairs})
+    merged: list[tuple[str, float]] = []
+    for d in event_days:
+        total = 0.0
+        for pairs in per_asset:
+            v = _value_on_or_before(pairs, d)
+            if v is None:
+                total = 0.0
+                break
+            total += v
+        else:
+            merged.append((d, round(total, 2)))
+    return merged
+
+
 def _build_portfolio_chart(
     positions: list[Portfolio],
     client: InvestAPIClient,
@@ -235,7 +290,7 @@ def _build_portfolio_chart(
     days: int = PORTFOLIO_CHART_DAYS,
 ) -> dict[str, list[Any]]:
     if not positions:
-        return {"labels": [], "values": []}
+        return {"labels": [], "values": [], "points": []}
 
     series: list[tuple[Decimal, list[PriceHistoryPoint]]] = []
     for position in positions:
@@ -253,17 +308,19 @@ def _build_portfolio_chart(
             series.append((position.quantity, list(history.points)))
 
     if not series:
-        return {"labels": [], "values": []}
+        return {"labels": [], "values": [], "points": []}
 
-    min_len = min(len(points) for _, points in series)
-    labels = [_chart_label(series[0][1][-min_len + i].timestamp) for i in range(min_len)]
+    merged = _merge_portfolio_history_by_day(series)
+    labels: list[str] = []
     values: list[float] = []
-    for i in range(min_len):
-        idx = -min_len + i
-        total = sum(float(qty * points[idx].price) for qty, points in series)
-        values.append(round(total, 2))
+    chart_points: list[dict[str, Any]] = []
+    for day, value in merged:
+        ts = f"{day}T00:00:00"
+        labels.append(_chart_label(ts))
+        values.append(value)
+        chart_points.append({"t": ts, "v": value})
 
-    return {"labels": labels, "values": values}
+    return {"labels": labels, "values": values, "points": chart_points}
 
 
 def _compute_performers(
@@ -351,9 +408,19 @@ def build_market_page_context(
         asset_type,
     )
 
+    chart_fetch_days = (
+        PORTFOLIO_CHART_MAX_DAYS_CRYPTO
+        if asset_type == AssetType.CRYPTO
+        else PORTFOLIO_CHART_MAX_DAYS
+    )
+
     cached_times: list[datetime] = []
     with InvestAPIClient() as client:
-        portfolio_chart = _build_portfolio_chart(positions, client)
+        portfolio_chart = _build_portfolio_chart(
+            positions,
+            client,
+            days=chart_fetch_days,
+        )
         cached_times.extend(
             _collect_cached_times(positions, client),
         )
@@ -376,6 +443,7 @@ def build_market_page_context(
         "cost_basis": _format_money(cost_basis),
         "market_results": market_results,
         "portfolio_chart": portfolio_chart,
+        "chart_period_cap": chart_fetch_days,
         "last_price_update": _format_last_update(cached_times),
         "coin_count": summary["position_count"],
         "item_count": summary["position_count"],

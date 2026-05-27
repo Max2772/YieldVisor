@@ -225,7 +225,7 @@
 }
 
 .hero-headline em         { color: var(--green); font-style: italic; }
-.hero-headline .line-muted { color: var(--text-dim); }
+.hero-headline .line-muted { color: var(--text-dim); color: #7DD3FC; }
 
 /* Sub */
 .hero-sub {
