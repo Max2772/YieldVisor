@@ -142,6 +142,13 @@ body::before {
   border-radius: 10px;
 }
 
+.btn-sm {
+  padding:       5px 10px;
+  font-size:     12px;
+  font-weight:   700;
+  border-radius: 6px;
+}
+
 /* ── Badges ───────────────────────────────── */
 .badge {
   display:        inline-flex;

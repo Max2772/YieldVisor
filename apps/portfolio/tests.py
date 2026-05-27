@@ -1,11 +1,13 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.urls import reverse
 
 from apps.history.models import History, HistoryOperation
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
+from apps.portfolio.services.holding_actions import delete_holding, sell_holding
 from apps.portfolio.services.holdings import _build_item_row, build_holdings
 from apps.portfolio.types import AssetType
 
@@ -52,6 +54,63 @@ class AddHoldingTests(TestCase):
         self.assertEqual(position.avg_buy_price, Decimal("150"))
 
 
+class SellDeleteHoldingTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="seller", password="pass")
+
+    def test_sell_partial_keeps_position(self):
+        pos = add_holding(
+            self.user,
+            asset_type=AssetType.STOCK,
+            asset_name="AMD",
+            app_id=None,
+            quantity=Decimal("10"),
+            buy_price=Decimal("100"),
+        )
+        sell_holding(
+            self.user,
+            position_id=pos.pk,
+            quantity=Decimal("4"),
+            sell_price=Decimal("120"),
+        )
+        pos.refresh_from_db()
+        self.assertEqual(pos.quantity, Decimal("6"))
+        self.assertEqual(
+            History.objects.filter(user=self.user, operation=HistoryOperation.SELL).count(),
+            1,
+        )
+
+    def test_sell_all_deletes_position(self):
+        pos = add_holding(
+            self.user,
+            asset_type=AssetType.STOCK,
+            asset_name="AMD",
+            app_id=None,
+            quantity=Decimal("2"),
+            buy_price=Decimal("100"),
+        )
+        sell_holding(
+            self.user,
+            position_id=pos.pk,
+            quantity=Decimal("2"),
+            sell_price=Decimal("110"),
+        )
+        self.assertEqual(Portfolio.objects.filter(user=self.user).count(), 0)
+        self.assertEqual(History.objects.filter(user=self.user).count(), 2)
+
+    def test_delete_removes_position(self):
+        pos = add_holding(
+            self.user,
+            asset_type=AssetType.STOCK,
+            asset_name="NVDA",
+            app_id=None,
+            quantity=Decimal("1"),
+            buy_price=Decimal("500"),
+        )
+        delete_holding(self.user, position_id=pos.pk)
+        self.assertEqual(Portfolio.objects.filter(user=self.user).count(), 0)
+
+
 class BuildHoldingsTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(username="holder", password="pass")
@@ -93,3 +152,30 @@ class BuildHoldingsTests(TestCase):
         row = _build_item_row(position, Decimal("110"), "100,105,110")
         self.assertEqual(row["pnl_pct"], "10.0")
         self.assertTrue(row["pnl_pct_pos"])
+        self.assertEqual(row["position_id"], position.pk)
+        self.assertEqual(row["asset_name"], "AMD")
+        self.assertEqual(row["asset_type"], AssetType.STOCK)
+        self.assertIn("qty_raw", row)
+
+
+class BuyHoldingAjaxTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="buyer", password="pass")
+        self.client = Client()
+        self.client.login(username="buyer", password="pass")
+
+    def test_buy_returns_json_ok(self):
+        r = self.client.post(
+            reverse("portfolio:buy_holding"),
+            {
+                "asset_type": AssetType.STOCK,
+                "asset_name": "GOOG",
+                "quantity": "1",
+                "buy_price": "100.00",
+                "next": "/stocks/",
+            },
+            HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+        )
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.json()["ok"])
+        self.assertEqual(Portfolio.objects.filter(user=self.user).count(), 1)

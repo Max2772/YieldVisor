@@ -10,7 +10,7 @@
       data-period-cap="{{ chart_period_cap|default:1825 }}"
     >
       <button type="button" class="chart-period-btn" data-days="7">7D</button>
-      <button type="button" class="chart-period-btn active" data-days="30">30D</button>
+      <button type="button" class="chart-period-btn active" data-days="30">1M</button>
       <button type="button" class="chart-period-btn" data-days="365">1Y</button>
       {% if chart_period_cap|default:1825 >= 1825 %}
       <button type="button" class="chart-period-btn" data-days="1825">5Y</button>

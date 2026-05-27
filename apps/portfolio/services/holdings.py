@@ -198,6 +198,19 @@ def _fetch_market_data(
             )
 
 
+def _holding_crud_fields(position: Portfolio, price: Decimal | None) -> dict[str, Any]:
+    ref = price if price is not None else position.avg_buy_price
+    suggested = ref.quantize(Decimal("0.01"))
+    return {
+        "position_id": position.pk,
+        "qty_raw": _format_qty(position.quantity),
+        "suggested_sell_price": f"{suggested:.2f}",
+        "asset_type": position.asset_type,
+        "asset_name": position.asset_name,
+        "app_id_attr": "" if position.app_id is None else str(position.app_id),
+    }
+
+
 def _build_item_row(
     position: Portfolio,
     price: Decimal | None,
@@ -224,6 +237,7 @@ def _build_item_row(
     if price is None:
         return {
             **row_base,
+            **_holding_crud_fields(position, price),
             "ticker": ticker,
             "name": name_value,
             "full_name": full_name,
@@ -246,6 +260,7 @@ def _build_item_row(
     total = position.current_value(price)
     return {
         **row_base,
+        **_holding_crud_fields(position, price),
         "ticker": ticker,
         "name": name_value,
         "full_name": full_name,

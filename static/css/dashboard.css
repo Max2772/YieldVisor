@@ -119,6 +119,163 @@
   box-shadow:   0 0 0 1px rgba(0, 230, 118, 0.08);
 }
 
+/* Holdings — buy / sell / delete + trade modal */
+.holding-actions-row {
+  display:         flex;
+  align-items:     center;
+  justify-content: space-between;
+  gap:             10px;
+  min-width:       120px;
+}
+
+.holding-actions-stack {
+  display:        flex;
+  flex-direction: column;
+  align-items:    stretch;
+  gap:            4px;
+}
+
+.holding-del-x {
+  flex-shrink:     0;
+  width:           32px;
+  height:          32px;
+  padding:         0;
+  border-radius:   8px;
+  border:          1px solid rgba(255, 77, 109, 0.35);
+  background:      transparent;
+  color:           var(--red);
+  font-size:       20px;
+  line-height:     1;
+  cursor:          pointer;
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  transition:      background 0.15s, border-color 0.15s;
+}
+
+.holding-del-x:hover {
+  background: rgba(255, 77, 109, 0.12);
+}
+
+/* Trade modal overlay */
+.holding-overlay {
+  position:   fixed;
+  inset:      0;
+  z-index:    3000;
+  display:    none;
+  padding:    24px 16px 16px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.holding-overlay.is-open {
+  display: flex;
+}
+
+.holding-overlay-backdrop {
+  position:   absolute;
+  inset:      0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.holding-overlay-panel {
+  position:      relative;
+  width:         min(420px, 100%);
+  margin-top:    0;
+  padding:       22px 24px 20px;
+  border-radius: var(--radius);
+  border:        1px solid var(--border);
+  background:    var(--surface);
+  box-shadow:    0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.holding-overlay-close {
+  position:      absolute;
+  top:           12px;
+  right:         12px;
+  width:         32px;
+  height:        32px;
+  border:        none;
+  border-radius: 8px;
+  background:    transparent;
+  color:         var(--text-muted);
+  font-size:     22px;
+  line-height:   1;
+  cursor:        pointer;
+}
+
+.holding-overlay-close:hover {
+  color: var(--text);
+}
+
+.holding-modal-title {
+  font-size:     16px;
+  font-weight:    700;
+  margin:         0 36px 14px 0;
+  letter-spacing: 0.2px;
+}
+
+.holding-modal-errors {
+  display:       none;
+  margin-bottom: 12px;
+  padding:       10px 12px;
+  border-radius: var(--radius-sm);
+  border:        1px solid rgba(255, 77, 109, 0.35);
+  background:    var(--red-dim);
+  color:         var(--red);
+  font-size:     13px;
+  white-space:   pre-wrap;
+}
+
+.holding-modal-errors.is-visible {
+  display: block;
+}
+
+.holding-modal-fields {
+  display:       flex;
+  flex-direction: column;
+  gap:           8px;
+}
+
+.holding-modal-label {
+  font-size:   11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color:       var(--text-muted);
+}
+
+.holding-modal-input {
+  width:         100%;
+  padding:       10px 12px;
+  border-radius: var(--radius-sm);
+  border:        1px solid var(--border);
+  background:    var(--surface2);
+  color:         var(--text);
+  font-family:   var(--font-mono);
+  font-size:     14px;
+  outline:       none;
+  margin-bottom: 6px;
+}
+
+.holding-modal-input:focus {
+  border-color: var(--green);
+}
+
+.holding-modal-delete-hint {
+  font-size:   13px;
+  color:       var(--text-muted);
+  line-height: 1.45;
+  margin:      0 0 16px;
+}
+
+.holding-modal-actions {
+  display:         flex;
+  justify-content: flex-end;
+  gap:             10px;
+  margin-top:      8px;
+}
+
 /* ── Assets table ─────────────────────────── */
 .assets-table {
   width:           100%;

@@ -19,7 +19,9 @@ class History(models.Model):
     )
     portfolio = models.ForeignKey(
         Portfolio,
-        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
         related_name="history",
     )
     operation  = models.CharField(max_length=4, choices=HistoryOperation.choices)
