@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import bisect
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -283,23 +283,71 @@ def _merge_portfolio_history_by_day(
     return merged
 
 
+def slice_portfolio_chart_calendar_days(
+    chart: dict[str, Any],
+    *,
+    days: int,
+    cap: int,
+) -> dict[str, list[Any]]:
+    """Subset of chart for the last `min(days, cap)` calendar days (e.g. stat badge)."""
+    points = chart.get("points") or []
+    if len(points) < 2:
+        return {"labels": list(chart.get("labels") or []), "values": list(chart.get("values") or [])}
+
+    span = min(days, cap)
+    last_raw = (points[-1].get("t") or "")[:10]
+    try:
+        last_d = date.fromisoformat(last_raw)
+    except ValueError:
+        return {"labels": list(chart.get("labels") or []), "values": list(chart.get("values") or [])}
+
+    cutoff = last_d - timedelta(days=span)
+    filtered: list[dict[str, Any]] = []
+    for p in points:
+        d_raw = (p.get("t") or "")[:10]
+        try:
+            d = date.fromisoformat(d_raw)
+        except ValueError:
+            continue
+        if d >= cutoff:
+            filtered.append(p)
+
+    if len(filtered) < 2:
+        filtered = list(points)
+
+    return {
+        "labels": [_chart_label(str(p.get("t") or "")) for p in filtered],
+        "values": [p["v"] for p in filtered],
+    }
+
+
 def _build_portfolio_chart(
     positions: list[Portfolio],
     client: InvestAPIClient,
     *,
     days: int = PORTFOLIO_CHART_DAYS,
+    per_asset_max_range: bool = False,
 ) -> dict[str, list[Any]]:
     if not positions:
         return {"labels": [], "values": [], "points": []}
 
     series: list[tuple[Decimal, list[PriceHistoryPoint]]] = []
     for position in positions:
+        req_days = (
+            (
+                PORTFOLIO_CHART_MAX_DAYS_CRYPTO
+                if position.asset_type == AssetType.CRYPTO
+                else PORTFOLIO_CHART_MAX_DAYS
+            )
+            if per_asset_max_range
+            else days
+        )
         try:
             history = get_history(
                 position.asset_type,
                 position.asset_name,
                 position.app_id,
-                days=days,
+                days=req_days,
                 client=client,
             )
         except Exception:

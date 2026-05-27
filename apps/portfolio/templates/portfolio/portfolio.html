@@ -65,19 +65,7 @@
 
       <div class="left-col">
 
-        <div class="card anim-5">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Portfolio Value</div>
-              <div class="card-subtitle">Total performance over time</div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="chart-h280">
-              <canvas id="portfolioChart"></canvas>
-            </div>
-          </div>
-        </div>
+        {% include "includes/market_value_history_card.html" with chart_title="Portfolio Value" chart_canvas_id="portfolioChart" chart_card_class="anim-5" %}
 
         <div class="card anim-6">
           <div class="card-header">

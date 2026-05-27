@@ -7,6 +7,11 @@ from django.db.models import Q
 from django.utils.timesince import timesince
 
 from apps.alerts.models import Alert
+from apps.core.market_catalog import (
+    PORTFOLIO_CHART_DAYS,
+    PORTFOLIO_CHART_MAX_DAYS,
+    PORTFOLIO_CHART_MAX_DAYS_CRYPTO,
+)
 from apps.core.services.invest_api import InvestAPIClient, get_price
 from apps.core.services.ticker import format_ticker_price
 from apps.portfolio.models import Portfolio
@@ -22,6 +27,7 @@ from apps.portfolio.services.market_page import (
     _compute_performers,
     _format_last_update,
     _split_money_display,
+    slice_portfolio_chart_calendar_days,
 )
 from apps.portfolio.types import AssetType
 
@@ -220,7 +226,8 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
             "alerts_near_target": 0,
             "assets_count": 0,
             "asset_types_count": 0,
-            "portfolio_chart": {"labels": [], "values": []},
+            "portfolio_chart": {"labels": [], "values": [], "points": []},
+            "chart_period_cap": PORTFOLIO_CHART_MAX_DAYS,
             "type_allocation": [],
             "alerts": [],
             "best_asset": "—",
@@ -260,8 +267,17 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
 
     type_allocation = _build_type_allocation(totals_by_type, total_value)
 
+    has_crypto = any(p.asset_type == AssetType.CRYPTO for p in positions)
+    chart_period_cap = (
+        PORTFOLIO_CHART_MAX_DAYS_CRYPTO if has_crypto else PORTFOLIO_CHART_MAX_DAYS
+    )
+
     with InvestAPIClient() as client:
-        portfolio_chart = _build_portfolio_chart(positions, client)
+        portfolio_chart = _build_portfolio_chart(
+            positions,
+            client,
+            per_asset_max_range=True,
+        )
         cached_times.extend(_collect_cached_times(positions, client))
 
     alerts, alerts_count, alerts_near = _build_alerts(user)
@@ -283,7 +299,13 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
         pnl_pct = (total_pnl / cost_basis) * Decimal("100")
 
     dollars, cents = _split_money_display(total_value)
-    period_change = _chart_period_change(portfolio_chart)
+    period_change = _chart_period_change(
+        slice_portfolio_chart_calendar_days(
+            portfolio_chart,
+            days=PORTFOLIO_CHART_DAYS,
+            cap=chart_period_cap,
+        ),
+    )
     asset_types_count = sum(1 for amount in totals_by_type.values() if amount > 0)
 
     def format_performer(label: dict[str, str] | None) -> str:
@@ -305,6 +327,7 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
         "assets_count": len(positions),
         "asset_types_count": asset_types_count,
         "portfolio_chart": portfolio_chart,
+        "chart_period_cap": chart_period_cap,
         "type_allocation": type_allocation,
         "allocation": type_allocation,
         "alerts": alerts,
