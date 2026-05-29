@@ -15,31 +15,6 @@ def _require_whole_quantity(quantity: Decimal) -> None:
         raise forms.ValidationError(STEAM_WHOLE_QTY_ERROR)
 
 
-class AddHoldingForm(forms.Form):
-    quantity = forms.DecimalField(
-        min_value=Decimal("0.00000001"),
-        max_digits=38,
-        decimal_places=8,
-        label="Quantity",
-    )
-    buy_price = forms.DecimalField(
-        min_value=Decimal("0.01"),
-        max_digits=38,
-        decimal_places=2,
-        label="Buy price (USD)",
-    )
-
-    def __init__(self, *args, asset_type: str | None = None, **kwargs):
-        self.asset_type = asset_type
-        super().__init__(*args, **kwargs)
-
-    def clean_quantity(self):
-        quantity = self.cleaned_data["quantity"]
-        if self.asset_type == AssetType.STEAM:
-            _require_whole_quantity(quantity)
-        return quantity
-
-
 class BuyHoldingForm(forms.Form):
     asset_type = forms.ChoiceField(choices=AssetType.choices)
     asset_name = forms.CharField(max_length=255)
