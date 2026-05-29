@@ -91,8 +91,8 @@ function initPeriodLineChart({
   datasetLabel = "",
   tension = 0.25,
   gradientHeight = 280,
-  formatY = (v) => `$${Number(v).toLocaleString()}`,
-  formatTooltip = (c) => `  $${Number(c.parsed.y).toLocaleString()}`,
+  formatY = (v) => `${Number(v).toLocaleString()}`,
+  formatTooltip = (c) => `  ${Number(c.parsed.y).toLocaleString()}`,
   maxTicksLimit = 7,
   tickFontSize = 11,
 } = {}) {

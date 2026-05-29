@@ -19,8 +19,8 @@ function initPriceChart() {
     datasetLabel: canvas.dataset.symbol || "Price",
     tension: 0.4,
     gradientHeight: 260,
-    formatY: (v) => `$${v}`,
-    formatTooltip: (c) => `  $${c.parsed.y.toFixed(2)}`,
+    formatY: (v) => `${v}`,
+    formatTooltip: (c) => `  ${c.parsed.y.toFixed(2)}`,
     tickFontSize: 10,
   });
 }
@@ -58,7 +58,7 @@ function initPnlChart() {
         tooltip: {
           callbacks: {
             label: (ctx) =>
-              `  ${ctx.parsed.y >= 0 ? "+" : ""}$${ctx.parsed.y}`,
+              `  ${ctx.parsed.y >= 0 ? "+" : ""}${ctx.parsed.y}`,
           },
         },
       },
@@ -74,7 +74,7 @@ function initPnlChart() {
           ticks: {
             color:    "#4b5563",
             font:     { family: "DM Mono", size: 10 },
-            callback: (v) => `$${v}`,
+            callback: (v) => `${v}`,
           },
         },
       },
