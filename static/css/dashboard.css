@@ -414,6 +414,68 @@
 
 .assets-table td:not(:first-child) { text-align: right; }
 
+/* Portfolio /assets table: компактнее, числовые колонки ближе к названию */
+.assets-table--portfolio {
+  table-layout: fixed;
+}
+
+.assets-table--portfolio .col-asset {
+  width: 32%;
+  padding-left: 16px;
+  padding-right: 10px;
+  text-align: left;
+}
+
+.assets-table--portfolio th.col-asset {
+  padding-left: 25px;
+  text-align: left;
+}
+
+.assets-table--portfolio th:not(.col-asset):not(.col-sparkline),
+.assets-table--portfolio td:not(.col-asset):not(.col-sparkline) {
+  width: 10%;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.assets-table--portfolio th.col-sparkline {
+  width: 80px;
+  padding-left: 50px;
+  padding-right: 8px;
+  text-align: left;
+}
+
+.assets-table--portfolio td.col-sparkline {
+  width: 80px;
+  padding-left: 0;
+  padding-right: 8px;
+  text-align: left;
+}
+
+.assets-table--portfolio td.col-sparkline .sparkline-canvas {
+  display: block;
+  margin-left: 20px;
+  margin-right: auto;
+}
+
+.assets-table--portfolio .asset-cell {
+  padding-left: 10px;
+  gap: 15px;
+  min-width: 0;
+}
+
+.assets-table--portfolio .asset-cell > div {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.assets-table--portfolio .asset-ticker,
+.assets-table--portfolio .asset-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .asset-cell {
   display:     flex;
   align-items: center;

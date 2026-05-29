@@ -75,22 +75,23 @@
             </div>
           </div>
           <div class="card-body" style="padding:0">
-            <table class="assets-table" id="portfolioAssetsTable">
+            <table class="assets-table assets-table--portfolio" id="portfolioAssetsTable">
               <thead>
                 <tr>
-                  <th style="padding-left:24px">Asset</th>
+                  <th class="col-asset">Asset</th>
                   <th>Price</th>
                   <th>Holdings</th>
                   <th>Value</th>
                   <th>P&amp;L</th>
-                  <th>7D</th>
+                  <th>Change</th>
+                  <th class="col-sparkline">7D</th>
                 </tr>
               </thead>
               <tbody>
                 {% for asset in assets %}
                 <tr data-asset-type="{{ asset.asset_type }}">
-                  <td style="padding-left:24px">
-                    <a href="{{ asset.detail_url }}" class="asset-cell" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit">
+                  <td class="col-asset">
+                    <a href="{{ asset.detail_url }}" class="asset-cell" style="text-decoration:none;color:inherit">
                       {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.ticker icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg %}
                       <div>
                         <div class="asset-ticker">{{ asset.ticker }}</div>
@@ -107,6 +108,15 @@
                     </span>
                   </td>
                   <td>
+                    {% if asset.change_pct == "—" %}
+                    <span class="mono muted">—</span>
+                    {% else %}
+                    <span class="badge {% if asset.change_positive %}badge-up{% else %}badge-down{% endif %}">
+                      {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_pct }}%
+                    </span>
+                    {% endif %}
+                  </td>
+                  <td class="col-sparkline">
                     <canvas class="sparkline-canvas"
                             id="sp-{{ asset.id }}"
                             width="80" height="36"
@@ -117,7 +127,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                  <td colspan="6" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
+                  <td colspan="7" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
                     No assets yet. Add holdings from <a href="{% url 'stocks:market' %}">Stocks</a>,
                     <a href="{% url 'crypto:crypto' %}">Crypto</a>, or
                     <a href="{% url 'steam:steam' %}">Steam</a>.

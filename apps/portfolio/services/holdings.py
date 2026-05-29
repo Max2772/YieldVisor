@@ -50,6 +50,22 @@ def format_pnl_pct(value: Decimal) -> str:
     return f"{abs(value):.1f}"
 
 
+def period_change_from_sparkline(sparkline: str) -> tuple[str, bool]:
+    """7D % из sparkline (первая → последняя точка)."""
+    parts = [p.strip() for p in sparkline.split(",") if p.strip()]
+    if len(parts) < 2:
+        return "—", True
+    try:
+        first = Decimal(parts[0])
+        last = Decimal(parts[-1])
+    except Exception:
+        return "—", True
+    if first == 0:
+        return "—", True
+    pct = ((last - first) / first) * Decimal("100")
+    return format_pnl_pct(pct), pct >= 0
+
+
 def _detail_url(position: Portfolio) -> str:
     if position.asset_type == AssetType.STOCK:
         return reverse("stocks:stock", kwargs={"ticker": position.asset_name.upper()})
@@ -276,6 +292,8 @@ def _build_item_row(
         crypto_symbol=crypto_symbol if position.asset_type == AssetType.CRYPTO else None,
     )
 
+    change_pct, change_pos = period_change_from_sparkline(sparkline or "")
+
     if price is None:
         return {
             **row_base,
@@ -292,6 +310,8 @@ def _build_item_row(
             "pnl_pos": True,
             "pnl_pct": "—",
             "pnl_pct_pos": True,
+            "change_pct": change_pct,
+            "change_pos": change_pos,
             "qty": _format_qty(position.quantity),
             "total": _format_money(position.cost_basis()),
             "sparkline": "0",
@@ -315,6 +335,8 @@ def _build_item_row(
         "pnl_pos": pnl_value >= 0,
         "pnl_pct": format_pnl_pct(pnl_pct),
         "pnl_pct_pos": pnl_pct >= 0,
+        "change_pct": change_pct,
+        "change_pos": change_pos,
         "qty": _format_qty(position.quantity),
         "total": _format_money(total),
         "sparkline": sparkline or "0",

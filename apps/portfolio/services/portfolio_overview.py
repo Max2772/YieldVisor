@@ -106,6 +106,8 @@ def _to_portfolio_asset(position: Portfolio, row: dict[str, Any]) -> dict[str, A
         "current_value": row["total"],
         "pnl_pct": pct_display,
         "pnl_positive": row["pnl_pos"],
+        "change_pct": row.get("change_pct", "—"),
+        "change_positive": row.get("change_pos", True),
         "sparkline_values": sparkline.split(",") if sparkline else [],
         "sparkline_color": "#00e676" if row["pnl_pos"] else "#ff4d6d",
         "detail_url": row["detail_url"],
