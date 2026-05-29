@@ -516,6 +516,70 @@
   white-space: nowrap;
 }
 
+/* Alerts table: компактные колонки, asset слева */
+.assets-table--alerts {
+  table-layout: fixed;
+}
+
+.assets-table--alerts .col-asset {
+  width: 30%;
+  padding-left: 16px;
+  padding-right: 8px;
+  text-align: left;
+}
+
+.assets-table--alerts th.col-asset {
+  padding-left: 24px;
+  text-align: left;
+}
+
+.assets-table--alerts th:not(.col-asset),
+.assets-table--alerts td:not(.col-asset) {
+  width: auto;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.assets-table--alerts .col-condition {
+  width: 18%;
+  text-align: left;
+}
+
+.assets-table--alerts th.col-condition,
+.assets-table--alerts td.col-condition {
+  text-align: left;
+}
+
+.assets-table--alerts .asset-cell {
+  min-width: 0;
+  gap: 10px;
+}
+
+.assets-table--alerts .asset-ticker,
+.assets-table--alerts .asset-ticker--wrap {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assets-table--alerts .asset-type {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Number inputs without browser spin buttons */
+.input-no-spin {
+  -moz-appearance: textfield;
+  appearance:      textfield;
+}
+
+.input-no-spin::-webkit-outer-spin-button,
+.input-no-spin::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin:             0;
+}
+
 .asset-cell {
   display:     flex;
   align-items: center;
