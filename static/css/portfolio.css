@@ -116,9 +116,11 @@
 }
 
 .holding-actions-stack--hero .btn {
-  min-width: 96px;
-  padding: 9px 18px;
-  font-size: 13px;
+  min-width:         96px;
+  padding:           9px 18px;
+  font-size:         13px;
+  justify-content:   center;
+  text-align:        center;
 }
 
 .holding-actions-stack--hero .btn-outline {
