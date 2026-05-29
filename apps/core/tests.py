@@ -275,7 +275,8 @@ class InvestAPIClientTests(SimpleTestCase):
         self.assertEqual(ctx["asset"]["symbol"], "AMD")
         self.assertIn("logo_url", ctx["asset"])
         self.assertTrue(ctx["asset"]["logo_url"])
-        self.assertEqual(len(ctx["chart"]["prices"]), 2)
+        self.assertEqual(len(ctx["chart"]["points"]), 2)
+        self.assertEqual(ctx["chart_period_cap"], 1825)
         self.assertTrue(ctx["asset"]["change_delta"])
         self.assertEqual(ctx["asset"]["market_symbol"], "AMD")
 
@@ -313,6 +314,7 @@ class InvestAPIClientTests(SimpleTestCase):
         self.assertEqual(ctx["asset"]["market_symbol"], "BTC")
         self.assertEqual(ctx["asset"]["hero_title"], "BITCOIN")
         self.assertEqual(ctx["asset"]["hero_subtitle"], "BTC")
+        self.assertEqual(ctx["chart_period_cap"], 365)
 
     def test_render_asset_not_found(self):
         from django.contrib.auth.models import AnonymousUser

@@ -1,4 +1,4 @@
-<div class="card anim-3" style="margin-top:20px">
+<div class="card anim-3 asset-holding-trade-card">
   <div class="card-header">
     <div>
       <div class="card-title">{% if portfolio_position %}Add more{% else %}Add to portfolio{% endif %}</div>
@@ -11,32 +11,8 @@
     {% endif %}
   </div>
   <div class="card-body">
-    <form method="post" class="add-holding-form" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
-      {% csrf_token %}
-      <div>
-        <label class="muted" style="font-size:11px;display:block;margin-bottom:4px">{{ add_form.quantity.label }}</label>
-        {{ add_form.quantity }}
-        {% if add_form.quantity.errors %}<div class="muted" style="color:var(--red);font-size:11px">{{ add_form.quantity.errors.0 }}</div>{% endif %}
-      </div>
-      <div>
-        <label class="muted" style="font-size:11px;display:block;margin-bottom:4px">{{ add_form.buy_price.label }}</label>
-        {{ add_form.buy_price }}
-        {% if add_form.buy_price.errors %}<div class="muted" style="color:var(--red);font-size:11px">{{ add_form.buy_price.errors.0 }}</div>{% endif %}
-      </div>
-      <button type="submit" class="btn btn-primary">+ Add</button>
-    </form>
+    {% include "includes/holding_row_actions.html" with item=holding_trade %}
   </div>
 </div>
 
-<style>
-  .add-holding-form input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 12px;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 13px;
-    width: 140px;
-  }
-</style>
+{% include "includes/holding_trade_modal.html" %}

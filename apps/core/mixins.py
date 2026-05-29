@@ -2,19 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from apps.core.services.asset_detail import build_asset_detail_context
 from apps.core.services.invest_api import InvestAPIError
-from apps.portfolio.forms import AddHoldingForm
 from apps.portfolio.models import Portfolio
-from apps.portfolio.services.add_holding import add_holding
-from apps.portfolio.services.holdings import _format_money
+from apps.portfolio.services.holdings import _format_money, build_holding_trade_context
 from apps.portfolio.services.market_page import build_market_page_context
+from apps.portfolio.types import AssetType
 
 
 class AssetMarketMixin(LoginRequiredMixin, TemplateView):
@@ -119,31 +117,6 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
 
         return super().get(request, *args, **kwargs)
 
-    def post(self, request, *args, **kwargs):
-        if self._load_detail(**kwargs) is None:
-            if self._load_error == "api":
-                return self._render_asset_not_found(
-                    request, self._asset_params, api_unavailable=True
-                )
-            return self._render_asset_not_found(request, self._asset_params)
-
-        form = AddHoldingForm(request.POST, asset_type=self.asset_type)
-        if form.is_valid():
-            add_holding(
-                request.user,
-                asset_type=self.asset_type,
-                asset_name=self._asset_params["asset_name"],
-                app_id=self._asset_params.get("app_id"),
-                quantity=form.cleaned_data["quantity"],
-                buy_price=form.cleaned_data["buy_price"],
-            )
-            messages.success(request, f"Added {self._asset_params['display_symbol']} to portfolio.")
-            return redirect(request.path)
-
-        context = self.get_context_data(**kwargs)
-        context["add_form"] = form
-        return self.render_to_response(context)
-
     def _apply_holding_metrics(
         self,
         asset: dict[str, Any],
@@ -168,10 +141,23 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
         context["active_nav"] = self.active_nav
         context["list_label"] = self.list_label
         context["list_url_name"] = self.list_url_name
-        context["portfolio_position"] = self._get_portfolio_position(self._asset_params)
+        position = self._get_portfolio_position(self._asset_params)
+        context["portfolio_position"] = position
         self._apply_holding_metrics(
             context["asset"],
-            context["portfolio_position"],
+            position,
         )
-        context.setdefault("add_form", AddHoldingForm(asset_type=self.asset_type))
+        trade_name = self._asset_params["asset_name"]
+        if self.asset_type == AssetType.CRYPTO:
+            coin = (context["asset"].get("coin_name") or "").strip()
+            if coin:
+                trade_name = coin
+        context["holding_trade"] = build_holding_trade_context(
+            asset_type=self.asset_type,
+            asset_name=trade_name,
+            display_ticker=self._asset_params["display_symbol"],
+            app_id=self._asset_params.get("app_id"),
+            current_price=context["asset"].get("price_raw"),
+            position=position,
+        )
         return context

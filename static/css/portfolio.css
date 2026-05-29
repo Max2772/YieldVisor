@@ -267,6 +267,26 @@
 .pos-label { font-size: 13px; color: var(--text-muted); }
 .pos-val   { font-family: var(--font-mono); font-size: 13px; }
 
+.chart-h260 {
+  height:         260px;
+  position:       relative;
+}
+
+.chart-empty-message {
+  padding: 24px;
+}
+
+/* ── Asset detail — Buy / Sell card ───────── */
+.asset-holding-trade-card .holding-actions-stack {
+  gap: 10px;
+}
+
+.asset-holding-trade-card .holding-actions-stack .btn {
+  min-width: 108px;
+  padding: 9px 20px;
+  font-size: 13px;
+}
+
 /* ── Related assets ───────────────────────── */
 .related-grid {
   display:               grid;

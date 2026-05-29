@@ -211,6 +211,34 @@ def _holding_crud_fields(position: Portfolio, price: Decimal | None) -> dict[str
     }
 
 
+def build_holding_trade_context(
+    *,
+    asset_type: str,
+    asset_name: str,
+    display_ticker: str,
+    app_id: int | None,
+    current_price: Decimal | None,
+    position: Portfolio | None,
+) -> dict[str, Any]:
+    """Контекст для holding_row_actions (Buy / Sell modal)."""
+    suggested = ""
+    if current_price is not None:
+        suggested = f"{current_price.quantize(Decimal('0.01')):.2f}"
+
+    trade: dict[str, Any] = {
+        "ticker": display_ticker,
+        "asset_type": asset_type,
+        "asset_name": asset_name,
+        "app_id_attr": "" if app_id is None else str(app_id),
+        "suggested_sell_price": suggested,
+        "position_id": "",
+        "qty_raw": "",
+    }
+    if position is not None:
+        trade.update(_holding_crud_fields(position, current_price))
+    return trade
+
+
 def _build_item_row(
     position: Portfolio,
     price: Decimal | None,

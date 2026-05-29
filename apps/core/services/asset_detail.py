@@ -1,14 +1,19 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
 from django.conf import settings
 
+from apps.core.market_catalog import (
+    PORTFOLIO_CHART_MAX_DAYS,
+    PORTFOLIO_CHART_MAX_DAYS_CRYPTO,
+)
 from apps.core.services.invest_api import (
     InvestAPIError,
     PriceHistory,
+    PriceHistoryPoint,
     PriceQuote,
     get_history,
     get_quote,
@@ -76,6 +81,26 @@ def _hero_subtitle(
     return subtitle
 
 
+def _filter_points_last_days(
+    points: tuple[PriceHistoryPoint, ...],
+    days: int,
+) -> tuple[PriceHistoryPoint, ...]:
+    if len(points) < 2:
+        return points
+    last_raw = points[-1].timestamp[:10]
+    try:
+        last_d = date.fromisoformat(last_raw)
+    except ValueError:
+        return points
+    cutoff = last_d - timedelta(days=days)
+    filtered = tuple(
+        p
+        for p in points
+        if date.fromisoformat(p.timestamp[:10]) >= cutoff
+    )
+    return filtered if len(filtered) >= 2 else points
+
+
 def _range_position(current: Decimal, low: Decimal, high: Decimal) -> int:
     if high <= low:
         return 50
@@ -115,13 +140,19 @@ def build_asset_detail_context(
   Возвращает None, если актив не найден (404).
   """
     history_days = days if days is not None else settings.TICKER_CHANGE_DAYS
+    chart_period_cap = (
+        PORTFOLIO_CHART_MAX_DAYS_CRYPTO
+        if asset_type == AssetType.CRYPTO
+        else PORTFOLIO_CHART_MAX_DAYS
+    )
+    fetch_days = max(history_days, chart_period_cap)
 
     try:
         result = _fetch_quote_and_history(
             asset_type,
             asset_name,
             app_id=app_id,
-            days=history_days,
+            days=fetch_days,
         )
     except InvestAPIError:
         raise
@@ -131,21 +162,23 @@ def build_asset_detail_context(
 
     quote, history = result
     points = history.points if history else ()
+    metrics_points = _filter_points_last_days(points, history_days)
 
-    change_pct: Decimal | None = period_change_pct(points) if points else None
+    change_pct: Decimal | None = (
+        period_change_pct(metrics_points) if metrics_points else None
+    )
     change_delta = ""
     change_positive = True
     if change_pct is not None:
         change_delta, change_positive = format_change_delta(change_pct)
 
-    prices = [float(p.price) for p in points]
-    labels = [_chart_label(p.timestamp) for p in points]
+    chart_points = [{"t": p.timestamp, "v": float(p.price)} for p in points]
 
     period_low: Decimal | None = None
     period_high: Decimal | None = None
-    if points:
-        period_low = min(p.price for p in points)
-        period_high = max(p.price for p in points)
+    if metrics_points:
+        period_low = min(p.price for p in metrics_points)
+        period_high = max(p.price for p in metrics_points)
 
     last_volume: str | None = None
     if points and points[-1].volume is not None:
@@ -222,6 +255,7 @@ def build_asset_detail_context(
         "asset": asset,
         "hero_meta": hero_meta or "",
         "history_days": history_days,
+        "chart_period_cap": chart_period_cap,
         "last_volume": last_volume,
-        "chart": {"labels": labels, "prices": prices},
+        "chart": {"points": chart_points},
     }

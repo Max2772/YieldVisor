@@ -4,20 +4,20 @@
       <div class="card-title">{{ chart_title }}</div>
       <div class="card-subtitle" id="{{ chart_canvas_id }}-subtitle">Last 30 days</div>
     </div>
-    <div
-      class="chart-period-toolbar"
-      data-chart-id="{{ chart_canvas_id }}"
-      data-period-cap="{{ chart_period_cap|default:1825 }}"
-    >
-      <button type="button" class="chart-period-btn" data-days="7">7D</button>
-      <button type="button" class="chart-period-btn active" data-days="30">1M</button>
-      <button type="button" class="chart-period-btn" data-days="365">1Y</button>
-      {% if chart_period_cap|default:1825 >= 1825 %}
-      <button type="button" class="chart-period-btn" data-days="1825">5Y</button>
-      {% endif %}
-    </div>
+    {% if chart_has_data|default:True %}
+    {% include "includes/chart_period_toolbar.html" with chart_canvas_id=chart_canvas_id chart_period_cap=chart_period_cap %}
+    {% endif %}
   </div>
   <div class="card-body">
-    <div class="chart-h280"><canvas id="{{ chart_canvas_id }}"></canvas></div>
+    {% if chart_has_data|default:True %}
+    <div class="{{ chart_body_class|default:'chart-h280' }}">
+      <canvas
+        id="{{ chart_canvas_id }}"
+        {% if chart_dataset_label %}data-symbol="{{ chart_dataset_label }}"{% endif %}
+      ></canvas>
+    </div>
+    {% elif chart_empty_message %}
+    <p class="muted chart-empty-message">{{ chart_empty_message }}</p>
+    {% endif %}
   </div>
 </div>

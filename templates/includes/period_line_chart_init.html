@@ -1,0 +1,14 @@
+{% load static %}
+<script src="{% static 'js/chart_period.js' %}"></script>
+<script>
+"use strict";
+document.addEventListener("DOMContentLoaded", () => {
+  initPeriodLineChart({
+    canvasId: "{{ chart_canvas_id }}",
+    dataElementId: "{{ chart_data_element_id|default:'portfolio-chart-data' }}",
+    lineColor: "{{ chart_line_color|default:'#00e676' }}",
+    fillStart: "{{ chart_fill_start|default:'rgba(0,230,118,0.18)' }}",
+    fillEnd: "{{ chart_fill_end|default:'rgba(0,230,118,0)' }}",
+  });
+});
+</script>

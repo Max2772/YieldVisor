@@ -23,5 +23,7 @@
 {% endblock %}
 
 {% block js %}
+  {{ block.super }}
+  <script src="{% static 'js/chart_period.js' %}"></script>
   <script src="{% static 'js/portfolio.js' %}"></script>
 {% endblock %}

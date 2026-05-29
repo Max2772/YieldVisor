@@ -58,24 +58,8 @@
 </div>
 
 <div class="grid-main anim-2">
-  <div class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Price History</div>
-        <div class="card-subtitle">{{ asset.market_symbol }} · last {{ history_days }} days</div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div style="height:260px;position:relative;">
-        {% if chart.prices %}
-        {{ chart|json_script:"asset-chart-data" }}
-        <canvas id="priceChart" data-symbol="{{ asset.market_symbol }}"></canvas>
-        {% else %}
-        <p class="muted" style="padding:24px">No history data available.</p>
-        {% endif %}
-      </div>
-    </div>
-  </div>
+  {% if chart.points %}{{ chart|json_script:"asset-chart-data" }}{% endif %}
+  {% include "includes/market_value_history_card.html" with chart_title="Price History" chart_canvas_id="priceChart" chart_period_cap=chart_period_cap chart_has_data=chart.points chart_empty_message="No history data available." chart_body_class="chart-h260" chart_dataset_label=asset.market_symbol %}
 
   <div class="right-stack">
     <div class="card">
