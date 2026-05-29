@@ -25,10 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-!rb(tvm#tl-9m&v+j7$y^4t2j11suu0k#j$!yqfb2(*duv97y&'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Project Mode
+MODE = RunMode(os.environ.get("MODE", "DEV"))
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True and MODE != RunMode.PROD
+
+ALLOWED_HOSTS = [
+    ".bibikau.org",
+]
 
 
 # Application definition
@@ -156,8 +161,6 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = '/'
 
-# Project Mode
-MODE = RunMode(os.environ.get("MODE", "DEV"))
 
 # InvestAPI (https://api.bibikau.org)
 INVEST_API_BASE_URL = os.environ.get(
