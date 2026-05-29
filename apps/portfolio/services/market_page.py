@@ -513,8 +513,6 @@ def build_market_page_context(
         ctx["inv_value_short"] = summary["portfolio_value_short"]
         ctx["steam_pnl"] = summary["unrealised_pnl"]
         ctx["steam_pnl_pos"] = summary["pnl_pos"]
-        ctx["steam_pnl_pct"] = (
-            f"{'+' if summary['pnl_pos'] else '−'}{summary['pnl_pct']}"
-        )
+        ctx["steam_pnl_pct"] = summary["pnl_pct"]
 
     return ctx

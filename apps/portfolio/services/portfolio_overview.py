@@ -20,6 +20,7 @@ from apps.portfolio.services.holdings import (
     _fetch_market_data,
     _format_money,
     _format_value_short,
+    format_pnl_pct,
 )
 from apps.portfolio.services.market_page import (
     _build_portfolio_chart,
@@ -89,7 +90,7 @@ def _pnl_pct_for(position: Portfolio, row: dict[str, Any]) -> Decimal | None:
 
 def _to_portfolio_asset(position: Portfolio, row: dict[str, Any]) -> dict[str, Any]:
     pnl_pct = _pnl_pct_for(position, row)
-    pct_display = f"{pnl_pct:.1f}" if pnl_pct is not None else "—"
+    pct_display = format_pnl_pct(pnl_pct) if pnl_pct is not None else "—"
     sparkline = row.get("sparkline") or "0"
     return {
         "id": position.pk,
@@ -321,7 +322,7 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
         "total_value_short": _format_value_short(total_value),
         "total_pnl": _format_money(abs(total_pnl)),
         "total_pnl_pos": total_pnl >= 0,
-        "total_pnl_pct": f"{pnl_pct:.1f}",
+        "total_pnl_pct": format_pnl_pct(pnl_pct),
         "alerts_count": alerts_count,
         "alerts_near_target": alerts_near,
         "assets_count": len(positions),

@@ -38,7 +38,7 @@
     <div class="stat-value {% if steam_pnl_pos %}up{% else %}down{% endif %}">
       {% if steam_pnl_pos %}+{% else %}−{% endif %}${{ steam_pnl }}
     </div>
-    <span class="badge badge-warn">{{ steam_pnl_pct }}% total</span>
+    <span class="badge badge-warn">{% if steam_pnl_pos %}+{% else %}−{% endif %}{{ steam_pnl_pct }}% total</span>
   </div>
   <div class="stat-card c-red">
     <div class="stat-label">Cost Basis</div>

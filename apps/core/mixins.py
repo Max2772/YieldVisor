@@ -13,6 +13,7 @@ from apps.portfolio.models import Portfolio
 from apps.portfolio.services.holdings import (
     _format_money,
     build_holding_trade_context,
+    format_pnl_pct,
     format_position_display,
 )
 from apps.portfolio.services.market_page import build_market_page_context
@@ -136,7 +137,7 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
         asset["has_holding"] = True
         asset["holding_pnl"] = _format_money(abs(pnl_value))
         asset["holding_pnl_positive"] = pnl_value >= 0
-        asset["holding_pnl_pct"] = f"{pnl_pct:.1f}"
+        asset["holding_pnl_pct"] = format_pnl_pct(pnl_pct)
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)

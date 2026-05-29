@@ -45,6 +45,11 @@ def _format_qty(value: Decimal) -> str:
     return text.rstrip("0").rstrip(".") if "." in text else text
 
 
+def format_pnl_pct(value: Decimal) -> str:
+    """Величина % без знака; знак задаётся в шаблоне через pnl_pos / pnl_pct_pos."""
+    return f"{abs(value):.1f}"
+
+
 def _detail_url(position: Portfolio) -> str:
     if position.asset_type == AssetType.STOCK:
         return reverse("stocks:stock", kwargs={"ticker": position.asset_name.upper()})
@@ -308,7 +313,7 @@ def _build_item_row(
         "market_price": format_ticker_price(price).lstrip("$"),
         "pnl": _format_money(abs(pnl_value)),
         "pnl_pos": pnl_value >= 0,
-        "pnl_pct": f"{pnl_pct:.1f}",
+        "pnl_pct": format_pnl_pct(pnl_pct),
         "pnl_pct_pos": pnl_pct >= 0,
         "qty": _format_qty(position.quantity),
         "total": _format_money(total),
@@ -378,6 +383,6 @@ def build_holdings(
         "position_count": len(positions),
         "unrealised_pnl": _format_money(abs(total_pnl)),
         "pnl_pos": total_pnl >= 0,
-        "pnl_pct": f"{pnl_pct:.1f}",
+        "pnl_pct": format_pnl_pct(pnl_pct),
         "allocation": allocation,
     }
