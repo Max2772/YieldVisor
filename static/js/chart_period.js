@@ -49,6 +49,27 @@ function chartPeriodSubtitle(days, periodCap) {
   return CHART_PERIOD_LABELS[days] || `Last ${days} days`;
 }
 
+/** Ось Y / tooltip: убирает float-шум (2.80000000000003) и подбирает знаки после запятой. */
+function formatChartYTick(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "";
+
+  const abs = Math.abs(n);
+  let decimals = 2;
+  if (abs >= 1000) decimals = 0;
+  else if (abs < 1 && abs > 0) decimals = 4;
+
+  const rounded = Number(n.toFixed(decimals));
+  return `$${rounded.toLocaleString("en-US", {
+    maximumFractionDigits: decimals,
+    minimumFractionDigits: 0,
+  })}`;
+}
+
+function formatChartTooltipLabel(ctx) {
+  return `  ${formatChartYTick(ctx.parsed.y)}`;
+}
+
 function initChartPeriodToolbar({
   periodBar,
   points,
@@ -91,8 +112,8 @@ function initPeriodLineChart({
   datasetLabel = "",
   tension = 0.25,
   gradientHeight = 280,
-  formatY = (v) => `${Number(v).toLocaleString()}`,
-  formatTooltip = (c) => `  ${Number(c.parsed.y).toLocaleString()}`,
+  formatY = formatChartYTick,
+  formatTooltip = formatChartTooltipLabel,
   maxTicksLimit = 7,
   tickFontSize = 11,
 } = {}) {

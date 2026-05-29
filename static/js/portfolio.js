@@ -19,8 +19,6 @@ function initPriceChart() {
     datasetLabel: canvas.dataset.symbol || "Price",
     tension: 0.4,
     gradientHeight: 260,
-    formatY: (v) => `${v}`,
-    formatTooltip: (c) => `  ${c.parsed.y.toFixed(2)}`,
     tickFontSize: 10,
   });
 }
