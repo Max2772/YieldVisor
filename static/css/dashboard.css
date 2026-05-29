@@ -119,6 +119,46 @@
   box-shadow:   0 0 0 1px rgba(0, 230, 118, 0.08);
 }
 
+/* Portfolio Assets — type filter (All / Stocks / Crypto / Steam) */
+.asset-type-filter {
+  display:         flex;
+  flex-wrap:       wrap;
+  justify-content: flex-end;
+  align-items:     center;
+  gap:             6px;
+  max-width:       min(100%, 360px);
+}
+
+.asset-type-filter-btn {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  padding:         8px 14px;
+  border-radius:   var(--radius-sm);
+  border:          1px solid var(--border-light);
+  background:      var(--surface2);
+  color:           var(--text-dim);
+  font-family:     var(--font-sans);
+  font-size:       13px;
+  font-weight:     700;
+  letter-spacing:  0.35px;
+  cursor:          pointer;
+  transition:      background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.asset-type-filter-btn:hover {
+  color:        var(--text);
+  border-color: var(--border);
+  background:   var(--surface);
+}
+
+.asset-type-filter-btn.active {
+  background:   var(--green-dim);
+  color:        var(--green);
+  border-color: rgba(0, 230, 118, 0.35);
+  box-shadow:   0 0 0 1px rgba(0, 230, 118, 0.08);
+}
+
 /* Holdings — buy / sell / delete + trade modal */
 .assets-table td.holding-trailing-cell {
   white-space:   nowrap;

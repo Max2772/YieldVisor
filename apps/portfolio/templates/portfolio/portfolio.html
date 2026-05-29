@@ -73,6 +73,14 @@
               <div class="card-title">Assets</div>
               <div class="card-subtitle">Your current holdings</div>
             </div>
+            {% if assets %}
+            <div class="asset-type-filter" id="portfolioAssetFilter" role="tablist" aria-label="Filter by asset type">
+              <button type="button" class="asset-type-filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
+              <button type="button" class="asset-type-filter-btn" data-filter="stock" role="tab" aria-selected="false">Stocks</button>
+              <button type="button" class="asset-type-filter-btn" data-filter="crypto" role="tab" aria-selected="false">Crypto</button>
+              <button type="button" class="asset-type-filter-btn" data-filter="steam" role="tab" aria-selected="false">Steam</button>
+            </div>
+            {% endif %}
           </div>
           <div class="card-body" style="padding:0">
             <table class="assets-table assets-table--portfolio" id="portfolioAssetsTable">
@@ -134,6 +142,11 @@
                   </td>
                 </tr>
                 {% endfor %}
+                <tr class="portfolio-assets-filter-empty" hidden>
+                  <td colspan="7" style="padding:32px 24px;text-align:center;color:var(--text-muted)">
+                    No assets in this category.
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -237,6 +250,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (values.length && values.some(v => v > 0)) {
       initSparkline(c.id, values, c.dataset.color || "#00e676");
     }
+  });
+
+  const filterBar = document.getElementById("portfolioAssetFilter");
+  const table = document.getElementById("portfolioAssetsTable");
+  if (!filterBar || !table) return;
+
+  const rows = table.querySelectorAll("tbody tr[data-asset-type]");
+  const emptyRow = table.querySelector(".portfolio-assets-filter-empty");
+
+  function applyFilter(filter) {
+    let visible = 0;
+    rows.forEach((row) => {
+      const show = filter === "all" || row.dataset.assetType === filter;
+      row.hidden = !show;
+      if (show) visible++;
+    });
+    if (emptyRow) {
+      emptyRow.hidden = filter === "all" || visible > 0;
+    }
+  }
+
+  filterBar.addEventListener("click", (e) => {
+    const btn = e.target.closest(".asset-type-filter-btn");
+    if (!btn) return;
+    filterBar.querySelectorAll(".asset-type-filter-btn").forEach((b) => {
+      const active = b === btn;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    applyFilter(btn.dataset.filter);
   });
 });
 </script>
