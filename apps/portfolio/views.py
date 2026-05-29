@@ -9,11 +9,16 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_http_methods
 from django.views.generic import TemplateView, View
 
+from apps.core.services.invest_api import InvestAPIClient, InvestAPIError
 from apps.portfolio.forms import BuyHoldingForm, DeleteHoldingForm, SellHoldingForm
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
 from apps.portfolio.services.holding_actions import delete_holding, sell_holding
 from apps.portfolio.services.portfolio_overview import build_portfolio_overview_context
+from apps.portfolio.types import AssetType
+
+MARKET_SEARCH_RESULT_LIMIT = 10
+_VALID_SEARCH_TYPES = frozenset({AssetType.STOCK, AssetType.CRYPTO, AssetType.STEAM})
 
 
 def _wants_json(request) -> bool:
@@ -124,6 +129,29 @@ class DeleteHoldingView(LoginRequiredMixin, View):
             return JsonResponse({"ok": True})
         messages.success(request, "Holding removed.")
         return _safe_redirect(request)
+
+
+class MarketSearchView(LoginRequiredMixin, View):
+    """Live Market Search — прокси к InvestAPI /search."""
+
+    def get(self, request, *args, **kwargs):
+        query = (request.GET.get("q") or "").strip()
+        asset_type = (request.GET.get("type") or "").strip()
+        if not query or asset_type not in _VALID_SEARCH_TYPES:
+            return JsonResponse({"query": query, "results": []})
+        try:
+            with InvestAPIClient() as client:
+                payload = client.search(
+                    query,
+                    asset_type,
+                    limit=MARKET_SEARCH_RESULT_LIMIT,
+                )
+        except InvestAPIError:
+            return JsonResponse(
+                {"query": query, "results": [], "error": "Search unavailable"},
+                status=502,
+            )
+        return JsonResponse(payload)
 
 
 class PortfolioView(LoginRequiredMixin, TemplateView):

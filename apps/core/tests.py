@@ -83,6 +83,26 @@ class InvestAPIClientTests(SimpleTestCase):
         self.assertEqual(mock_client.get.call_count, 1)
 
     @override_settings(INVEST_API_BASE_URL="https://api.example.com")
+    def test_search_limits_and_filters_by_type(self):
+        mock_response = _mock_httpx_response(
+            json_data={
+                "query": "bit",
+                "results": [
+                    {"asset_type": "crypto", "name": "bitcoin", "symbol": "BTC"},
+                    {"asset_type": "stock", "name": "BITF"},
+                    {"asset_type": "crypto", "name": "extra", "symbol": "X"},
+                ],
+            }
+        )
+        mock_client = MagicMock()
+        mock_client.get.return_value = mock_response
+
+        payload = InvestAPIClient(client=mock_client).search("bit", "crypto", limit=5)
+
+        self.assertEqual(len(payload["results"]), 2)
+        self.assertTrue(all(row["asset_type"] == "crypto" for row in payload["results"]))
+
+    @override_settings(INVEST_API_BASE_URL="https://api.example.com")
     def test_get_crypto_quotes_batch(self):
         mock_response = _mock_httpx_response(
             json_data={

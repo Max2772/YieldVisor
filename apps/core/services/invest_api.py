@@ -290,6 +290,27 @@ class InvestAPIClient:
             return self.get_steam_history(app_id, asset_name, days=days)
         raise InvestAPIError(f"Unknown asset type: {asset_type!r}")
 
+    def search(
+        self,
+        query: str,
+        asset_type: str,
+        *,
+        limit: int = 5,
+    ) -> dict[str, Any]:
+        q = query.strip()
+        if not q:
+            return {"query": "", "results": []}
+        data = self._fetch_json("search", params={"q": q, "type": asset_type})
+        results = [
+            row
+            for row in (data.get("results") or [])
+            if row.get("asset_type") == asset_type
+        ]
+        return {
+            "query": data.get("query", q),
+            "results": results[:limit],
+        }
+
     def fetch(
         self,
         asset_type: str,

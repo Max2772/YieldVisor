@@ -1,4 +1,5 @@
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
@@ -13,6 +14,35 @@ from apps.portfolio.services.holdings import _build_item_row, build_holdings
 from apps.portfolio.types import AssetType
 
 User = get_user_model()
+
+
+class MarketSearchViewTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="searcher", password="pass")
+        self.client.login(username="searcher", password="pass")
+
+    @patch("apps.portfolio.views.InvestAPIClient")
+    def test_returns_api_results(self, client_cls):
+        api = client_cls.return_value.__enter__.return_value
+        api.search.return_value = {
+            "query": "nvda",
+            "results": [
+                {
+                    "asset_type": "stock",
+                    "name": "NVDA",
+                    "full_name": "NVIDIA Corporation",
+                }
+            ],
+        }
+
+        response = self.client.get(
+            reverse("stocks:market_search"),
+            {"q": "nvda", "type": "stock"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["results"]), 1)
+        api.search.assert_called_once_with("nvda", "stock", limit=5)
 
 
 class AddHoldingTests(TestCase):

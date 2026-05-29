@@ -1,0 +1,24 @@
+<div class="card market-search-card">
+  <div class="card-header">
+    <div class="card-title">Market Search</div>
+  </div>
+  <div class="card-body market-search-card__body">
+    <div class="market-search-field">
+      <input
+        type="text"
+        id="marketSearchInput"
+        class="market-search-input"
+        placeholder="{{ market_search_placeholder }}"
+        autocomplete="off"
+        spellcheck="false"
+      >
+      <div id="marketSearchDropdown" class="market-search-dropdown" hidden></div>
+    </div>
+    <button type="button" id="marketSearchBtn" class="btn btn-ghost market-search-btn">
+      {{ market_search_button }}
+    </button>
+    <div id="marketResults" class="market-search-suggestions">
+      {% include "includes/market_search_results.html" %}
+    </div>
+  </div>
+</div>
