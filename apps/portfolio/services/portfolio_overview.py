@@ -3,7 +3,6 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
-from django.db.models import Q
 from django.utils.timesince import timesince
 
 from apps.alerts.models import Alert
@@ -185,9 +184,8 @@ def _build_alert_row(alert: Alert, current: Decimal | None) -> dict[str, Any]:
 
 def _build_alerts(user) -> tuple[list[dict[str, Any]], int, int]:
     alerts_qs = (
-        Alert.objects.filter(user=user)
-        .filter(Q(is_active=True) | Q(triggered_at__isnull=False))
-        .order_by("-is_active", "-created_at")[:8]
+        Alert.objects.filter(user=user, is_active=True)
+        .order_by("-created_at")[:8]
     )
 
     rows: list[dict[str, Any]] = []

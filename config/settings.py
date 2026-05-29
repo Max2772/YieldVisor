@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from config.enums import RunMode
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -154,6 +156,9 @@ AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = '/'
 
+# Project Mode
+MODE = RunMode(os.environ.get("MODE", "DEV"))
+
 # InvestAPI (https://api.bibikau.org)
 INVEST_API_BASE_URL = os.environ.get(
     "INVEST_API_BASE_URL",
@@ -166,10 +171,24 @@ STEAM_LOGO_FETCH_TIMEOUT = float(os.environ.get("STEAM_LOGO_FETCH_TIMEOUT", "12"
 
 TICKER_CHANGE_DAYS = int(os.environ.get("TICKER_CHANGE_DAYS", "30"))
 
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "yieldvisor",
-        "OPTIONS": {"MAX_ENTRIES": 1000},
-    },
-}
+if MODE == RunMode.PROD:
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get(
+                "REDIS_URL",
+                "redis://127.0.0.1:6379/0"
+            ),
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "yieldvisor",
+            "OPTIONS": {"MAX_ENTRIES": 1000},
+        },
+    }
