@@ -62,7 +62,7 @@ class BuyHoldingView(LoginRequiredMixin, View):
 @method_decorator(require_http_methods(["POST"]), name="dispatch")
 class SellHoldingView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        form = SellHoldingForm(request.POST)
+        form = SellHoldingForm(request.POST, user=request.user)
         if not form.is_valid():
             if _wants_json(request):
                 return JsonResponse(

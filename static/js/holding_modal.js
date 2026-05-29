@@ -1,6 +1,9 @@
 "use strict";
 
 (function () {
+  const ASSET_STEAM = "steam";
+  const STEAM_QTY_ERROR = "Steam items can only be traded in whole units.";
+
   function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -14,6 +17,13 @@
     const n = Number(s);
     if (!Number.isFinite(n) || n <= 0) return null;
     return s;
+  }
+
+  function isWholeQuantity(raw) {
+    const s = String(raw || "").trim().replace(",", ".");
+    if (!/^\d+$/.test(s)) return false;
+    const n = Number(s);
+    return Number.isFinite(n) && n > 0;
   }
 
   function clearErrors(el) {
@@ -92,6 +102,27 @@
     let mode = "buy";
     let sellMaxQty = "";
     let currentTicker = "";
+    let wholeQtyOnly = false;
+
+    function setRemoveVisible(visible) {
+      if (visible) {
+        removeBtn.removeAttribute("hidden");
+      } else {
+        removeBtn.setAttribute("hidden", "");
+      }
+    }
+
+    function configureQuantityInput() {
+      if (wholeQtyOnly) {
+        qtyInput.setAttribute("inputmode", "numeric");
+        qtyInput.setAttribute("pattern", "[0-9]*");
+        qtyInput.setAttribute("step", "1");
+      } else {
+        qtyInput.setAttribute("inputmode", "decimal");
+        qtyInput.removeAttribute("pattern");
+        qtyInput.removeAttribute("step");
+      }
+    }
 
     function openOverlay() {
       overlay.hidden = false;
@@ -105,7 +136,9 @@
       document.body.style.overflow = "";
       clearErrors(errEl);
       form.reset();
-      removeBtn.hidden = true;
+      setRemoveVisible(false);
+      wholeQtyOnly = false;
+      configureQuantityInput();
     }
 
     document.querySelectorAll("[data-close-holding-modal]").forEach((el) => {
@@ -119,6 +152,7 @@
     });
 
     removeBtn.addEventListener("click", async () => {
+      if (mode !== "sell") return;
       clearErrors(errEl);
       removeBtn.disabled = true;
       await postDelete(
@@ -140,21 +174,23 @@
         mode = btn.dataset.modal || "buy";
         sellMaxQty = btn.dataset.qtyMax || "";
         currentTicker = btn.dataset.ticker || "";
+        const assetType = btn.dataset.assetType || "";
+        wholeQtyOnly = assetType === ASSET_STEAM;
         const nextPath =
           btn.dataset.next || window.location.pathname + window.location.search;
 
         nextInput.value = nextPath;
         positionIdInput.value = btn.dataset.positionId || "";
-        assetTypeInput.value = btn.dataset.assetType || "";
+        assetTypeInput.value = assetType;
         assetNameInput.value = btn.dataset.assetName || "";
         appIdInput.value = btn.dataset.appId || "";
 
         fieldsWrap.hidden = false;
-        removeBtn.hidden = mode !== "sell";
+        setRemoveVisible(mode === "sell");
         submitBtn.textContent = mode === "buy" ? "Buy" : "Sell";
         const defPrice = btn.dataset.defaultPrice || "";
         const defQty = mode === "sell" ? btn.dataset.qtyMax || "" : "";
-        qtyInput.value = defQty;
+        qtyInput.value = wholeQtyOnly && defQty ? String(Math.trunc(Number(defQty))) : defQty;
         priceInput.value = defPrice;
         priceLabel.textContent =
           mode === "buy" ? "Buy price (USD)" : "Sell price (USD)";
@@ -166,6 +202,7 @@
         titleEl.textContent =
           mode === "buy" ? `Buy ${currentTicker}` : `Sell ${currentTicker}`;
 
+        configureQuantityInput();
         openOverlay();
         qtyInput.focus();
       });
@@ -175,9 +212,20 @@
       e.preventDefault();
       clearErrors(errEl);
 
-      const qtyRaw = parsePositiveDecimal(qtyInput.value);
+      const qtyRaw = wholeQtyOnly
+        ? isWholeQuantity(qtyInput.value)
+          ? String(qtyInput.value).trim().replace(",", ".")
+          : null
+        : parsePositiveDecimal(qtyInput.value);
+
       if (!qtyRaw) {
-        showErrors(errEl, { quantity: ["Enter a valid positive quantity."] });
+        showErrors(errEl, {
+          quantity: [
+            wholeQtyOnly
+              ? STEAM_QTY_ERROR
+              : "Enter a valid positive quantity.",
+          ],
+        });
         return;
       }
 

@@ -15,6 +15,7 @@
     class="btn btn-sm btn-ghost holding-open-modal"
     data-modal="sell"
     data-ticker="{{ item.ticker|escape }}"
+    data-asset-type="{{ item.asset_type|escape }}"
     data-position-id="{{ item.position_id }}"
     data-qty-max="{{ item.qty_raw|escape }}"
     data-default-price="{{ item.suggested_sell_price|escape }}"

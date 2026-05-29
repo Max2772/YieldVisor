@@ -127,7 +127,7 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
                 )
             return self._render_asset_not_found(request, self._asset_params)
 
-        form = AddHoldingForm(request.POST)
+        form = AddHoldingForm(request.POST, asset_type=self.asset_type)
         if form.is_valid():
             add_holding(
                 request.user,
@@ -173,5 +173,5 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
             context["asset"],
             context["portfolio_position"],
         )
-        context.setdefault("add_form", AddHoldingForm())
+        context.setdefault("add_form", AddHoldingForm(asset_type=self.asset_type))
         return context

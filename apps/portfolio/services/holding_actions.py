@@ -8,6 +8,10 @@ from apps.history.models import History, HistoryOperation
 from apps.portfolio.models import Portfolio
 
 
+def _detach_history(position: Portfolio) -> None:
+    History.objects.filter(portfolio=position).update(portfolio=None)
+
+
 @transaction.atomic
 def sell_holding(
     user,
@@ -35,6 +39,7 @@ def sell_holding(
 
     new_qty = position.quantity - quantity
     if new_qty <= 0:
+        _detach_history(position)
         position.delete()
     else:
         position.quantity = new_qty
@@ -44,4 +49,5 @@ def sell_holding(
 @transaction.atomic
 def delete_holding(user, *, position_id: int) -> None:
     position = Portfolio.objects.select_for_update().get(pk=position_id, user=user)
+    _detach_history(position)
     position.delete()

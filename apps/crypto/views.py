@@ -68,7 +68,7 @@ class CryptoCoinView(AssetDetailMixin, TemplateView):
                 )
             return self._render_asset_not_found(request, self._asset_params)
 
-        form = AddHoldingForm(request.POST)
+        form = AddHoldingForm(request.POST, asset_type=self.asset_type)
         if form.is_valid():
             canonical = (detail["asset"].get("coin_name") or "").strip()
             add_holding(

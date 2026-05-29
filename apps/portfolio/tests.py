@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from apps.history.models import History, HistoryOperation
 from apps.portfolio.models import Portfolio
+from apps.portfolio.forms import BuyHoldingForm, SellHoldingForm
 from apps.portfolio.services.add_holding import add_holding
 from apps.portfolio.services.holding_actions import delete_holding, sell_holding
 from apps.portfolio.services.holdings import _build_item_row, build_holdings
@@ -109,6 +110,53 @@ class SellDeleteHoldingTests(TestCase):
         )
         delete_holding(self.user, position_id=pos.pk)
         self.assertEqual(Portfolio.objects.filter(user=self.user).count(), 0)
+
+    def test_delete_keeps_history_without_portfolio_link(self):
+        pos = add_holding(
+            self.user,
+            asset_type=AssetType.STOCK,
+            asset_name="NVDA",
+            app_id=None,
+            quantity=Decimal("1"),
+            buy_price=Decimal("500"),
+        )
+        history_id = History.objects.get(portfolio=pos).pk
+        delete_holding(self.user, position_id=pos.pk)
+        history = History.objects.get(pk=history_id)
+        self.assertIsNone(history.portfolio_id)
+
+    def test_steam_buy_rejects_fractional_quantity(self):
+        form = BuyHoldingForm(
+            {
+                "asset_type": AssetType.STEAM,
+                "asset_name": "AWP | Asiimov (Field-Tested)",
+                "app_id": 730,
+                "quantity": "1.5",
+                "buy_price": "100",
+            },
+        )
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.errors.get("quantity"))
+
+    def test_steam_sell_rejects_fractional_quantity(self):
+        pos = add_holding(
+            self.user,
+            asset_type=AssetType.STEAM,
+            asset_name="AWP | Asiimov (Field-Tested)",
+            app_id=730,
+            quantity=Decimal("2"),
+            buy_price=Decimal("100"),
+        )
+        form = SellHoldingForm(
+            {
+                "position_id": pos.pk,
+                "quantity": "0.5",
+                "sell_price": "120",
+            },
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("quantity", form.errors)
 
 
 class BuildHoldingsTests(TestCase):
