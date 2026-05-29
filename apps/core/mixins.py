@@ -10,7 +10,11 @@ from django.views.generic import TemplateView
 from apps.core.services.asset_detail import build_asset_detail_context
 from apps.core.services.invest_api import InvestAPIError
 from apps.portfolio.models import Portfolio
-from apps.portfolio.services.holdings import _format_money, build_holding_trade_context
+from apps.portfolio.services.holdings import (
+    _format_money,
+    build_holding_trade_context,
+    format_position_display,
+)
 from apps.portfolio.services.market_page import build_market_page_context
 from apps.portfolio.types import AssetType
 
@@ -159,5 +163,9 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
             app_id=self._asset_params.get("app_id"),
             current_price=context["asset"].get("price_raw"),
             position=position,
+        )
+        context["detail_asset_type"] = self.asset_type
+        context["position_display"] = (
+            format_position_display(position) if position else None
         )
         return context

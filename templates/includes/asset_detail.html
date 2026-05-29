@@ -5,12 +5,28 @@
     {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.symbol icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg hero=True %}
   </div>
 
-  <div style="flex:1">
+  <div class="asset-hero-main">
     <div class="hero-title serif">{{ asset.hero_title }}</div>
     {% if asset.hero_subtitle %}
     <div class="hero-meta">{{ asset.hero_subtitle }}</div>
     {% endif %}
     <div class="hero-type-pill">{{ asset.asset_type }}</div>
+
+    <div class="asset-hero-portfolio">
+      {% if position_display %}
+      <div class="asset-position-summary">
+        <span class="asset-position-qty">{{ position_display.quantity }}</span>
+        <span class="asset-position-unit">{% if detail_asset_type == "steam" %}{% if position_display.quantity == "1" %}item{% else %}items{% endif %}{% else %}{% if position_display.quantity == "1" %}unit{% else %}units{% endif %}{% endif %}</span>
+        <span class="asset-position-sep">·</span>
+        <span class="asset-position-detail">avg <span class="mono">${{ position_display.avg_buy }}</span></span>
+        <span class="asset-position-sep">·</span>
+        <span class="asset-position-detail">cost <span class="mono">${{ position_display.cost_basis }}</span></span>
+      </div>
+      {% else %}
+      <p class="asset-position-empty">Not in your portfolio</p>
+      {% endif %}
+      {% include "includes/holding_row_actions.html" with item=holding_trade hero_actions=True %}
+    </div>
   </div>
 
   <div class="hero-metrics">
@@ -38,15 +54,9 @@
       </div>
       {% else %}
       <div class="hm-val muted" style="font-size:18px">—</div>
-      <div class="hm-sub muted">Not in portfolio</div>
+      <div class="hm-sub muted">No position</div>
       {% endif %}
     </div>
-    {% if asset.period_low %}
-    <div class="hero-metric">
-      <div class="hm-label">{{ history_days }}d Range</div>
-      <div class="hm-val" style="font-size:15px">${{ asset.period_low }} — ${{ asset.period_high }}</div>
-    </div>
-    {% endif %}
     <div class="hero-metric">
       <div class="hm-label">Source</div>
       <div class="hm-val" style="font-size:14px">{{ asset.source }}</div>
@@ -65,9 +75,11 @@
     <div class="card">
       <div class="card-header"><div class="card-title">Market Data</div></div>
       <div class="card-body" style="padding-top:4px;">
+        {% if detail_asset_type != "steam" %}
         <div class="km-row">
           <div class="km-left"><div class="km-label">Symbol</div><div class="km-val">{{ asset.market_symbol }}</div></div>
         </div>
+        {% endif %}
         {% if asset.name %}
         <div class="km-row">
           <div class="km-left"><div class="km-label">Full Name</div><div class="km-val">{{ asset.name }}</div></div>
@@ -89,7 +101,7 @@
         {% if asset.period_low %}
         <div class="km-row">
           <div class="km-left">
-            <div class="km-label">Period low / high</div>
+            <div class="km-label">{{ history_days }}d Range</div>
             <div class="km-val">${{ asset.period_low }} — ${{ asset.period_high }}</div>
           </div>
         </div>
@@ -105,3 +117,5 @@
     </div>
   </div>
 </div>
+
+{% include "includes/holding_trade_modal.html" %}

@@ -211,6 +211,15 @@ def _holding_crud_fields(position: Portfolio, price: Decimal | None) -> dict[str
     }
 
 
+def format_position_display(position: Portfolio) -> dict[str, str]:
+    """Отформатированные поля позиции для UI детальной страницы."""
+    return {
+        "quantity": _format_qty(position.quantity),
+        "avg_buy": _format_money(position.avg_buy_price),
+        "cost_basis": _format_money(position.cost_basis()),
+    }
+
+
 def build_holding_trade_context(
     *,
     asset_type: str,

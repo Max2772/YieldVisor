@@ -1,7 +1,7 @@
-<div class="holding-actions-stack">
+<div class="holding-actions-stack{% if hero_actions %} holding-actions-stack--hero{% endif %}">
   <button
     type="button"
-    class="btn btn-sm btn-outline holding-open-modal"
+    class="btn {% if not hero_actions %}btn-sm {% endif %}btn-outline holding-open-modal"
     data-modal="buy"
     data-ticker="{{ item.ticker|escape }}"
     data-asset-type="{{ item.asset_type|escape }}"
@@ -13,7 +13,7 @@
   {% if item.position_id %}
   <button
     type="button"
-    class="btn btn-sm btn-ghost holding-open-modal"
+    class="btn {% if not hero_actions %}btn-sm {% endif %}btn-ghost holding-open-modal"
     data-modal="sell"
     data-ticker="{{ item.ticker|escape }}"
     data-asset-type="{{ item.asset_type|escape }}"
