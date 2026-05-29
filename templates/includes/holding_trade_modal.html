@@ -28,13 +28,12 @@
         <input class="holding-modal-input" type="text" id="holdingModalPrice" inputmode="decimal" autocomplete="off">
       </div>
 
-      <p id="holdingModalDeleteHint" class="holding-modal-delete-hint" hidden>
-        This removes the entire position from your portfolio (no sell record).
-      </p>
-
       <div class="holding-modal-actions">
-        <button type="button" class="btn btn-ghost" data-close-holding-modal>Cancel</button>
-        <button type="submit" class="btn btn-primary" id="holdingModalSubmit">Submit</button>
+        <button type="button" class="btn btn-ghost holding-modal-remove" id="holdingModalRemove" hidden>Remove</button>
+        <div class="holding-modal-actions-main">
+          <button type="button" class="btn btn-ghost" data-close-holding-modal>Cancel</button>
+          <button type="submit" class="btn btn-primary" id="holdingModalSubmit">Submit</button>
+        </div>
       </div>
     </form>
   </div>

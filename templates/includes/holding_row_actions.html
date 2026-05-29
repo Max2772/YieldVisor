@@ -1,37 +1,23 @@
-<td class="holding-actions-cell" style="padding-right:16px;vertical-align:middle">
-  <div class="holding-actions-row">
-    <div class="holding-actions-stack">
-      <button
-        type="button"
-        class="btn btn-sm btn-outline holding-open-modal"
-        data-modal="buy"
-        data-ticker="{{ item.ticker|escape }}"
-        data-asset-type="{{ item.asset_type|escape }}"
-        data-asset-name="{{ item.asset_name|escape }}"
-        data-app-id="{{ item.app_id_attr|escape }}"
-        data-default-price="{{ item.suggested_sell_price|escape }}"
-        data-next="{{ request.get_full_path|escape }}"
-      >Buy</button>
-      <button
-        type="button"
-        class="btn btn-sm btn-ghost holding-open-modal"
-        data-modal="sell"
-        data-ticker="{{ item.ticker|escape }}"
-        data-position-id="{{ item.position_id }}"
-        data-qty-max="{{ item.qty_raw|escape }}"
-        data-default-price="{{ item.suggested_sell_price|escape }}"
-        data-next="{{ request.get_full_path|escape }}"
-      >Sell</button>
-    </div>
-    <button
-      type="button"
-      class="holding-del-x holding-open-modal"
-      data-modal="delete"
-      data-ticker="{{ item.ticker|escape }}"
-      data-position-id="{{ item.position_id }}"
-      data-next="{{ request.get_full_path|escape }}"
-      title="Remove holding"
-      aria-label="Remove holding"
-    >&times;</button>
-  </div>
-</td>
+<div class="holding-actions-stack">
+  <button
+    type="button"
+    class="btn btn-sm btn-outline holding-open-modal"
+    data-modal="buy"
+    data-ticker="{{ item.ticker|escape }}"
+    data-asset-type="{{ item.asset_type|escape }}"
+    data-asset-name="{{ item.asset_name|escape }}"
+    data-app-id="{{ item.app_id_attr|escape }}"
+    data-default-price="{{ item.suggested_sell_price|escape }}"
+    data-next="{{ request.get_full_path|escape }}"
+  >Buy</button>
+  <button
+    type="button"
+    class="btn btn-sm btn-ghost holding-open-modal"
+    data-modal="sell"
+    data-ticker="{{ item.ticker|escape }}"
+    data-position-id="{{ item.position_id }}"
+    data-qty-max="{{ item.qty_raw|escape }}"
+    data-default-price="{{ item.suggested_sell_price|escape }}"
+    data-next="{{ request.get_full_path|escape }}"
+  >Sell</button>
+</div>
