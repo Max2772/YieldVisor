@@ -130,8 +130,12 @@
         "use strict";
         document.addEventListener("DOMContentLoaded", () => {
             initMarketSearch({type: "stock", baseUrl: "{% url 'stocks:market' %}"});
-            document.querySelectorAll(".sparkline-canvas").forEach(c =>
-                initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
+            document.querySelectorAll(".sparkline-canvas").forEach((c) => {
+                initSparkline(
+                    c.id,
+                    c.dataset.values.split(",").map(Number),
+                    c.dataset.color || "#00e676",
+                );
             });
             document.getElementById("stocksSearch")?.addEventListener("input", e => {
                 const q = e.target.value.toLowerCase();
