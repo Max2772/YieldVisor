@@ -69,6 +69,11 @@
   gap:                   20px;
 }
 
+/* Market pages (crypto / stocks / steam) — narrower sidebar for wider holdings table */
+.content-grid--market {
+  grid-template-columns: 1fr 280px;
+}
+
 .left-col  { display: flex; flex-direction: column; gap: 20px; }
 .right-col { display: flex; flex-direction: column; gap: 20px; }
 
@@ -161,14 +166,20 @@
 
 /* Holdings — buy / sell / delete + trade modal */
 .assets-table td.holding-trailing-cell {
-  white-space:   nowrap;
+  white-space: nowrap;
 }
 
-.holding-trailing-cell {
+.holding-trailing-inner {
   display:         flex;
   align-items:     center;
   justify-content: flex-end;
-  gap:             14px;
+  gap:             10px;
+  width:           100%;
+}
+
+.assets-table--holdings .holding-actions-stack,
+.assets-table--holdings .sparkline-canvas {
+  flex-shrink: 0;
 }
 
 .holding-actions-stack {
@@ -454,6 +465,134 @@
 
 .assets-table td:not(:first-child) { text-align: right; }
 
+/* Market pages — My Holdings / My Inventory (crypto, stocks, steam) */
+.assets-table--holdings {
+  table-layout: fixed;
+  width:        100%;
+}
+
+.assets-table--holdings th,
+.assets-table--holdings td {
+  padding-left:  6px;
+  padding-right: 6px;
+}
+
+.assets-table--holdings th:first-child,
+.assets-table--holdings td:first-child {
+  width:         22%;
+  padding-left:  24px;
+  text-align:    left;
+  overflow:      hidden;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(2),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(2) {
+  width: 8%;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(3),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(3) {
+  width: 9%;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(4),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(4) {
+  width: 12%;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(5),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(5) {
+  width: 8%;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(6),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(6) {
+  width: 8%;
+}
+
+.assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(7),
+.assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(7) {
+  width:         10%;
+  padding-right: 8px;
+}
+
+.assets-table--holdings th:last-child,
+.assets-table--holdings td:last-child {
+  width:         220px;
+  padding-left:  14px;
+  padding-right: 16px;
+  overflow:      hidden;
+  text-align:    right;
+}
+
+/* Steam: extra Game column */
+.assets-table--holdings-meta th:first-child,
+.assets-table--holdings-meta td:first-child {
+  width: 18%;
+}
+
+.assets-table--holdings-meta th:nth-child(2),
+.assets-table--holdings-meta td:nth-child(2) {
+  width:      7%;
+  text-align: left;
+}
+
+.assets-table--holdings-meta th:nth-child(n+3):nth-child(-n+4),
+.assets-table--holdings-meta td:nth-child(n+3):nth-child(-n+4) {
+  width: 8%;
+}
+
+.assets-table--holdings-meta th:nth-child(5),
+.assets-table--holdings-meta td:nth-child(5) {
+  width: 12%;
+}
+
+.assets-table--holdings-meta th:nth-child(6),
+.assets-table--holdings-meta td:nth-child(6) {
+  width: 7%;
+}
+
+.assets-table--holdings-meta th:nth-child(7),
+.assets-table--holdings-meta td:nth-child(7) {
+  width: 8%;
+}
+
+.assets-table--holdings-meta th:nth-child(8),
+.assets-table--holdings-meta td:nth-child(8) {
+  width:         9%;
+  padding-right: 8px;
+}
+
+.assets-table--holdings-meta th:last-child,
+.assets-table--holdings-meta td:last-child {
+  width: 220px;
+}
+
+.assets-table--holdings .asset-cell {
+  min-width: 0;
+  gap:       10px;
+}
+
+.assets-table--holdings .asset-cell > div {
+  min-width: 0;
+  overflow:  hidden;
+}
+
+.assets-table--holdings .asset-ticker,
+.assets-table--holdings .asset-ticker--wrap,
+.assets-table--holdings .asset-type,
+.assets-table--holdings .asset-type--wrap {
+  max-width:     none;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+}
+
+.assets-table--holdings .badge {
+  white-space:    nowrap;
+  flex-wrap:      nowrap;
+}
+
 /* Portfolio /assets table: компактнее, числовые колонки ближе к названию */
 .assets-table--portfolio {
   table-layout: fixed;
@@ -683,6 +822,29 @@
   font-size:  11px;
   color:      var(--text-muted);
   margin-top: 2px;
+}
+
+/* Market pages — compact allocation donut card */
+.market-allocation-card .card-body {
+  padding: 16px 18px;
+}
+
+.market-allocation-card .donut-wrap {
+  height:        130px;
+  margin-bottom: 10px;
+}
+
+.market-allocation-card .donut-total {
+  font-size: 14px;
+}
+
+.market-allocation-card .legend {
+  gap: 8px;
+}
+
+.market-allocation-card .legend-name,
+.market-allocation-card .legend-pct {
+  font-size: 12px;
 }
 
 /* Colour bar strip */

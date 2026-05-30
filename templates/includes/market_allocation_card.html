@@ -1,13 +1,13 @@
-<div class="card">
+<div class="card market-allocation-card">
   <div class="card-header">
     <div class="card-title">{{ allocation_title }}</div>
     <span class="muted" style="font-size:12px">by value</span>
   </div>
   <div class="card-body">
-    <div class="donut-wrap" style="height:160px">
+    <div class="donut-wrap">
       <canvas id="{{ donut_id }}"></canvas>
       <div class="donut-center">
-        <div class="donut-total" style="font-size:16px">${{ portfolio_value_short }}</div>
+        <div class="donut-total">${{ portfolio_value_short }}</div>
         <div class="donut-label">Total</div>
       </div>
     </div>

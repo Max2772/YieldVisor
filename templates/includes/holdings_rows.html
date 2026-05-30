@@ -27,8 +27,10 @@
   <td><span class="mono muted">{{ item.qty }}</span></td>
   <td><span class="mono">${{ item.total }}</span></td>
   <td class="holding-trailing-cell">
-    {% include "includes/holding_row_actions.html" %}
-    <canvas class="sparkline-canvas" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas>
+    <div class="holding-trailing-inner">
+      {% include "includes/holding_row_actions.html" %}
+      <canvas class="sparkline-canvas" width="80" height="36" data-values="{{ item.sparkline }}" data-color="{% if item.pnl_pos %}#00e676{% else %}#ff4d6d{% endif %}"></canvas>
+    </div>
   </td>
 </tr>
 {% empty %}
