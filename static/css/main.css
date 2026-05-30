@@ -3,9 +3,9 @@
   position:        fixed;
   top: 0; left: 0; right: 0;
   z-index:         200;
-  display:         flex;
+  display:         grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items:     center;
-  justify-content: space-between;
   padding:         0 48px;
   height:          64px;
   background:      rgba(10, 12, 15, 0.85);
@@ -14,9 +14,10 @@
 }
 
 .pub-nav-logo {
-  display:     flex;
-  align-items: center;
-  gap:         10px;
+  display:         flex;
+  align-items:     center;
+  gap:             10px;
+  justify-self:    start;
 }
 
 .pub-nav-logo-icon {
@@ -40,9 +41,10 @@
 .pub-nav-logo-text span { color: var(--green); }
 
 .pub-nav-links {
-  display:     flex;
-  align-items: center;
-  gap:         4px;
+  display:         flex;
+  align-items:     center;
+  gap:             4px;
+  justify-self:    center;
 }
 
 .pub-nav-link {
@@ -60,9 +62,10 @@
 }
 
 .pub-nav-actions {
-  display:     flex;
-  align-items: center;
-  gap:         10px;
+  display:         flex;
+  align-items:     center;
+  gap:             10px;
+  justify-self:    end;
 }
 
 /* ── Page wrapper ─────────────────────────── */
