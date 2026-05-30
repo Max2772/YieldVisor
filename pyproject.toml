@@ -8,4 +8,5 @@ dependencies = [
     "django-debug-toolbar>=6.3.0",
     "pillow>=12.2.0",
     "django-redis>=6.0.0",
+    "python-dotenv>=1.2.2",
 ]

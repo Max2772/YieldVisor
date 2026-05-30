@@ -13,28 +13,29 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+
 from config.enums import RunMode
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!rb(tvm#tl-9m&v+j7$y^4t2j11suu0k#j$!yqfb2(*duv97y&'
+SECRET_KEY = os.environ["SECRET_KEY"]
 
 # Project Mode
-MODE = RunMode(os.environ.get("MODE", "DEV"))
+MODE = RunMode(os.getenv("MODE", "DEV"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True and MODE != RunMode.PROD
+DEBUG = MODE == RunMode.DEV
 
-ALLOWED_HOSTS = [
-    ".bibikau.org",
-]
-
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").split(",")
 
 # Application definition
 
@@ -45,9 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
-    'debug_toolbar',
-
     'apps.analytics',
     'apps.alerts',
     'apps.core',
@@ -68,9 +66,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+if MODE == RunMode.DEV:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
+
+    INTERNAL_IPS = ["127.0.0.1"]
 
 ROOT_URLCONF = 'config.urls'
 
@@ -91,7 +93,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
@@ -101,7 +102,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -121,7 +121,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -132,7 +131,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
@@ -149,12 +147,6 @@ MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
 
-INTERNAL_IPS = [
-    # ...
-    "127.0.0.1",
-    # ...
-]
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -162,7 +154,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = '/'
-
 
 # InvestAPI (https://api.bibikau.org)
 INVEST_API_BASE_URL = os.environ.get(
@@ -197,3 +188,10 @@ else:
             "OPTIONS": {"MAX_ENTRIES": 1000},
         },
     }
+
+
+if MODE == RunMode.PROD:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
