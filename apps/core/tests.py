@@ -131,9 +131,12 @@ class InvestAPIClientTests(SimpleTestCase):
             ["bitcoin", "ethereum"]
         )
 
-        self.assertEqual(len(quotes), 2)
+        self.assertEqual(len(quotes), 4)
         self.assertEqual(quotes["bitcoin"].price, Decimal("62000"))
+        self.assertEqual(quotes["btc"].price, Decimal("62000"))
         self.assertEqual(quotes["ethereum"].symbol, "ETH")
+        self.assertEqual(quotes["eth"].symbol, "ETH")
+        self.assertEqual(len({id(q) for q in quotes.values()}), 2)
         called_url = mock_client.get.call_args[0][0]
         self.assertEqual(
             called_url,
@@ -356,7 +359,7 @@ class AssetLogoTests(SimpleTestCase):
 
     def test_crypto_logo_url_uses_catalog_symbol(self):
         url = crypto_logo_url("bitcoin")
-        self.assertIn("/btc.svg", url)
+        self.assertIn("/BTC.svg", url)
         self.assertEqual(url, crypto_logo_url("bitcoin"))
 
     def test_parse_steam_logo_from_html(self):
