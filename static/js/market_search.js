@@ -1,7 +1,7 @@
 /**
  * market_search.js — live search dropdown + переход на страницу актива.
  *
- * initMarketSearch({ type, baseUrl, searchUrl, appSelectId? })
+ * initMarketSearch({ type, baseUrl, searchUrl, appGameSelectId?, appIdInputId?, appSelectId? })
  */
 "use strict";
 
@@ -28,7 +28,30 @@ function initMarketSearch(config) {
   let activeController = null;
   let requestSeq = 0;
 
-  function steamAppId() {
+  function steamAppIdFromFilters() {
+    const gameSelect = config.appGameSelectId
+      ? document.getElementById(config.appGameSelectId)
+      : null;
+    const customInput = config.appIdInputId
+      ? document.getElementById(config.appIdInputId)
+      : null;
+
+    if (gameSelect) {
+      if (gameSelect.value === "custom") {
+        const val = customInput?.value.trim() || "";
+        return /^\d+$/.test(val) ? val : "730";
+      }
+      return gameSelect.value || "730";
+    }
+
+    if (customInput) {
+      const val = customInput.value.trim();
+      if (/^\d+$/.test(val)) {
+        return val;
+      }
+      return "730";
+    }
+
     const select = config.appSelectId
       ? document.getElementById(config.appSelectId)
       : null;
@@ -37,6 +60,29 @@ function initMarketSearch(config) {
       appId = "730";
     }
     return appId;
+  }
+
+  function steamAppIdForResult(result) {
+    if (result?.app_id != null && String(result.app_id).trim() !== "") {
+      return String(result.app_id);
+    }
+    return steamAppIdFromFilters();
+  }
+
+  function syncCustomAppIdField() {
+    const gameSelect = config.appGameSelectId
+      ? document.getElementById(config.appGameSelectId)
+      : null;
+    const customInput = config.appIdInputId
+      ? document.getElementById(config.appIdInputId)
+      : null;
+    if (!gameSelect || !customInput) return;
+
+    const isCustom = gameSelect.value === "custom";
+    customInput.hidden = !isCustom;
+    if (isCustom) {
+      customInput.focus();
+    }
   }
 
   function detailPath(result) {
@@ -49,7 +95,7 @@ function initMarketSearch(config) {
       return `${baseUrl}${encodeURIComponent(String(result.name).toLowerCase())}/`;
     }
     if (config.type === "steam") {
-      return `${baseUrl}${steamAppId()}/${encodeURIComponent(result.name)}/`;
+      return `${baseUrl}${steamAppIdForResult(result)}/${encodeURIComponent(result.name)}/`;
     }
     return null;
   }
@@ -65,7 +111,7 @@ function initMarketSearch(config) {
       return `${baseUrl}${encodeURIComponent(q.toLowerCase())}/`;
     }
     if (config.type === "steam") {
-      return `${baseUrl}${steamAppId()}/${encodeURIComponent(q)}/`;
+      return `${baseUrl}${steamAppIdFromFilters()}/${encodeURIComponent(q)}/`;
     }
     return null;
   }
@@ -82,7 +128,7 @@ function initMarketSearch(config) {
 
   function secondaryLabel(result) {
     if (config.type === "steam") {
-      return "";
+      return result.game || "";
     }
     const primary = primaryLabel(result);
     const full = result.full_name || "";
@@ -225,7 +271,25 @@ function initMarketSearch(config) {
     }
   });
 
-  if (config.appSelectId) {
+  if (config.appGameSelectId) {
+    syncCustomAppIdField();
+    document.getElementById(config.appGameSelectId)?.addEventListener("change", () => {
+      syncCustomAppIdField();
+      if (input.value.trim()) {
+        onInputChange();
+      }
+    });
+  }
+
+  if (config.appIdInputId) {
+    document.getElementById(config.appIdInputId)?.addEventListener("input", () => {
+      if (input.value.trim()) {
+        onInputChange();
+      }
+    });
+  }
+
+  if (config.appSelectId && !config.appGameSelectId && !config.appIdInputId) {
     document.getElementById(config.appSelectId)?.addEventListener("change", () => {
       if (input.value.trim()) {
         onInputChange();

@@ -34,4 +34,20 @@ def resolve_steam_app_filter(raw: str | None) -> int | None:
 def steam_app_label(app_id: int | None) -> str:
     if app_id is None:
         return "—"
-    return STEAM_APPS.get(app_id, f"App {app_id}")
+    return STEAM_APP_FULL_LABELS.get(app_id, f"App {app_id}")
+
+
+def enrich_steam_search_result(row: dict) -> dict:
+    """Добавляет человекочитаемое имя игры для результатов Market Search."""
+    if row.get("asset_type") != "steam":
+        return row
+    app_id = row.get("app_id")
+    if app_id is None:
+        return row
+    try:
+        app_id_int = int(app_id)
+    except (TypeError, ValueError):
+        return row
+    enriched = dict(row)
+    enriched["game"] = steam_app_label(app_id_int)
+    return enriched

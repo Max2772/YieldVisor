@@ -89,7 +89,7 @@
 
     {% include "includes/market_allocation_card.html" with allocation_title="By Item" donut_id="typeDonut" %}
 
-    {% include "includes/market_search_card.html" with market_search_placeholder="e.g. AWP Asiimov…" market_search_button="Search Steam Market" %}
+    {% include "includes/market_search_card.html" with market_search_placeholder="e.g. AWP Asiimov…" market_search_button="Search Steam Market" market_search_steam_apps=steam_apps market_search_default_app_id=selected_app_filter|default:730 %}
 
     <div class="card">
       <div class="card-header"><div class="card-title">Quick Stats</div></div>
@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
     type: "steam",
     baseUrl: "{% url 'steam:steam' %}",
     searchUrl: "{% url 'steam:market_search' %}",
-    appSelectId: "appSelect",
+    appGameSelectId: "marketSearchAppSelect",
+    appIdInputId: "marketSearchAppId",
   });
   document.getElementById("appSelect")?.addEventListener("change", (e) => {
     const url = new URL(window.location.href);

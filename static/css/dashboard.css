@@ -199,6 +199,53 @@
   overflow:        visible;
 }
 
+.market-search-game-row {
+  display:     flex;
+  gap:         8px;
+  align-items: stretch;
+}
+
+.market-search-app-select {
+  flex:          1;
+  min-width:     0;
+  padding:       9px 10px;
+  border-radius: var(--radius-sm);
+  border:        1px solid var(--border);
+  background:    var(--surface2);
+  color:         var(--text);
+  font-family:   var(--font-mono);
+  font-size:     12px;
+  outline:       none;
+  cursor:        pointer;
+}
+
+.market-search-app-select:focus {
+  border-color: rgba(0, 230, 118, 0.45);
+}
+
+.market-search-app-id {
+  width:         88px;
+  flex-shrink:   0;
+  padding:       9px 8px;
+  border-radius: var(--radius-sm);
+  border:        1px solid var(--border);
+  background:    var(--surface2);
+  color:         var(--text-muted);
+  font-family:   var(--font-mono);
+  font-size:     12px;
+  text-align:    center;
+  outline:       none;
+}
+
+.market-search-app-id[hidden] {
+  display: none !important;
+}
+
+.market-search-app-id:focus {
+  border-color: rgba(0, 230, 118, 0.45);
+  color:        var(--text);
+}
+
 .market-search-field {
   position: relative;
   z-index:  200;

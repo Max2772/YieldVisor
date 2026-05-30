@@ -3,6 +3,33 @@
     <div class="card-title">Market Search</div>
   </div>
   <div class="card-body market-search-card__body">
+    {% if market_search_steam_apps %}
+    <div class="market-search-game-row">
+      <select
+        id="marketSearchAppSelect"
+        class="market-search-app-select"
+        aria-label="Game"
+      >
+        {% for app_id, label in market_search_steam_apps.items %}
+        <option value="{{ app_id }}"{% if market_search_default_app_id == app_id %} selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+        <option value="custom"{% if market_search_default_app_custom %} selected{% endif %}>Other…</option>
+      </select>
+      <input
+        type="text"
+        id="marketSearchAppId"
+        class="market-search-app-id"
+        inputmode="numeric"
+        placeholder="App ID"
+        value="{{ market_search_custom_app_id|default:'' }}"
+        autocomplete="off"
+        spellcheck="false"
+        title="Steam App ID"
+        aria-label="Steam App ID"
+        {% if not market_search_default_app_custom %}hidden{% endif %}
+      >
+    </div>
+    {% endif %}
     <div class="market-search-field">
       <input
         type="text"

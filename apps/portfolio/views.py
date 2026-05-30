@@ -16,6 +16,7 @@ from apps.portfolio.services.add_holding import add_holding
 from apps.portfolio.services.holding_actions import delete_holding, sell_holding
 from apps.portfolio.services.portfolio_overview import build_portfolio_overview_context
 from apps.portfolio.types import AssetType
+from apps.steam.constants import enrich_steam_search_result
 
 MARKET_SEARCH_RESULT_LIMIT = 10
 _VALID_SEARCH_TYPES = frozenset({AssetType.STOCK, AssetType.CRYPTO, AssetType.STEAM})
@@ -151,6 +152,14 @@ class MarketSearchView(LoginRequiredMixin, View):
                 {"query": query, "results": [], "error": "Search unavailable"},
                 status=502,
             )
+        if asset_type == AssetType.STEAM:
+            payload = {
+                **payload,
+                "results": [
+                    enrich_steam_search_result(row)
+                    for row in payload.get("results", [])
+                ],
+            }
         return JsonResponse(payload)
 
 

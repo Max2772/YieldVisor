@@ -42,7 +42,31 @@ class MarketSearchViewTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["results"]), 1)
-        api.search.assert_called_once_with("nvda", "stock", limit=5)
+        api.search.assert_called_once_with("nvda", "stock", limit=10)
+
+    @patch("apps.portfolio.views.InvestAPIClient")
+    def test_steam_results_include_game_label(self, client_cls):
+        api = client_cls.return_value.__enter__.return_value
+        api.search.return_value = {
+            "query": "key",
+            "results": [
+                {
+                    "asset_type": "steam",
+                    "name": "Mann Co. Supply Crate Key",
+                    "app_id": 440,
+                }
+            ],
+        }
+
+        response = self.client.get(
+            reverse("steam:market_search"),
+            {"q": "key", "type": "steam"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        row = response.json()["results"][0]
+        self.assertEqual(row["game"], "Team Fortress 2")
+        self.assertEqual(row["app_id"], 440)
 
 
 class AddHoldingTests(TestCase):
