@@ -7,12 +7,10 @@
 {% endblock %}
 
 {% block page_title %}
-  Good morning{% if request.user.first_name %}, <em>{{ request.user.first_name }}</em>{% endif %}
+  Portfolio
 {% endblock %}
 
-{% block page_meta %}
-  Here's your portfolio overview for today.
-{% endblock %}
+{% block page_meta %}Holdings, P&amp;L, and portfolio value at a glance{% endblock %}
 
 {% block topbar_actions %}
   {% include "includes/date_badge.html" %}
