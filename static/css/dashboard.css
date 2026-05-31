@@ -813,6 +813,11 @@
   white-space: nowrap;
 }
 
+.assets-table--alerts th.col-actions,
+.assets-table--alerts td.col-actions {
+  text-align: center;
+}
+
 /* History transactions table */
 .assets-table--history {
   table-layout: fixed;

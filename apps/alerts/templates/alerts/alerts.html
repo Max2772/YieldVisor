@@ -66,7 +66,7 @@
             <th>Current</th>
             <th>Progress</th>
             <th>Created</th>
-            <th>Actions</th>
+            <th class="col-actions">Actions</th>
           </tr></thead>
           <tbody id="activeAlertsBody">
             {% for alert in alerts %}
@@ -92,7 +92,7 @@
                 </div>
               </td>
               <td><span class="mono muted" style="font-size:11px">{{ alert.created_at|date:"d/m/Y" }}</span></td>
-              <td style="padding-right:24px">
+              <td class="col-actions">
                 <form method="post" action="{% url 'alerts:delete' alert.pk %}" style="display:inline">
                   {% csrf_token %}
                   <button type="submit" class="btn btn-danger" style="padding:4px 8px;font-size:11px" title="Delete alert">✕</button>
