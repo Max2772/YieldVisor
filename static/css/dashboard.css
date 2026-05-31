@@ -74,6 +74,11 @@
   grid-template-columns: 1fr 280px;
 }
 
+/* History — wider transactions table, compact chart sidebar */
+.content-grid--history {
+  grid-template-columns: minmax(0, 1fr) 260px;
+}
+
 .left-col  { display: flex; flex-direction: column; gap: 20px; }
 .right-col { display: flex; flex-direction: column; gap: 20px; }
 
@@ -752,6 +757,112 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* History transactions table */
+.assets-table--history {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.assets-table--history th,
+.assets-table--history td {
+  padding: 13px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  text-align: right;
+}
+
+.assets-table--history th.col-date,
+.assets-table--history td.col-date {
+  width: 12%;
+  padding-left: 20px;
+  text-align: left;
+}
+
+.assets-table--history th.col-op,
+.assets-table--history td.col-op {
+  width: 9%;
+  text-align: center;
+}
+
+.assets-table--history th.col-asset,
+.assets-table--history td.col-asset {
+  width: 26%;
+  text-align: left;
+}
+
+.assets-table--history th.col-type,
+.assets-table--history td.col-type {
+  width: 9%;
+  text-align: center;
+}
+
+.assets-table--history th.col-qty,
+.assets-table--history td.col-qty {
+  width: 10%;
+}
+
+.assets-table--history th.col-price,
+.assets-table--history td.col-price {
+  width: 11%;
+}
+
+.assets-table--history th.col-total,
+.assets-table--history td.col-total {
+  width: 12%;
+  padding-right: 20px;
+}
+
+.assets-table--history td.col-op .badge {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.assets-table--history td.col-type .badge {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.assets-table--history .history-date {
+  font-size: 14px;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.assets-table--history .asset-ticker,
+.assets-table--history .history-asset-link {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assets-table--history .history-asset-link {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.assets-table--history .history-asset-link:hover {
+  color: var(--green);
+}
+
+.assets-table--history td.col-qty .mono,
+.assets-table--history td.col-price .mono,
+.assets-table--history td.col-total .mono {
+  display: block;
+  text-align: right;
+}
+
+.assets-table--history .history-empty td {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 32px 24px;
+  white-space: normal;
 }
 
 /* Number inputs without browser spin buttons */

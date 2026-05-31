@@ -11,7 +11,7 @@
 
 {% block topbar_actions %}
   {% include "includes/date_badge.html" %}
-  <button class="btn btn-ghost" id="exportCsvBtn">⬇ Export CSV</button>
+  <button class="btn btn-ghost" id="exportCsvBtn">Export CSV</button>
 {% endblock %}
 
 {% block page_content %}
@@ -20,29 +20,29 @@
 <div class="stats-grid anim-1">
   <div class="stat-card c-green">
     <div class="stat-label">Total Invested</div>
-    <div class="stat-value">${{ total_invested|default:"12,840" }}<span class="cents">.00</span></div>
-    <span class="badge badge-up">{{ buy_count|default:"31" }} buys</span>
+    <div class="stat-value">${{ total_invested_dollars }}<span class="cents">.{{ total_invested_cents }}</span></div>
+    <span class="badge badge-up">{{ buy_count }} buys</span>
   </div>
   <div class="stat-card c-red">
     <div class="stat-label">Total Sold</div>
-    <div class="stat-value">${{ total_sold|default:"3,210" }}<span class="cents">.50</span></div>
-    <span class="badge badge-down">{{ sell_count|default:"9" }} sells</span>
+    <div class="stat-value">${{ total_sold_dollars }}<span class="cents">.{{ total_sold_cents }}</span></div>
+    <span class="badge badge-down">{{ sell_count }} sells</span>
   </div>
   <div class="stat-card c-blue">
     <div class="stat-label">Realised P&amp;L</div>
     <div class="stat-value {% if realised_pos %}up{% else %}down{% endif %}">
-      {{ realised_sign|default:"+" }}${{ realised_pnl|default:"620" }}<span class="cents">.30</span>
+      {{ realised_sign }}${{ realised_pnl_dollars }}<span class="cents">.{{ realised_pnl_cents }}</span>
     </div>
     <span class="badge badge-blue">Closed positions</span>
   </div>
   <div class="stat-card c-amber">
     <div class="stat-label">Transactions</div>
-    <div class="stat-value">{{ total_txns|default:"40" }}</div>
+    <div class="stat-value">{{ total_txns }}</div>
     <span class="badge badge-warn">All time</span>
   </div>
 </div>
 
-<div class="content-grid anim-2">
+<div class="content-grid content-grid--history anim-2">
   <div class="left-col">
 
     {# Filters bar #}
@@ -72,16 +72,14 @@
                  style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
 
           <select name="sort" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 12px;border-radius:var(--radius-sm);font-family:var(--font-mono);font-size:12px;outline:none">
-            <option value="-created_at" {% if request.GET.sort == '-created_at' %}selected{% endif %}>Newest first</option>
+            <option value="-created_at" {% if request.GET.sort == '-created_at' or not request.GET.sort %}selected{% endif %}>Newest first</option>
             <option value="created_at"  {% if request.GET.sort == 'created_at'  %}selected{% endif %}>Oldest first</option>
             <option value="-total"      {% if request.GET.sort == '-total'      %}selected{% endif %}>Largest first</option>
             <option value="total"       {% if request.GET.sort == 'total'       %}selected{% endif %}>Smallest first</option>
           </select>
 
-          <button type="submit" class="btn btn-primary" style="padding:8px 18px">🔍 Filter</button>
-        {# ЗДЕСЬ ДОБАВЛЕНИЕ ДОБАВИТЬ #}
-{#          <a href="{% url 'history:list' %}" class="btn btn-ghost" style="padding:8px 14px">✕ Clear</a>#}
-          <a href="#" class="btn btn-ghost" style="padding:8px 14px">✕ Clear</a>
+          <button type="submit" class="btn btn-primary" style="padding:8px 18px">Filter</button>
+          <a href="{% url 'history:history' %}" class="btn btn-ghost" style="padding:8px 14px">Clear</a>
         </form>
       </div>
     </div>
@@ -91,61 +89,45 @@
       <div class="card-header">
         <div>
           <div class="card-title">Transactions</div>
-          <div class="card-subtitle">{{ page_obj.paginator.count|default:"40" }} records found</div>
-        </div>
-        <div class="tabs">
-          <div class="tab active" data-op="">All</div>
-          <div class="tab" data-op="buy">Buys</div>
-          <div class="tab" data-op="sell">Sells</div>
+          <div class="card-subtitle">{{ page_obj.paginator.count }} records found</div>
         </div>
       </div>
       <div class="card-body" style="padding:0">
-        <table class="assets-table" id="historyTable">
+        <table class="assets-table assets-table--history" id="historyTable">
           <thead><tr>
-            <th style="padding-left:24px">Date</th>
-            <th>Operation</th>
-            <th>Asset</th>
-            <th>Type</th>
-            <th>Qty</th>
-            <th>Price</th>
-            <th>Total</th>
-            <th>Portfolio</th>
+            <th class="col-date">Date</th>
+            <th class="col-op">Operation</th>
+            <th class="col-asset">Asset</th>
+            <th class="col-type">Type</th>
+            <th class="col-qty">Qty</th>
+            <th class="col-price">Price</th>
+            <th class="col-total">Total</th>
           </tr></thead>
           <tbody>
             {% for tx in history %}
             <tr class="tx-row" data-op="{{ tx.operation }}">
-              <td style="padding-left:24px"><span class="mono muted" style="font-size:12px">{{ tx.created_at|date:"d/m/Y" }}<br>{{ tx.created_at|time:"H:i" }}</span></td>
-              <td>
+              <td class="col-date"><span class="history-date mono">{{ tx.date_display }}</span></td>
+              <td class="col-op">
                 <span class="badge {% if tx.operation == 'buy' %}badge-up{% else %}badge-down{% endif %}">
-                  {% if tx.operation == 'buy' %}↑ BUY{% else %}↓ SELL{% endif %}
+                  {% if tx.operation == 'buy' %}BUY{% else %}SELL{% endif %}
                 </span>
               </td>
-              <td>
-                <div class="asset-cell">
-                  <div class="asset-icon" style="background:var(--surface2);color:var(--text-dim);font-size:10px;font-weight:700">{{ tx.asset_name|slice:":2"|upper }}</div>
-                  <div class="asset-ticker">{{ tx.asset_name }}</div>
-                </div>
+              <td class="col-asset">
+                {% if tx.detail_url %}
+                <a href="{{ tx.detail_url }}" class="asset-ticker mono history-asset-link">{{ tx.asset_name }}</a>
+                {% else %}
+                <span class="asset-ticker mono">{{ tx.asset_name }}</span>
+                {% endif %}
               </td>
-              <td><span class="badge badge-blue" style="font-size:10px">{{ tx.asset_type|upper }}</span></td>
-              <td><span class="mono">{{ tx.quantity }}</span></td>
-              <td><span class="mono">${{ tx.price }}</span></td>
-              <td><span class="mono {% if tx.operation == 'buy' %}down{% else %}up{% endif %}">${{ tx.total }}</span></td>
-              <td><span class="muted" style="font-size:12px">{{ tx.portfolio_name|default:"—" }}</span></td>
+              <td class="col-type"><span class="badge badge-blue" style="font-size:10px">{{ tx.asset_type_label }}</span></td>
+              <td class="col-qty"><span class="mono">{{ tx.quantity }}</span></td>
+              <td class="col-price"><span class="mono">${{ tx.price }}</span></td>
+              <td class="col-total"><span class="mono {% if tx.operation == 'buy' %}down{% else %}up{% endif %}">${{ tx.total }}</span></td>
             </tr>
             {% empty %}
-            {# Fallback rows #}
-            {% for i in "1234567890AB" %}
-            <tr class="tx-row {% cycle 'buy' 'sell' as op %}">
-              <td style="padding-left:24px"><span class="mono muted" style="font-size:12px">15/05/2026<br>09:41</span></td>
-              <td><span class="badge {% if forloop.counter|divisibleby:3 %}badge-down{% else %}badge-up{% endif %}">{% if forloop.counter|divisibleby:3 %}↓ SELL{% else %}↑ BUY{% endif %}</span></td>
-              <td><div class="asset-cell"><div class="asset-icon" style="background:#1a2a1a;color:#00e676;font-size:10px;font-weight:700">BT</div><div class="asset-ticker">BTC</div></div></td>
-              <td><span class="badge badge-blue" style="font-size:10px">CRYPTO</span></td>
-              <td><span class="mono">0.05</span></td>
-              <td><span class="mono">$77,000</span></td>
-              <td><span class="mono {% if forloop.counter|divisibleby:3 %}up{% else %}down{% endif %}">$3,850</span></td>
-              <td><span class="muted" style="font-size:12px">Main</span></td>
+            <tr class="history-empty">
+              <td colspan="7">No transactions match your filters.</td>
             </tr>
-            {% endfor %}
             {% endfor %}
           </tbody>
         </table>
@@ -155,17 +137,17 @@
       {% if page_obj.has_other_pages %}
       <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:center;gap:6px">
         {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">← Prev</a>
+        <a href="?page={{ page_obj.previous_page_number }}{% if filter_query %}&amp;{{ filter_query }}{% endif %}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">← Prev</a>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
           {% if page_obj.number == num %}
           <span class="btn btn-primary" style="padding:6px 12px;font-size:12px">{{ num }}</span>
           {% elif num|add:"-1" == page_obj.number or num|add:"1" == page_obj.number %}
-          <a href="?page={{ num }}&{{ request.GET.urlencode }}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">{{ num }}</a>
+          <a href="?page={{ num }}{% if filter_query %}&amp;{{ filter_query }}{% endif %}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">{{ num }}</a>
           {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">Next →</a>
+        <a href="?page={{ page_obj.next_page_number }}{% if filter_query %}&amp;{{ filter_query }}{% endif %}" class="btn btn-ghost" style="padding:6px 12px;font-size:12px">Next →</a>
         {% endif %}
       </div>
       {% endif %}
@@ -196,14 +178,20 @@
         <div class="donut-wrap" style="height:160px">
           <canvas id="txDonut"></canvas>
           <div class="donut-center">
-            <div class="donut-total" style="font-size:16px">{{ total_txns|default:"40" }}</div>
+            <div class="donut-total" style="font-size:16px">{{ total_txns }}</div>
             <div class="donut-label">Total</div>
           </div>
         </div>
         <div class="legend" style="margin-top:12px">
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#4fc3f7"></div><div class="legend-name">Stocks</div></div><div class="legend-pct">{{ stock_pct|default:"52" }}%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#7c83ff"></div><div class="legend-name">Crypto</div></div><div class="legend-pct">{{ crypto_pct|default:"31" }}%</div></div>
-          <div class="legend-item"><div class="legend-left"><div class="legend-dot" style="background:#ffb300"></div><div class="legend-name">Steam</div></div><div class="legend-pct">{{ steam_pct|default:"17" }}%</div></div>
+          {% for item in legend %}
+          <div class="legend-item">
+            <div class="legend-left">
+              <div class="legend-dot" style="background:{{ item.color }}"></div>
+              <div class="legend-name">{{ item.label }}</div>
+            </div>
+            <div class="legend-pct">{{ item.pct }}%</div>
+          </div>
+          {% endfor %}
         </div>
       </div>
     </div>
@@ -212,16 +200,21 @@
     <div class="card">
       <div class="card-header"><div class="card-title">This Month</div></div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:13px;padding-top:14px">
-        <div class="qs-row"><span class="qs-label">Transactions</span><span class="qs-val">{{ month_txn_count|default:"8" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Invested</span><span class="qs-val down">${{ month_invested|default:"2,100" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Sold</span><span class="qs-val up">${{ month_sold|default:"450" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Net flow</span><span class="qs-val {% if month_net_pos %}up{% else %}down{% endif %}">${{ month_net|default:"−1,650" }}</span></div>
-        <div class="qs-row"><span class="qs-label">Most traded</span><span class="qs-val">{{ most_traded|default:"BTC" }}</span></div>
+        <div class="qs-row"><span class="qs-label">Transactions</span><span class="qs-val">{{ month_txn_count }}</span></div>
+        <div class="qs-row"><span class="qs-label">Invested</span><span class="qs-val down">${{ month_invested }}</span></div>
+        <div class="qs-row"><span class="qs-label">Sold</span><span class="qs-val up">${{ month_sold }}</span></div>
+        <div class="qs-row"><span class="qs-label">Net flow</span><span class="qs-val {% if month_net_pos %}up{% else %}down{% endif %}">{{ month_net_sign }}${{ month_net }}</span></div>
+        <div class="qs-row"><span class="qs-label">Most traded</span><span class="qs-val">{{ most_traded }}</span></div>
       </div>
     </div>
 
   </div>{# /right-col #}
 </div>
+
+{{ volume_chart|json_script:"volumeChartData" }}
+{{ type_chart_values|json_script:"typeChartData" }}
+{{ type_chart_colors|json_script:"typeChartColors" }}
+{{ history_export|json_script:"historyExportData" }}
 
 {% endblock %}
 
@@ -231,19 +224,19 @@
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
 
-  /* monthly volume chart */
+  const volumeData = JSON.parse(document.getElementById("volumeChartData").textContent);
+  const typeValues = JSON.parse(document.getElementById("typeChartData").textContent);
+  const typeColors = JSON.parse(document.getElementById("typeChartColors").textContent);
+
   const vc = document.getElementById("volumeChart");
   if (vc) {
-    const labels = ["Dec","Jan","Feb","Mar","Apr","May"];
-    const buys   = [3200, 1800, 2400, 1200, 3100, 2100];
-    const sells  = [400,  600,  200,  800,  1200, 450];
     new Chart(vc.getContext("2d"), {
       type:"bar",
       data:{
-        labels,
+        labels: volumeData.labels,
         datasets:[
-          {label:"Buy",  data:buys,  backgroundColor:"rgba(0,230,118,0.7)",  borderColor:"#00e676", borderWidth:1, borderRadius:4},
-          {label:"Sell", data:sells, backgroundColor:"rgba(255,77,109,0.7)", borderColor:"#ff4d6d", borderWidth:1, borderRadius:4}
+          {label:"Buy",  data:volumeData.buys,  backgroundColor:"rgba(0,230,118,0.7)",  borderColor:"#00e676", borderWidth:1, borderRadius:4},
+          {label:"Sell", data:volumeData.sells, backgroundColor:"rgba(255,77,109,0.7)", borderColor:"#ff4d6d", borderWidth:1, borderRadius:4}
         ]
       },
       options:{
@@ -258,43 +251,61 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /* tx type donut */
   const td = document.getElementById("txDonut");
-  if (td) new Chart(td.getContext("2d"),{type:"doughnut",data:{datasets:[{data:[52,31,17],backgroundColor:["#4fc3f7","#7c83ff","#ffb300"],borderColor:"#111418",borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:"72%",plugins:{legend:{display:false}}}});
-
-  /* client-side tab filter */
-  document.querySelectorAll(".tabs .tab[data-op]").forEach(tab => {
-    tab.addEventListener("click", () => {
-      tab.closest(".tabs").querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      const op = tab.dataset.op;
-      document.querySelectorAll(".tx-row").forEach(row => {
-        row.style.display = (!op || row.dataset.op === op) ? "" : "none";
-      });
+  if (td && typeValues.length && typeValues.some(v => v > 0)) {
+    new Chart(td.getContext("2d"), {
+      type: "doughnut",
+      data: {
+        labels: typeValues.map((_, i) => String(i)),
+        datasets: [{
+          data: typeValues,
+          backgroundColor: typeColors,
+          borderColor: "#111418",
+          borderWidth: 3,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "72%",
+        plugins: { legend: { display: false } },
+      },
     });
-  });
+  }
 
-  /* CSV export (client-side demo) */
+  const csvEscape = (value) => {
+    const text = String(value ?? "");
+    if (/[",\r\n]/.test(text)) {
+      return `"${text.replace(/"/g, '""')}"`;
+    }
+    return text;
+  };
+
   document.getElementById("exportCsvBtn")?.addEventListener("click", () => {
-    const rows = [["Date","Operation","Asset","Type","Qty","Price","Total"]];
-    document.querySelectorAll("#historyTable tbody tr").forEach(tr => {
-      const cells = [...tr.querySelectorAll("td")];
-      if (cells.length < 7) return;
-      rows.push([
-        cells[0].innerText.replace("\n"," "),
-        cells[1].innerText.trim(),
-        cells[2].innerText.trim(),
-        cells[3].innerText.trim(),
-        cells[4].innerText.trim(),
-        cells[5].innerText.trim(),
-        cells[6].innerText.trim(),
-      ]);
-    });
-    const csv  = rows.map(r => r.join(",")).join("\n");
-    const blob = new Blob([csv], {type:"text/csv"});
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href = url; a.download = "history.csv"; a.click();
+    const exportEl = document.getElementById("historyExportData");
+    if (!exportEl) return;
+
+    const items = JSON.parse(exportEl.textContent);
+    const header = ["Date", "Operation", "Asset", "Type", "Qty", "Price", "Total"];
+    const lines = [
+      header.join(","),
+      ...items.map((row) => [
+        row.date,
+        row.operation,
+        row.asset,
+        row.type,
+        row.qty,
+        row.price,
+        row.total,
+      ].map(csvEscape).join(",")),
+    ];
+    const csv = "\uFEFF" + lines.join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "history.csv";
+    a.click();
     URL.revokeObjectURL(url);
   });
 
