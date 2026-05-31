@@ -21,12 +21,12 @@
   <div class="stat-card c-amber">
     <div class="stat-label">Active Alerts</div>
     <div class="stat-value">{{ active_count }}</div>
-    <span class="badge badge-warn">⏳ Watching</span>
+    <span class="badge badge-warn">{% include "includes/ui_icon.html" with name="clock" size="xs" %} Watching</span>
   </div>
   <div class="stat-card c-green">
     <div class="stat-label">Triggered Today</div>
     <div class="stat-value">{{ triggered_today }}</div>
-    <span class="badge badge-up">▲ Fired</span>
+    <span class="badge badge-up">{% include "includes/trend_icon.html" with up=True %} Fired</span>
   </div>
   <div class="stat-card c-blue">
     <div class="stat-label">Total Created</div>
@@ -95,7 +95,7 @@
               <td class="col-actions">
                 <form method="post" action="{% url 'alerts:delete' alert.pk %}" style="display:inline">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-danger" style="padding:4px 8px;font-size:11px" title="Delete alert">✕</button>
+                  <button type="submit" class="btn btn-danger" style="padding:4px 8px;font-size:11px" title="Delete alert">{% include "includes/ui_icon.html" with name="close" size="xs" %}</button>
                 </form>
               </td>
             </tr>
@@ -126,7 +126,7 @@
           <div class="alert-dot triggered"></div>
           <div style="flex:1">
             <div style="display:flex;justify-content:space-between">
-              <div class="alert-name up">{{ t.display_name }} {{ t.direction }} ${{ t.target }} ✓</div>
+              <div class="alert-name up">{{ t.display_name }} {{ t.direction }} ${{ t.target }} {% include "includes/ui_icon.html" with name="check" size="xs" %}</div>
               <span class="mono muted" style="font-size:11px">{{ t.triggered_at|date:"d/m/Y H:i" }}</span>
             </div>
             <div class="alert-meta">Triggered at ${{ t.triggered_price }}</div>

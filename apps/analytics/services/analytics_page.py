@@ -210,7 +210,7 @@ def build_analytics_context(user) -> dict[str, Any]:
     notable = notable_days(days, values)
     period_badge = period_change_badge(portfolio_chart, days=30, cap=chart_period_cap)
 
-    drawdown_badge = f"⚠ {format_day_label(drawdown_day)} dip" if drawdown_day else None
+    drawdown_badge = f"{format_day_label(drawdown_day)} dip" if drawdown_day else None
     risk_metrics = build_risk_metrics(
         beta=beta_value,
         alpha=alpha_value,

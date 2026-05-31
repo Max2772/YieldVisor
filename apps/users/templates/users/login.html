@@ -65,7 +65,7 @@
     <div class="form-group">
       <label class="form-label" for="{{ form.username.id_for_label }}">Username or Email</label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">👤</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="user" size="sm" %}</span>
         <input
           class="form-input has-icon {% if form.username.errors %}error{% endif %}"
           type="text"
@@ -91,7 +91,7 @@
         </a>
       </label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">🔒</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="lock" size="sm" %}</span>
         <input
           class="form-input has-icon has-action {% if form.password.errors %}error{% endif %}"
           type="password"

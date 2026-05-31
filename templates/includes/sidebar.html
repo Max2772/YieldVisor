@@ -12,13 +12,13 @@
 
     <a href="{% url 'portfolio:portfolio' %}"
        class="sidebar-nav-item {% if active_nav == 'portfolio' %}active{% endif %}">
-      <span class="sidebar-nav-icon">💼</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="portfolio" size="sm" %}</span>
       Portfolio
     </a>
 
     <a href="{% url 'analytics:analytics' %}"
        class="sidebar-nav-item {% if active_nav == 'analytics' %}active{% endif %}">
-      <span class="sidebar-nav-icon">📊</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="analytics" size="sm" %}</span>
       Analytics
     </a>
 
@@ -26,19 +26,19 @@
 
     <a href="{% url 'stocks:market' %}"
        class="sidebar-nav-item {% if active_nav == 'stocks' %}active{% endif %}">
-      <span class="sidebar-nav-icon">💹</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="stocks" size="sm" %}</span>
       Stocks
     </a>
 
     <a href="{% url 'crypto:crypto' %}"
        class="sidebar-nav-item {% if active_nav == 'crypto' %}active{% endif %}">
-      <span class="sidebar-nav-icon">⚡</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="crypto" size="sm" %}</span>
       Crypto
     </a>
 
     <a href="{% url 'steam:steam' %}"
        class="sidebar-nav-item {% if active_nav == 'steam' %}active{% endif %}">
-      <span class="sidebar-nav-icon">🎮</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="steam" size="sm" %}</span>
       Steam
     </a>
 
@@ -46,7 +46,7 @@
 
     <a href="{% url 'alerts:alerts' %}"
        class="sidebar-nav-item {% if active_nav == 'alerts' %}active{% endif %}">
-      <span class="sidebar-nav-icon">🔔</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="alerts" size="sm" %}</span>
       Alerts
       {% if alerts_count %}
         <span class="sidebar-badge">{{ alerts_count }}</span>
@@ -55,7 +55,7 @@
 
     <a href="{% url 'history:history' %}"
        class="sidebar-nav-item {% if active_nav == 'history' %}active{% endif %}">
-      <span class="sidebar-nav-icon">📜</span>
+      <span class="sidebar-nav-icon">{% include "includes/ui_icon.html" with name="history" size="sm" %}</span>
       History
     </a>
 
@@ -85,7 +85,7 @@
 
       <form method="post" action="{% url 'user:logout' %}" class="sidebar-logout-form">
         {% csrf_token %}
-        <button type="submit" class="sidebar-logout-btn" title="Logout">⏻</button>
+        <button type="submit" class="sidebar-logout-btn" title="Logout">{% include "includes/ui_icon.html" with name="logout" size="sm" %}</button>
       </form>
 
     </div>

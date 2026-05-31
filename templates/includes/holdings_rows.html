@@ -16,12 +16,12 @@
   {% endif %}
   <td><span class="mono">${{ item.avg_buy }}</span></td>
   <td><span class="mono">${{ item.market_price }}</span></td>
-  <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pos %}▲{% else %}▼{% endif %} ${{ item.pnl }}</span></td>
+  <td><span class="badge {% if item.pnl_pos %}badge-up{% else %}badge-down{% endif %}">{% include "includes/trend_icon.html" with up=item.pnl_pos %} ${{ item.pnl }}</span></td>
   <td>
     {% if item.pnl_pct == "—" %}
     <span class="mono muted">—</span>
     {% else %}
-    <span class="badge {% if item.pnl_pct_pos %}badge-up{% else %}badge-down{% endif %}">{% if item.pnl_pct_pos %}▲{% else %}▼{% endif %} {{ item.pnl_pct }}%</span>
+    <span class="badge {% if item.pnl_pct_pos %}badge-up{% else %}badge-down{% endif %}">{% include "includes/trend_icon.html" with up=item.pnl_pct_pos %} {{ item.pnl_pct }}%</span>
     {% endif %}
   </td>
   <td><span class="mono muted">{{ item.qty }}</span></td>

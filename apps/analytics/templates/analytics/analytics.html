@@ -27,7 +27,7 @@
       {% if total_return_pos %}+{% else %}−{% endif %}{{ total_return_pct }}<span class="cents">%</span>
     </div>
     {% if period_change_badge %}
-    <span class="badge {% if period_change_positive %}badge-up{% else %}badge-down{% endif %}">{{ period_change_badge }}</span>
+    <span class="badge {% if period_change_positive %}badge-up{% else %}badge-down{% endif %}">{% include "includes/trend_icon.html" with up=period_change_positive %} {{ period_change_badge }}</span>
     {% elif has_data %}
     <span class="badge badge-blue">Unrealised · cost basis</span>
     {% else %}
@@ -49,7 +49,7 @@
     </div>
     <div class="stat-value down">−{{ max_drawdown }}<span class="cents">%</span></div>
     {% if max_drawdown_badge %}
-    <span class="badge badge-warn">{{ max_drawdown_badge }}</span>
+    <span class="badge badge-warn">{% include "includes/ui_icon.html" with name="warning" size="xs" %} {{ max_drawdown_badge }}</span>
     {% else %}
     <span class="badge badge-warn">Peak-to-trough</span>
     {% endif %}
@@ -173,7 +173,7 @@
               </td>
               <td class="col-return">
                 <span class="badge {% if asset.pnl_pos %}badge-up{% else %}badge-down{% endif %}">
-                  {% if asset.pnl_pos %}▲{% else %}▼{% endif %} {{ asset.ret_pct }}%
+                  {% include "includes/trend_icon.html" with up=asset.pnl_pos %} {{ asset.ret_pct }}%
                 </span>
               </td>
               <td class="col-weight">

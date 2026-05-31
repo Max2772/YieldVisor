@@ -98,9 +98,9 @@
 }
 
 .sidebar-nav-icon {
-  font-size:   15px;
+  display:     inline-flex;
+  align-items: center;
   width:       20px;
-  text-align:  center;
   flex-shrink: 0;
 }
 

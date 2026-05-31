@@ -48,7 +48,7 @@ def period_change_badge(
     pct = ((last - first) / first) * Decimal("100")
     positive = pct >= 0
     sign = "+" if positive else "−"
-    return f"{'▲' if positive else '▼'} vs last month {sign}{abs(pct):.1f}%", positive
+    return f"vs last month {sign}{abs(pct):.1f}%", positive
 
 
 def build_risk_metrics(

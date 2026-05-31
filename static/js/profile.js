@@ -133,7 +133,7 @@ function initSessionRevoke() {
         // In real app: fetch(btn.dataset.url, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() } })
         const row = btn.closest(".session-item");
         row?.remove();
-        showToast("✓ Session revoked.");
+        showToast("Session revoked.");
       }
     });
   });

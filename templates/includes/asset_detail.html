@@ -38,7 +38,7 @@
     <div class="hero-metric">
       <div class="hm-label">Change</div>
       <div class="hm-val {% if asset.change_positive %}up{% else %}down{% endif %}" style="font-size:18px">
-        {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_delta }}
+        {% include "includes/trend_icon.html" with up=asset.change_positive size="sm" %} {{ asset.change_delta }}
       </div>
       <div class="hm-sub muted">{{ history_days }}d</div>
     </div>
@@ -50,7 +50,7 @@
         {% if asset.holding_pnl_positive %}+{% else %}−{% endif %}${{ asset.holding_pnl }}
       </div>
       <div class="hm-sub {% if asset.holding_pnl_positive %}up{% else %}down{% endif %}">
-        {% if asset.holding_pnl_positive %}▲{% else %}▼{% endif %} {{ asset.holding_pnl_pct }}%
+        {% include "includes/trend_icon.html" with up=asset.holding_pnl_positive size="sm" %} {{ asset.holding_pnl_pct }}%
       </div>
       {% else %}
       <div class="hm-val muted" style="font-size:18px">—</div>

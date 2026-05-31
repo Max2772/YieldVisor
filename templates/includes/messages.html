@@ -3,13 +3,18 @@
   {% for message in messages %}
     <div class="toast toast--{{ message.tags|default:'info' }}" role="alert">
       <span class="toast__icon">
-        {% if message.tags == 'success' %}✓
-        {% elif message.tags == 'error' %}✕
-        {% elif message.tags == 'warning' %}⚠
-        {% else %}ℹ{% endif %}
+        {% if message.tags == 'success' %}
+          {% include "includes/ui_icon.html" with name="check" size="sm" %}
+        {% elif message.tags == 'error' %}
+          {% include "includes/ui_icon.html" with name="close" size="sm" %}
+        {% elif message.tags == 'warning' %}
+          {% include "includes/ui_icon.html" with name="warning" size="sm" %}
+        {% else %}
+          {% include "includes/ui_icon.html" with name="info" size="sm" %}
+        {% endif %}
       </span>
       <span class="toast__text">{{ message }}</span>
-      <button class="toast__close" type="button" aria-label="Close">✕</button>
+      <button class="toast__close" type="button" aria-label="Close">{% include "includes/ui_icon.html" with name="close" size="sm" %}</button>
       <div class="toast__progress"></div>
     </div>
   {% endfor %}

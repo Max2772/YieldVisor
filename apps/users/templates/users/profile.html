@@ -78,13 +78,13 @@
     {% with tab=active_profile_tab|default:"overview" %}
     <div class="profile-tabs">
         <div class="profile-tab{% if tab == 'overview' %} active{% endif %}" data-tab="overview">
-            <span class="profile-tab-icon">👤</span> Overview
+            <span class="profile-tab-icon">{% include "includes/ui_icon.html" with name="user" size="sm" %}</span> Overview
         </div>
         <div class="profile-tab{% if tab == 'security' %} active{% endif %}" data-tab="security">
-            <span class="profile-tab-icon">🔒</span> Security
+            <span class="profile-tab-icon">{% include "includes/ui_icon.html" with name="lock" size="sm" %}</span> Security
         </div>
         <div class="profile-tab{% if tab == 'activity' %} active{% endif %}" data-tab="activity">
-            <span class="profile-tab-icon">📜</span> Activity
+            <span class="profile-tab-icon">{% include "includes/ui_icon.html" with name="history" size="sm" %}</span> Activity
         </div>
     </div>
 
@@ -213,7 +213,7 @@
                             </p>
                             <a href="https://t.me/InvestingAPIBot?start=link_{{ request.user.username }}"
                                class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
-                                ✈ Connect via Telegram
+                                {% include "includes/ui_icon.html" with name="send" size="sm" %} Connect via Telegram
                             </a>
                         {% endif %}
                     </div>
@@ -333,7 +333,7 @@
 
         <div class="danger-zone">
             <div class="danger-zone-header">
-                <span>⚠</span>
+                {% include "includes/ui_icon.html" with name="warning" size="sm" %}
                 <div class="danger-zone-title">Danger Zone</div>
             </div>
             <div class="danger-zone-body">
@@ -379,7 +379,7 @@
                     {% for action in recent_activity %}
                         <div class="activity-item">
                             <div class="activity-icon {{ action.type }}">
-                                {% if action.type == 'buy' %}📈{% elif action.type == 'sell' %}📉{% else %}🔔{% endif %}
+                                {% if action.type == 'buy' %}{% include "includes/ui_icon.html" with name="chart-up" size="sm" %}{% elif action.type == 'sell' %}{% include "includes/ui_icon.html" with name="chart-down" size="sm" %}{% else %}{% include "includes/ui_icon.html" with name="alerts" size="sm" %}{% endif %}
                             </div>
                             <div class="activity-body">
                                 <div class="activity-title">{{ action.title }}</div>

@@ -46,7 +46,7 @@
         <div class="stat-label">Active Alerts</div>
         <div class="stat-value">{{ alerts_count }}</div>
         {% if alerts_near_target %}
-        <span class="badge badge-warn">⏳ {{ alerts_near_target }} near target</span>
+        <span class="badge badge-warn">{% include "includes/ui_icon.html" with name="clock" size="xs" %} {{ alerts_near_target }} near target</span>
         {% else %}
         <span class="badge badge-warn">Price alerts</span>
         {% endif %}
@@ -110,7 +110,7 @@
                   <td><span class="mono">${{ asset.current_value }}</span></td>
                   <td>
                     <span class="badge {% if asset.pnl_positive %}badge-up{% else %}badge-down{% endif %}">
-                      {% if asset.pnl_positive %}▲{% else %}▼{% endif %} {{ asset.pnl_pct }}%
+                      {% include "includes/trend_icon.html" with up=asset.pnl_positive %} {{ asset.pnl_pct }}%
                     </span>
                   </td>
                   <td>
@@ -118,7 +118,7 @@
                     <span class="mono muted">—</span>
                     {% else %}
                     <span class="badge {% if asset.change_positive %}badge-up{% else %}badge-down{% endif %}">
-                      {% if asset.change_positive %}▲{% else %}▼{% endif %} {{ asset.change_pct }}%
+                      {% include "includes/trend_icon.html" with up=asset.change_positive %} {{ asset.change_pct }}%
                     </span>
                     {% endif %}
                   </td>
@@ -204,7 +204,7 @@
               <div style="flex:1">
                 <div class="alert-name {% if alert.triggered %}up{% endif %}">
                   {{ alert.ticker }} {{ alert.condition }} ${{ alert.target }}
-                  {% if alert.triggered %}✓{% endif %}
+                  {% if alert.triggered %}{% include "includes/ui_icon.html" with name="check" size="xs" %}{% endif %}
                 </div>
                 <div class="alert-meta">{{ alert.meta }}</div>
                 {% if not alert.triggered and alert.progress %}

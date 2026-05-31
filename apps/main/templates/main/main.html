@@ -74,7 +74,7 @@
                     <div class="mockup-stat-val">${{ hero_mockup.total_value_dollars }}</div>
                     {% if hero_mockup.value_change %}
                     <div class="mockup-stat-sub {% if hero_mockup.value_change_positive %}up{% else %}down{% endif %}">
-                      {% if hero_mockup.value_change_positive %}▲{% else %}▼{% endif %} {{ hero_mockup.value_change }} 30D
+                      {% include "includes/trend_icon.html" with up=hero_mockup.value_change_positive size="xs" %} {{ hero_mockup.value_change }} 30D
                     </div>
                     {% endif %}
                     {% else %}
@@ -89,7 +89,7 @@
                     </div>
                     {% if hero_mockup.value_change %}
                     <div class="mockup-stat-sub {% if hero_mockup.value_change_positive %}up{% else %}down{% endif %}">
-                      {% if hero_mockup.value_change_positive %}▲{% else %}▼{% endif %} {{ hero_mockup.value_change }}
+                      {% include "includes/trend_icon.html" with up=hero_mockup.value_change_positive size="xs" %} {{ hero_mockup.value_change }}
                     </div>
                     {% endif %}
                     {% else %}
@@ -146,7 +146,7 @@
 
           <div class="features-grid">
             <div class="feature-card c-green">
-              <div class="feature-icon">📊</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="analytics" size="lg" %}</div>
               <div class="feature-title">Portfolio Analytics</div>
               <div class="feature-desc">Track P&L, average buy price, ROI, and allocation breakdown across all your holdings in real time.</div>
               <div class="feature-tags">
@@ -156,7 +156,7 @@
               </div>
             </div>
             <div class="feature-card c-blue">
-              <div class="feature-icon">🔔</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="alerts" size="lg" %}</div>
               <div class="feature-title">Smart Alerts</div>
               <div class="feature-desc">Set price conditions with &gt;, ≥, &lt;, ≤ operators. Get notified the moment an asset hits your target.</div>
               <div class="feature-tags">
@@ -166,7 +166,7 @@
               </div>
             </div>
             <div class="feature-card c-amber">
-              <div class="feature-icon">📈</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="chart-up" size="lg" %}</div>
               <div class="feature-title">Interactive Charts</div>
               <div class="feature-desc">Visualise price history with 1W / 1M / 3M / 1Y views. Sparklines, bar charts, P&L over time.</div>
               <div class="feature-tags">
@@ -176,7 +176,7 @@
               </div>
             </div>
             <div class="feature-card c-purple">
-              <div class="feature-icon">📜</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="history" size="lg" %}</div>
               <div class="feature-title">Full History</div>
               <div class="feature-desc">Every buy and sell is logged with timestamps. Filter by asset type, export your activity at any time.</div>
               <div class="feature-tags">
@@ -186,7 +186,7 @@
               </div>
             </div>
             <div class="feature-card c-red">
-              <div class="feature-icon">⚡</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="crypto" size="lg" %}</div>
               <div class="feature-title">Cached Live Prices</div>
               <div class="feature-desc">Powered by InvestAPI — reliable cached prices for stocks, crypto, and Steam market items without rate limits.</div>
               <div class="feature-tags">
@@ -196,7 +196,7 @@
               </div>
             </div>
             <div class="feature-card c-teal">
-              <div class="feature-icon">🛠</div>
+              <div class="feature-icon">{% include "includes/ui_icon.html" with name="tools" size="lg" %}</div>
               <div class="feature-title">Developer-First</div>
               <div class="feature-desc">Open source Django app with Docker support. PostgreSQL in production, SQLite in dev. MIT license.</div>
               <div class="feature-tags">
@@ -217,7 +217,7 @@
           <div class="asset-types-grid">
             <div class="asset-type-card">
 
-              <span class="type-emoji">💹</span>
+              <span class="type-icon">{% include "includes/ui_icon.html" with name="stocks" size="xl" %}</span>
               <div class="type-name">Stocks & ETFs</div>
               <div class="type-desc">Track US equities and ETFs with live pricing. Monitor P&L per share and portfolio weight.</div>
               <div class="type-tickers">
@@ -229,7 +229,7 @@
               </div>
             </div>
             <div class="asset-type-card">
-              <span class="type-emoji">⚡</span>
+              <span class="type-icon">{% include "includes/ui_icon.html" with name="crypto" size="xl" %}</span>
               <div class="type-name">Cryptocurrency</div>
               <div class="type-desc">Bitcoin, Ethereum, Solana and hundreds of tokens. Track fractional holdings with full precision.</div>
               <div class="type-tickers">
@@ -240,7 +240,7 @@
               </div>
             </div>
             <div class="asset-type-card">
-              <span class="type-emoji">🎮</span>
+              <span class="type-icon">{% include "includes/ui_icon.html" with name="steam" size="xl" %}</span>
               <div class="type-name">Steam Market</div>
               <div class="type-desc">CS2 skins, cases, and capsules. The only investment tracker that takes your inventory seriously.</div>
               <div class="type-tickers">

@@ -1,0 +1,68 @@
+/*
+ * icons.css — UI icons via CSS mask (inherits currentColor).
+ * SVG assets: static/icons/*.svg
+ */
+
+.ui-icon {
+  display:            inline-block;
+  flex-shrink:        0;
+  vertical-align:     middle;
+  background-color:   currentColor;
+  mask-repeat:        no-repeat;
+  mask-position:      center;
+  mask-size:          contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+}
+
+.ui-icon--xs  { width: 10px; height: 10px; }
+.ui-icon--sm  { width: 16px; height: 16px; }
+.ui-icon--md  { width: 20px; height: 20px; }
+.ui-icon--lg  { width: 24px; height: 24px; }
+.ui-icon--xl  { width: 36px; height: 36px; }
+
+.ui-icon--portfolio { mask-image: url("../icons/portfolio.svg"); -webkit-mask-image: url("../icons/portfolio.svg"); }
+.ui-icon--analytics { mask-image: url("../icons/analytics.svg"); -webkit-mask-image: url("../icons/analytics.svg"); }
+.ui-icon--stocks    { mask-image: url("../icons/stocks.svg");    -webkit-mask-image: url("../icons/stocks.svg"); }
+.ui-icon--crypto    { mask-image: url("../icons/crypto.svg");    -webkit-mask-image: url("../icons/crypto.svg"); }
+.ui-icon--steam     { mask-image: url("../icons/steam.svg");     -webkit-mask-image: url("../icons/steam.svg"); }
+.ui-icon--alerts    { mask-image: url("../icons/alerts.svg");    -webkit-mask-image: url("../icons/alerts.svg"); }
+.ui-icon--history   { mask-image: url("../icons/history.svg");   -webkit-mask-image: url("../icons/history.svg"); }
+.ui-icon--tools     { mask-image: url("../icons/tools.svg");     -webkit-mask-image: url("../icons/tools.svg"); }
+.ui-icon--user      { mask-image: url("../icons/user.svg");      -webkit-mask-image: url("../icons/user.svg"); }
+.ui-icon--lock      { mask-image: url("../icons/lock.svg");      -webkit-mask-image: url("../icons/lock.svg"); }
+.ui-icon--mail      { mask-image: url("../icons/mail.svg");      -webkit-mask-image: url("../icons/mail.svg"); }
+.ui-icon--at        { mask-image: url("../icons/at.svg");        -webkit-mask-image: url("../icons/at.svg"); }
+.ui-icon--chart-up  { mask-image: url("../icons/chart-up.svg");  -webkit-mask-image: url("../icons/chart-up.svg"); }
+.ui-icon--chart-down{ mask-image: url("../icons/chart-down.svg");-webkit-mask-image: url("../icons/chart-down.svg"); }
+.ui-icon--star      { mask-image: url("../icons/star.svg");      -webkit-mask-image: url("../icons/star.svg"); }
+.ui-icon--send      { mask-image: url("../icons/send.svg");      -webkit-mask-image: url("../icons/send.svg"); }
+.ui-icon--warning   { mask-image: url("../icons/warning.svg");   -webkit-mask-image: url("../icons/warning.svg"); }
+.ui-icon--check     { mask-image: url("../icons/check.svg");     -webkit-mask-image: url("../icons/check.svg"); }
+.ui-icon--close     { mask-image: url("../icons/close.svg");     -webkit-mask-image: url("../icons/close.svg"); }
+.ui-icon--arrow-up  { mask-image: url("../icons/arrow-up.svg");  -webkit-mask-image: url("../icons/arrow-up.svg"); }
+.ui-icon--arrow-down{ mask-image: url("../icons/arrow-down.svg");-webkit-mask-image: url("../icons/arrow-down.svg"); }
+.ui-icon--info      { mask-image: url("../icons/info.svg");      -webkit-mask-image: url("../icons/info.svg"); }
+.ui-icon--logout    { mask-image: url("../icons/logout.svg");    -webkit-mask-image: url("../icons/logout.svg"); }
+.ui-icon--dot       { mask-image: url("../icons/dot.svg");       -webkit-mask-image: url("../icons/dot.svg"); }
+.ui-icon--clock     { mask-image: url("../icons/clock.svg");     -webkit-mask-image: url("../icons/clock.svg"); }
+
+.trend-icon { margin-top: -1px; }
+
+.feature-icon .ui-icon { color: var(--text-dim); }
+.type-icon  .ui-icon { color: var(--text-dim); }
+
+.form-input-icon .ui-icon { color: var(--text-muted); }
+
+.toast__icon .ui-icon,
+.toast__close .ui-icon { color: inherit; }
+
+.sidebar-nav-item .ui-icon { color: var(--text-muted); }
+.sidebar-nav-item.active .ui-icon,
+.sidebar-nav-item:hover .ui-icon { color: inherit; }
+
+.profile-tab .ui-icon { color: var(--text-muted); }
+.profile-tab.active .ui-icon { color: inherit; }
+
+.activity-icon .ui-icon { color: inherit; }

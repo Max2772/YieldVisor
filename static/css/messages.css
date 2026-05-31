@@ -88,11 +88,9 @@
 
 /* ── Иконка ── */
 .toast__icon {
-  font-size:   15px;
-  line-height: 1;
+  display:     flex;
+  align-items: center;
   flex-shrink: 0;
-  width:       20px;
-  text-align:  center;
 }
 
 /* ── Текст ── */
@@ -109,8 +107,8 @@
   border:      none;
   color:       var(--text-muted);
   cursor:      pointer;
-  font-size:   13px;
-  line-height: 1;
+  display:     flex;
+  align-items: center;
   padding:     2px 4px;
   flex-shrink: 0;
   transition:  color 0.15s;

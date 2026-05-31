@@ -1,0 +1,8 @@
+{# Trend arrow — pass up: true|false, optional size (default xs) #}
+{% with icon_size=size|default:"xs" %}
+  {% if up %}
+    {% include "includes/ui_icon.html" with name="arrow-up" size=icon_size class="trend-icon" %}
+  {% else %}
+    {% include "includes/ui_icon.html" with name="arrow-down" size=icon_size class="trend-icon" %}
+  {% endif %}
+{% endwith %}

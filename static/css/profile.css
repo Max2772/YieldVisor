@@ -201,7 +201,10 @@
   border-color: var(--green);
 }
 
-.profile-tab-icon { font-size: 15px; }
+.profile-tab-icon {
+  display:     inline-flex;
+  align-items: center;
+}
 
 /* Tab panels */
 .profile-panel { display: none; }
@@ -476,9 +479,12 @@
   display:         flex;
   align-items:     center;
   justify-content: center;
-  font-size:       15px;
   flex-shrink:     0;
 }
+
+.activity-icon.buy .ui-icon   { color: var(--green); }
+.activity-icon.sell .ui-icon  { color: var(--red); }
+.activity-icon.alert .ui-icon { color: var(--amber); }
 
 .activity-icon.buy   { background: var(--green-dim); }
 .activity-icon.sell  { background: var(--red-dim); }

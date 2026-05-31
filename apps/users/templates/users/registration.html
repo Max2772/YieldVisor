@@ -102,7 +102,7 @@
     <div class="form-group">
       <label class="form-label" for="{{ form.username.id_for_label }}">Username</label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">@</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="at" size="sm" %}</span>
         <input
           class="form-input has-icon {% if form.username.errors %}error{% endif %}"
           type="text"
@@ -124,7 +124,7 @@
     <div class="form-group">
       <label class="form-label" for="{{ form.email.id_for_label }}">Email</label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">✉</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="mail" size="sm" %}</span>
         <input
           class="form-input has-icon {% if form.email.errors %}error{% endif %}"
           type="email"
@@ -144,7 +144,7 @@
     <div class="form-group">
       <label class="form-label" for="{{ form.password1.id_for_label }}">Password</label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">🔒</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="lock" size="sm" %}</span>
         <input
           class="form-input has-icon has-action {% if form.password1.errors %}error{% endif %}"
           type="password"
@@ -171,7 +171,7 @@
     <div class="form-group">
       <label class="form-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
       <div class="form-input-wrap">
-        <span class="form-input-icon">🔒</span>
+        <span class="form-input-icon">{% include "includes/ui_icon.html" with name="lock" size="sm" %}</span>
         <input
           class="form-input has-icon has-action {% if form.password2.errors %}error{% endif %}"
           type="password"
