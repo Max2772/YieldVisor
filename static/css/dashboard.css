@@ -537,29 +537,38 @@
   overflow:      hidden;
 }
 
+.assets-table--holdings:not(.assets-table--holdings-meta) th:first-child,
+.assets-table--holdings:not(.assets-table--holdings-meta) td:first-child {
+  width: 20%;
+}
+
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(2),
 .assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(2) {
-  width: 8%;
+  width:         11%;
+  padding-right: 14px;
+  white-space:   nowrap;
 }
 
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(3),
 .assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(3) {
-  width: 9%;
+  width:        11%;
+  padding-left: 10px;
+  white-space:  nowrap;
 }
 
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(4),
 .assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(4) {
-  width: 12%;
+  width: 11%;
 }
 
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(5),
 .assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(5) {
-  width: 8%;
+  width: 7%;
 }
 
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(6),
 .assets-table--holdings:not(.assets-table--holdings-meta) td:nth-child(6) {
-  width: 8%;
+  width: 7%;
 }
 
 .assets-table--holdings:not(.assets-table--holdings-meta) th:nth-child(7),
@@ -589,14 +598,23 @@
   text-align: left;
 }
 
-.assets-table--holdings-meta th:nth-child(n+3):nth-child(-n+4),
-.assets-table--holdings-meta td:nth-child(n+3):nth-child(-n+4) {
-  width: 8%;
+.assets-table--holdings-meta th:nth-child(3),
+.assets-table--holdings-meta td:nth-child(3) {
+  width:         10%;
+  padding-right: 14px;
+  white-space:   nowrap;
+}
+
+.assets-table--holdings-meta th:nth-child(4),
+.assets-table--holdings-meta td:nth-child(4) {
+  width:        10%;
+  padding-left: 10px;
+  white-space:  nowrap;
 }
 
 .assets-table--holdings-meta th:nth-child(5),
 .assets-table--holdings-meta td:nth-child(5) {
-  width: 12%;
+  width: 11%;
 }
 
 .assets-table--holdings-meta th:nth-child(6),
