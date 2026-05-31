@@ -326,7 +326,7 @@
 
 .mockup-chart-wrap { height: 130px; margin-bottom: 14px; }
 
-.mockup-rows { display: flex; flex-direction: column; gap: 1px; }
+.mockup-rows { display: flex; flex-direction: column; gap: 3px; }
 
 .mockup-row {
   display:       flex;
@@ -501,7 +501,8 @@
   padding:       3px 8px;
   border-radius: 4px;
   background:    var(--surface3);
-  color:         var(--text-muted);
+  color:         var(--text-dim);
+  border:        1px solid var(--border-light);
 }
 
 /* ── Asset types section ──────────────────── */
@@ -547,8 +548,8 @@
   padding:       4px 9px;
   border-radius: 5px;
   background:    var(--surface3);
-  color:         var(--text-dim);
-  border:        1px solid var(--border);
+  color:         #b4bac5;
+  border:        1px solid var(--border-light);
 }
 
 /* ── CTA section ──────────────────────────── */
