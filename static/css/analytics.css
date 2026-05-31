@@ -1,44 +1,197 @@
 /*
  * analytics.css
- * Extra layout rules for the Analytics page.
+ * Analytics page layout overrides.
  * Depends on: tokens.css, base.css, dashboard.css
  */
 
-/* full-width asset breakdown table cells */
-.assets-table td:first-child,
-.assets-table th:first-child {
-  padding-left: 24px;
+.content-grid--analytics {
+  grid-template-columns: minmax(0, 1fr) 240px;
 }
 
-.assets-table td:last-child,
-.assets-table th:last-child {
+.analytics-sidebar {
+  gap: 14px;
+}
+
+.analytics-sidebar .card-body {
+  padding: 14px 16px;
+}
+
+.analytics-sidebar .card-header {
+  padding: 14px 16px 12px;
+}
+
+.analytics-sidebar .donut-wrap {
+  height: 110px;
+  margin-bottom: 8px;
+}
+
+.analytics-sidebar .donut-total {
+  font-size: 15px;
+}
+
+.analytics-sidebar .donut-label {
+  font-size: 10px;
+}
+
+.analytics-sidebar .legend {
+  gap: 6px;
+}
+
+.analytics-sidebar .legend-item {
+  font-size: 12px;
+}
+
+.analytics-sidebar .qs-row {
+  font-size: 12px;
+}
+
+.analytics-sidebar .alert-item {
+  padding: 8px 0;
+}
+
+.analytics-sidebar .alert-name {
+  font-size: 13px;
+}
+
+.analytics-sidebar .alert-meta {
+  font-size: 11px;
+}
+
+/* Return chart — asset type filter */
+.analytics-return-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.analytics-return-filter-btn {
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.analytics-return-filter-btn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.analytics-return-filter-btn.active {
+  color: var(--text);
+  background: var(--surface2);
+  border-color: var(--text-muted);
+}
+
+.analytics-return-chart-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Asset breakdown table */
+.assets-table--analytics {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.assets-table--analytics th,
+.assets-table--analytics td {
+  padding: 12px 10px;
+  vertical-align: middle;
+}
+
+.assets-table--analytics th:first-child,
+.assets-table--analytics td:first-child {
+  padding-left: 24px;
+  text-align: left;
+}
+
+.assets-table--analytics th:last-child,
+.assets-table--analytics td:last-child {
   padding-right: 24px;
 }
 
-/* progress bar inside table */
-.weight-bar-wrap {
-  display:     flex;
+.assets-table--analytics .col-asset {
+  width: 26%;
+}
+
+.assets-table--analytics .col-money {
+  width: 14%;
+}
+
+.assets-table--analytics .col-pnl {
+  width: 14%;
+}
+
+.assets-table--analytics .col-return {
+  width: 12%;
+}
+
+.assets-table--analytics .col-weight {
+  width: 16%;
+  min-width: 108px;
+}
+
+.assets-table--analytics th:not(:first-child),
+.assets-table--analytics td:not(:first-child) {
+  text-align: right;
+}
+
+.assets-table--analytics .col-weight,
+.assets-table--analytics td.col-weight {
+  text-align: right;
+}
+
+.assets-table--analytics .asset-cell {
+  display: flex;
   align-items: center;
-  gap:         8px;
+  gap: 10px;
+  min-width: 0;
 }
 
-.weight-bar-track {
-  flex:          1;
-  height:        4px;
-  background:    var(--surface2);
+.assets-table--analytics .asset-cell > div {
+  min-width: 0;
+}
+
+.assets-table--analytics .asset-ticker {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assets-table--analytics .weight-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.assets-table--analytics .weight-bar-track {
+  flex: 1;
+  min-width: 48px;
+  max-width: 72px;
+  height: 4px;
+  background: var(--surface2);
   border-radius: 2px;
-  overflow:      hidden;
+  overflow: hidden;
 }
 
-.weight-bar-fill {
-  height:        100%;
+.assets-table--analytics .weight-bar-fill {
+  height: 100%;
   border-radius: 2px;
 }
 
-.weight-label {
+.assets-table--analytics .weight-label {
   font-family: var(--font-mono);
-  font-size:   11px;
-  color:       var(--text-muted);
-  width:       30px;
-  text-align:  right;
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
 }
