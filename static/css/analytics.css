@@ -196,11 +196,7 @@
   flex-shrink: 0;
 }
 
-/* Metric help (i) tooltips — hover only */
-.stats-grid .stat-card {
-  overflow: visible;
-}
-
+/* Metric help (i) tooltips — hover only, fixed position via JS to avoid clipping */
 .label-with-help {
   display: inline-flex;
   align-items: center;
@@ -250,13 +246,8 @@
 
 .metric-help__tip {
   display: none;
-  position: absolute;
-  z-index: 100;
-  top: calc(100% + 8px);
-  left: 50%;
-  transform: translateX(-50%);
   width: max-content;
-  max-width: 240px;
+  max-width: min(240px, calc(100vw - 24px));
   padding: 10px 12px;
   font-family: var(--font-sans);
   font-size: 12px;
@@ -273,44 +264,31 @@
   pointer-events: none;
 }
 
-.metric-help__tip::before {
+.metric-help__tip--open {
+  display: block;
+  position: fixed;
+  z-index: 10000;
+  margin: 0;
+  transform: none;
+}
+
+.metric-help__tip--open::before {
   content: "";
   position: absolute;
   bottom: 100%;
-  left: 50%;
+  left: var(--tip-arrow-x, 50%);
   transform: translateX(-50%);
   border: 6px solid transparent;
   border-bottom-color: var(--border-light);
 }
 
-.metric-help__tip::after {
+.metric-help__tip--open::after {
   content: "";
   position: absolute;
   bottom: 100%;
-  left: 50%;
+  left: var(--tip-arrow-x, 50%);
   transform: translateX(-50%);
   margin-bottom: -1px;
   border: 5px solid transparent;
   border-bottom-color: var(--surface2);
-}
-
-.metric-help:hover .metric-help__tip {
-  display: block;
-}
-
-.analytics-sidebar .metric-help__tip {
-  left: auto;
-  right: 0;
-  transform: none;
-}
-
-.analytics-sidebar .metric-help__tip::before,
-.analytics-sidebar .metric-help__tip::after {
-  left: auto;
-  right: 6px;
-  transform: none;
-}
-
-.card {
-  overflow: visible;
 }
