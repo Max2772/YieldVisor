@@ -28,6 +28,12 @@ _PORTFOLIO_CHART = {
     "chart_fill_end": "rgba(255,152,0,0)",
 }
 
+_HERO_CHART = {
+    "chart_line_color": "#4fc3f7",
+    "chart_fill_start": "rgba(79,195,247,0.18)",
+    "chart_fill_end": "rgba(79,195,247,0)",
+}
+
 
 def asset_chart_colors(asset_type: str) -> dict[str, str]:
     """Line-chart colors for a market category (list + detail pages)."""
@@ -37,3 +43,8 @@ def asset_chart_colors(asset_type: str) -> dict[str, str]:
 def portfolio_chart_colors() -> dict[str, str]:
     """Line-chart colors for the aggregate portfolio overview page."""
     return dict(_PORTFOLIO_CHART)
+
+
+def hero_chart_colors() -> dict[str, str]:
+    """Line-chart colors for the public homepage hero mockup."""
+    return dict(_HERO_CHART)

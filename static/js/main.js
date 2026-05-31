@@ -16,18 +16,24 @@ function initHeroChart() {
   const canvas = document.getElementById("heroChart");
   if (!canvas) return;
 
-  const ctx = canvas.getContext("2d");
+  const chartDataEl = document.getElementById("hero-chart-data");
+  const payload = chartDataEl ? JSON.parse(chartDataEl.textContent) : null;
+  const values = payload?.values?.length
+    ? payload.values
+    : [
+        11800, 12100, 11900, 12400, 12700, 12500, 13000, 12900,
+        12600, 13100, 13500, 13400, 13800, 14200, 14000, 13800,
+        14100, 14300, 14256,
+      ];
 
-  // Static demo data: portfolio value growth for ~1 month
-  const values = [
-    11800, 12100, 11900, 12400, 12700, 12500, 13000, 12900,
-    12600, 13100, 13500, 13400, 13800, 14200, 14000, 13800,
-    14100, 14300, 14256,
-  ];
+  const ctx = canvas.getContext("2d");
+  const lineColor = canvas.dataset.lineColor || "#00e676";
+  const fillStart = canvas.dataset.fillStart || "rgba(0, 230, 118, 0.18)";
+  const fillEnd = canvas.dataset.fillEnd || "rgba(0, 230, 118, 0)";
 
   const gradient = ctx.createLinearGradient(0, 0, 0, 130);
-  gradient.addColorStop(0, "rgba(0, 230, 118, 0.18)");
-  gradient.addColorStop(1, "rgba(0, 230, 118, 0)");
+  gradient.addColorStop(0, fillStart);
+  gradient.addColorStop(1, fillEnd);
 
   new Chart(ctx, {
     type: "line",
@@ -36,7 +42,7 @@ function initHeroChart() {
       datasets: [
         {
           data: values,
-          borderColor: "#00e676",
+          borderColor: lineColor,
           borderWidth: 2,
           fill: true,
           backgroundColor: gradient,

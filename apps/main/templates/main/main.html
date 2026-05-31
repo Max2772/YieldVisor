@@ -53,16 +53,6 @@
                 <a href="{% url 'user:login' %}" class="btn btn-primary btn-lg">Start for free →</a>
                 <a href="{% url 'portfolio:portfolio' %}" class="btn btn-outline btn-lg">Open portfolio</a>
             </div>
-
-            <div class="hero-social-proof">
-              <div class="proof-avatars">
-                <div class="proof-avatar" style="background:linear-gradient(135deg,#1a3a2a,#00e676)">A</div>
-                <div class="proof-avatar" style="background:linear-gradient(135deg,#1a2040,#4fc3f7)">K</div>
-                <div class="proof-avatar" style="background:linear-gradient(135deg,#2a1a30,#7c83ff)">D</div>
-                <div class="proof-avatar" style="background:linear-gradient(135deg,#3a2a10,#ffb300)">M</div>
-              </div>
-              <span>Joined by <strong>{{ user_count|default:"2,400" }}+</strong> investors this month</span>
-            </div>
           </div>
 
           {# Интерактивный мокап портфолио #}
@@ -80,40 +70,64 @@
                 <div class="mockup-summary">
                   <div class="mockup-stat">
                     <div class="mockup-stat-label">Total Value</div>
-                    <div class="mockup-stat-val">$14,256</div>
-                    <div class="mockup-stat-sub up">▲ +3.24%</div>
+                    {% if hero_mockup.has_data %}
+                    <div class="mockup-stat-val">${{ hero_mockup.total_value_dollars }}</div>
+                    {% if hero_mockup.value_change %}
+                    <div class="mockup-stat-sub {% if hero_mockup.value_change_positive %}up{% else %}down{% endif %}">
+                      {% if hero_mockup.value_change_positive %}▲{% else %}▼{% endif %} {{ hero_mockup.value_change }} 30D
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="mockup-stat-val">—</div>
+                    {% endif %}
                   </div>
                   <div class="mockup-stat">
-                    <div class="mockup-stat-label">Total P&L</div>
-                    <div class="mockup-stat-val down">−$892</div>
-                    <div class="mockup-stat-sub down">▼ −5.88%</div>
+                    <div class="mockup-stat-label">30D Change</div>
+                    {% if hero_mockup.has_data %}
+                    <div class="mockup-stat-val {% if hero_mockup.period_pnl_positive %}up{% else %}down{% endif %}">
+                      {% if hero_mockup.period_pnl_positive %}+{% else %}−{% endif %}${{ hero_mockup.period_pnl }}
+                    </div>
+                    {% if hero_mockup.value_change %}
+                    <div class="mockup-stat-sub {% if hero_mockup.value_change_positive %}up{% else %}down{% endif %}">
+                      {% if hero_mockup.value_change_positive %}▲{% else %}▼{% endif %} {{ hero_mockup.value_change }}
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="mockup-stat-val">—</div>
+                    {% endif %}
                   </div>
                 </div>
 
-                {# Chart.js mini chart — данные передаются через data-атрибут #}
                 <div class="mockup-chart-wrap">
-                  <canvas id="heroChart"></canvas>
+                  <canvas
+                    id="heroChart"
+                    {% if hero_mockup.has_data %}
+                    data-line-color="{{ hero_mockup.chart_line_color }}"
+                    data-fill-start="{{ hero_mockup.chart_fill_start }}"
+                    data-fill-end="{{ hero_mockup.chart_fill_end }}"
+                    {% endif %}
+                  ></canvas>
                 </div>
 
                 <div class="mockup-rows">
-                  <div class="mockup-row">
-                    <div class="mockup-row-icon" style="background:#1a2e40;color:#4fc3f7">N</div>
-                    <span class="mockup-row-name">NVDA</span>
-                    <span class="mockup-row-price">$874.15</span>
-                    <span class="mockup-row-pnl" style="background:var(--green-dim);color:var(--green)">+22.4%</span>
+                  {% for asset in hero_mockup.assets %}
+                  <div class="mockup-row" data-asset-type="{{ asset.asset_type }}">
+                    <div class="mockup-row-asset">
+                      {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.ticker icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg %}
+                      <span class="mockup-row-name">{{ asset.ticker }}</span>
+                    </div>
+                    <span class="mockup-row-price">${{ asset.price }}</span>
+                    {% if asset.change_pct != "—" %}
+                    <span class="mockup-row-pnl" style="background:{% if asset.change_positive %}var(--green-dim){% else %}var(--red-dim){% endif %};color:{% if asset.change_positive %}var(--green){% else %}var(--red){% endif %}">{{ asset.change_pct }}</span>
+                    {% else %}
+                    <span class="mockup-row-pnl muted">—</span>
+                    {% endif %}
                   </div>
+                  {% empty %}
                   <div class="mockup-row">
-                    <div class="mockup-row-icon" style="background:#1a2a1a;color:#00e676">₿</div>
-                    <span class="mockup-row-name">BTC</span>
-                    <span class="mockup-row-price">$83,200</span>
-                    <span class="mockup-row-pnl" style="background:var(--green-dim);color:var(--green)">+8.1%</span>
+                    <span class="mockup-row-name muted">Loading market data…</span>
                   </div>
-                  <div class="mockup-row">
-                    <div class="mockup-row-icon" style="background:#2a1a1a;color:#ff4d6d">Ξ</div>
-                    <span class="mockup-row-name">ETH</span>
-                    <span class="mockup-row-price">$2,112.49</span>
-                    <span class="mockup-row-pnl" style="background:var(--red-dim);color:var(--red)">−33.9%</span>
-                  </div>
+                  {% endfor %}
                 </div>
               </div>
             </div>
@@ -273,5 +287,8 @@
 
 {# ── JS ── #}
 {% block js %}
+  {% if hero_mockup.has_data %}
+  {{ hero_mockup.hero_chart|json_script:"hero-chart-data" }}
+  {% endif %}
   <script src="{% static 'js/main.js' %}"></script>
 {% endblock %}
