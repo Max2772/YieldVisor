@@ -24,6 +24,7 @@ def build_asset_breakdown(
 
         breakdown.append({
             "ticker": row["ticker"],
+            "asset_type": position.asset_type,
             "type": position.asset_type.upper(),
             "logo_url": row.get("logo_url", ""),
             "icon_text": row["icon_text"],

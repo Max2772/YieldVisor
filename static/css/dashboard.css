@@ -968,7 +968,8 @@
 
 /* Steam: PNG-логотипы без серой подложки */
 #steamTable .asset-icon--logo,
-#portfolioAssetsTable tr[data-asset-type="steam"] .asset-icon--logo {
+#portfolioAssetsTable tr[data-asset-type="steam"] .asset-icon--logo,
+.assets-table--analytics tr[data-asset-type="steam"] .asset-icon--logo {
   background: transparent;
 }
 

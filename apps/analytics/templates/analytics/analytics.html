@@ -136,7 +136,7 @@
           </thead>
           <tbody>
             {% for asset in asset_breakdown %}
-            <tr>
+            <tr data-asset-type="{{ asset.asset_type }}">
               <td class="col-asset">
                 <a href="{{ asset.detail_url }}" class="asset-cell" style="text-decoration:none;color:inherit">
                   {% include "includes/asset_icon.html" with logo_url=asset.logo_url ticker=asset.ticker icon_text=asset.icon_text icon_bg=asset.icon_bg icon_fg=asset.icon_fg %}
