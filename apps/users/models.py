@@ -50,3 +50,7 @@ class UserProfile(models.Model):
 
     def can_add_alert(self) -> bool:
         return self.alerts_remaining() > 0
+
+    @property
+    def telegram_connected(self) -> bool:
+        return self.telegram_id is not None

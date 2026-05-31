@@ -24,12 +24,15 @@
     {# ── Base stylesheets ── #}
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 
     {# ── Page-specific CSS ── #}
     {% block css %}{% endblock %}
 </head>
 
 <body>
+    {% include "includes/messages.html" %}
+
     {# ── Navigation Bar ── #}
     {% block navbar %}{% endblock %}
 
@@ -42,6 +45,7 @@
     <script src="{% static 'js/bootstrap/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/base.js' %}"></script>
     <script src="{% static 'js/date_badge.js' %}"></script>
+    <script src="{% static 'js/messages.js' %}"></script>
 
     {# ── Page-specific JS ── #}
     {% block js %}{% endblock %}

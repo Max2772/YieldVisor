@@ -1,13 +1,14 @@
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.db.models import Prefetch
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView
+from django.views.generic import CreateView, UpdateView
 from apps.users.forms import UserLoginForm, UserRegistrationForm, ProfileForm
+from apps.users.services.profile_page import build_profile_page_context
 
 
 class UserLoginView(LoginView):
@@ -61,21 +62,41 @@ class UserProfileView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         return self.request.user
 
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("section") == "password":
+            return self._change_password(request)
+        return super().post(request, *args, **kwargs)
+
+    def _change_password(self, request):
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            auth.update_session_auth_hash(request, form.user)
+            messages.success(request, "Пароль успешно обновлен")
+            return redirect(self.success_url)
+
+        messages.error(request, "Не удалось обновить пароль")
+        context = self.get_context_data(password_form=form)
+        return self.render_to_response(context)
+
     def form_valid(self, form):
         messages.success(self.request, "Профиль успешно обновлен")
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.success(self.request, "Произошла ошибка")
+        messages.error(self.request, "Не удалось сохранить профиль")
         return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context.update(build_profile_page_context(self.request.user))
+        context.setdefault("password_form", PasswordChangeForm(user=self.request.user))
         context['title'] = 'Profile'
         return context
 
 @login_required
 def logout(request):
-    messages.success(request, f"{request.user.username}, Вы вышли из аккаунта")
+    username = request.user.username
     auth.logout(request)
+    messages.success(request, f"{username}, Вы вышли из аккаунта")
     return redirect(reverse('main:main'))

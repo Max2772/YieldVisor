@@ -3,11 +3,9 @@
 
 {% block css %}
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
 {% endblock %}
 
 {% block content %}
-    {% include "includes/messages.html" %}
     <div class="app">
 
       {# ── Sidebar (переиспользуемый компонент) ── #}
@@ -34,6 +32,4 @@
     </div>
 {% endblock %}
 
-{% block js %}
-    <script src="{% static 'js/messages.js' %}"></script>
-{% endblock %}
+{% block js %}{% endblock %}

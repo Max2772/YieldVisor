@@ -51,6 +51,31 @@ function initProfileTabs() {
   }
 }
 
+function initAvatarUpload() {
+  const input = document.getElementById("id_image");
+  const avatar = document.querySelector(".profile-avatar");
+  if (!input || !avatar) return;
+
+  input.addEventListener("change", () => {
+    const file = input.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      let img = avatar.querySelector(".profile-avatar-img");
+      if (!img) {
+        avatar.textContent = "";
+        img = document.createElement("img");
+        img.className = "profile-avatar-img";
+        img.alt = "Avatar preview";
+        avatar.insertBefore(img, avatar.querySelector(".profile-avatar-overlay"));
+      }
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 /* ── Character counters ───────────────────────────────────────────────── */
 /**
  * Для каждого .sfield-textarea / .sfield-input с data-maxlength
@@ -175,6 +200,19 @@ function showToast(message, duration = 3000) {
   }, duration);
 }
 
+function initPasswordToggles() {
+  document.querySelectorAll(".pw-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = btn.closest(".sfield, div")?.querySelector("input[type='password']");
+      if (!input) return;
+      const isHidden = input.type === "password";
+      input.type = isHidden ? "text" : "password";
+      btn.textContent = isHidden ? "Hide" : "Show";
+      btn.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+    });
+  });
+}
+
 /* ── Bootstrap ───────────────────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", () => {
   initProfileTabs();
@@ -183,4 +221,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initUnsavedWarning();
   initSessionRevoke();
   initDeleteConfirm();
+  initPasswordToggles();
 });

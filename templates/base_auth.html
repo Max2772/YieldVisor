@@ -2,7 +2,6 @@
 {% load static %}
 
 {% block css %}
-    <link rel="stylesheet" href="{% static 'css/messages.css' %}">
     <link rel="stylesheet" href="{% static 'css/auth.css' %}">
 {% endblock %}
 
@@ -33,9 +32,6 @@
     </div>
 {% endblock %}
 
-
-{% include "includes/messages.html" %}
 {% block js %}
     <script src="{% static 'js/auth.js' %}"></script>
-    <script src="{% static 'js/messages.js' %}"></script>
 {% endblock %}

@@ -38,17 +38,6 @@
     </div>
   </div>
 
-  <div class="auth-social-proof">
-    <div class="auth-proof-avatars">
-      <div class="auth-proof-avatar" style="background:linear-gradient(135deg,#1a3a2a,#00e676)">A</div>
-      <div class="auth-proof-avatar" style="background:linear-gradient(135deg,#1a2040,#4fc3f7)">K</div>
-      <div class="auth-proof-avatar" style="background:linear-gradient(135deg,#2a1a30,#7c83ff)">D</div>
-    </div>
-    <div class="auth-proof-text">
-      <strong>2,400+</strong> investors tracking<br>their portfolio right now
-    </div>
-  </div>
-
 {% endblock %}
 
 
@@ -112,7 +101,7 @@
           autocomplete="current-password"
           required
         >
-        <button type="button" class="form-input-toggle">👁</button>
+        <button type="button" class="form-input-toggle" aria-label="Show password">Show</button>
       </div>
       <div class="form-error {% if form.password.errors %}visible{% endif %}">
         {{ form.password.errors.0 }}

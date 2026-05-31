@@ -272,13 +272,20 @@
 .mockup-header {
   display:       flex;
   align-items:   center;
+  position:      relative;
   gap:           8px;
   padding:       14px 18px;
   background:    var(--surface2);
   border-bottom: 1px solid var(--border);
 }
 
-.mockup-dots { display: flex; gap: 6px; }
+.mockup-dots {
+  display:       flex;
+  gap:           6px;
+  flex-shrink:   0;
+  position:      relative;
+  z-index:       1;
+}
 
 .mockup-dot {
   width:         10px;
@@ -287,11 +294,14 @@
 }
 
 .mockup-title {
-  flex:        1;
+  position:    absolute;
+  left:        0;
+  right:       0;
   text-align:  center;
   font-family: var(--font-mono);
   font-size:   11px;
   color:       var(--text-muted);
+  pointer-events: none;
 }
 
 .mockup-body { padding: 18px; }

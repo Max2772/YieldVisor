@@ -24,22 +24,12 @@
       </div>
       <div class="auth-feature">
         <div class="auth-feature-dot"></div>
-        Interactive charts: 1W / 1M / 3M / 1Y
+        Interactive charts: 1W / 1M / 1Y / 5Y
       </div>
       <div class="auth-feature">
         <div class="auth-feature-dot"></div>
         Open source, MIT license
       </div>
-    </div>
-  </div>
-
-  <div class="auth-social-proof">
-    <div class="auth-proof-avatars">
-      <div class="auth-proof-avatar" style="background:linear-gradient(135deg,#1a3a2a,#00e676)">S</div>
-      <div class="auth-proof-avatar" style="background:linear-gradient(135deg,#2a1a30,#7c83ff)">L</div>
-    </div>
-    <div class="auth-proof-text">
-      <strong>47 people</strong> signed up<br>in the last 24 hours
     </div>
   </div>
 
@@ -165,7 +155,7 @@
           autocomplete="new-password"
           required
         >
-        <button type="button" class="form-input-toggle">👁</button>
+        <button type="button" class="form-input-toggle" aria-label="Show password">Show</button>
       </div>
       {% if form.password1.errors %}
         <div class="form-error visible">{{ form.password1.errors.0 }}</div>
@@ -192,7 +182,7 @@
           autocomplete="new-password"
           required
         >
-        <button type="button" class="form-input-toggle">👁</button>
+        <button type="button" class="form-input-toggle" aria-label="Show password">Show</button>
       </div>
       <div class="form-error {% if form.password2.errors %}visible{% endif %}">
         {{ form.password2.errors.0 }}

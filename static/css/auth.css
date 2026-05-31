@@ -356,7 +356,9 @@
   border:     none;
   color:      var(--text-muted);
   cursor:     pointer;
-  font-size:  16px;
+  font-size:  12px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
   padding:    4px;
   line-height: 1;
   transition: color 0.15s;

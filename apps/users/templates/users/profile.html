@@ -26,13 +26,13 @@
             <div class="profile-avatar">
                 {% if request.user.image %}
                     <img src="{{ request.user.image.url }}"
-                         alt="Аватар пользователя" class="img-fluid rounded-circle"
-                         style="max-width: 150px;">
+                         alt="{{ request.user.username }} avatar"
+                         class="profile-avatar-img">
                 {% else %}
                     {{ request.user.username|first|upper }}
                 {% endif %}
 
-                <input type="file" class="form-control mt-3" id="id_image"
+                <input type="file" id="id_image"
                        name="image"
                        accept="image/*"
                        form="formOverview">
@@ -46,10 +46,9 @@
             <div class="profile-avatar-badge"></div>
         </div>
 
-        {# Имя и бейджи #}
         <div class="profile-header-info">
             <div class="profile-display-name">
-                {{ request.user.get_full_name }}
+                {{ request.user.get_full_name|default:request.user.username }}
             </div>
             <div class="profile-username">@{{ request.user.username }}</div>
             <div class="profile-badges">
@@ -57,29 +56,31 @@
             </div>
         </div>
 
-        {# Ключевые статы портфолио #}
         <div class="profile-header-stats">
             <div class="phstat">
-                <div class="phstat-val">$14.2K</div>
+                <div class="phstat-val">${{ total_value_short }}</div>
                 <div class="phstat-label">Portfolio</div>
             </div>
             <div class="phstat">
-                <div class="phstat-val up">+3.24%</div>
-                <div class="phstat-label">Today</div>
+                {% if value_change %}
+                    <div class="phstat-val {% if value_change_positive %}up{% else %}down{% endif %}">{{ value_change }}</div>
+                {% else %}
+                    <div class="phstat-val">—</div>
+                {% endif %}
+                <div class="phstat-label">Period</div>
             </div>
             <div class="phstat">
-                <div class="phstat-val">12</div>
+                <div class="phstat-val">{{ assets_count }}</div>
                 <div class="phstat-label">Assets</div>
             </div>
             <div class="phstat">
-                <div class="phstat-val">{{ alerts_count|default:"3" }}</div>
+                <div class="phstat-val">{{ alerts_count }}</div>
                 <div class="phstat-label">Alerts</div>
             </div>
         </div>
 
-        {# Кнопки в шапке #}
         <div class="profile-header-actions">
-            <a href="{% url "portfolio:portfolio" %}" class="btn btn-ghost">View portfolio</a>
+            <a href="{{ portfolio_url }}" class="btn btn-ghost">View portfolio</a>
         </div>
 
     </div>
@@ -101,14 +102,12 @@
     <div class="profile-panel active" id="panel-overview">
         <div class="profile-layout">
 
-            {# Основной контент #}
             <div>
-                {# Личная информация #}
                 <div class="settings-section">
                     <div class="settings-section-header">
                         <div>
                             <div class="settings-section-title">Personal Information</div>
-                            <div class="settings-section-sub">Update your name, email, and bio.</div>
+                            <div class="settings-section-sub">Update your name, email, and avatar.</div>
                         </div>
                     </div>
                     <div class="settings-section-body">
@@ -170,12 +169,11 @@
                     </div>
                 </div>
 
-                {# Telegram интеграция #}
                 <div class="settings-section">
                     <div class="settings-section-header">
                         <div>
                             <div class="settings-section-title">Telegram Bot</div>
-                            <div class="settings-section-sub">Connect your original @InvestingAPIBot account.</div>
+                            <div class="settings-section-sub">Connect your Telegram account for price alerts.</div>
                         </div>
                         {% if profile.telegram_connected %}
                             <span class="badge badge-up">Connected</span>
@@ -188,19 +186,22 @@
                             <div style="display:flex;align-items:center;justify-content:space-between;">
                                 <div>
                                     <div style="font-size:14px;font-weight:600;">
-                                        @{{ profile.telegram_username|default:"max2772" }}</div>
-                                    <div style="font-size:12px;color:var(--text-muted);margin-top:3px;font-family:var(--font-mono);">
-                                        Connected {{ profile.telegram_connected_at|date:"d M Y"|default:"4 Feb 2026" }}
+                                        Telegram ID {{ profile.telegram_id }}
                                     </div>
+                                    {% if profile.notify_telegram %}
+                                        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;font-family:var(--font-mono);">
+                                            Notifications enabled
+                                        </div>
+                                    {% endif %}
                                 </div>
-                                <button class="btn btn-danger">Disconnect</button>
+                                <button class="btn btn-danger" type="button" disabled title="Coming soon">Disconnect</button>
                             </div>
                         {% else %}
                             <p style="font-size:14px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">
                                 Connect your Telegram to receive price alert notifications directly in the bot.
                             </p>
                             <a href="https://t.me/InvestingAPIBot?start=link_{{ request.user.id }}"
-                               class="btn btn-ghost" target="_blank">
+                               class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
                                 ✈ Connect via Telegram
                             </a>
                         {% endif %}
@@ -208,9 +209,7 @@
                 </div>
 
             </div>
-            {# /main #}
 
-            {# Aside — статы и быстрые ссылки #}
             <div class="profile-aside">
 
                 <div class="card">
@@ -219,20 +218,34 @@
                     </div>
                     <div class="card-body" style="padding-top:14px;">
                         <div class="aside-stat-list">
-                            <div class="aside-stat"><span class="aside-stat-label">Total value</span><span
-                                    class="aside-stat-val">$14,256.48</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Total P&amp;L</span><span
-                                    class="aside-stat-val down">−$892.30</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Assets</span><span
-                                    class="aside-stat-val">12</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Stocks</span><span
-                                    class="aside-stat-val">5</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Crypto</span><span
-                                    class="aside-stat-val">4</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Steam</span><span
-                                    class="aside-stat-val">3</span></div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Total value</span>
+                                <span class="aside-stat-val">${{ total_value_dollars }}.{{ total_value_cents }}</span>
+                            </div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Total P&amp;L</span>
+                                <span class="aside-stat-val {% if total_pnl_pos %}up{% else %}down{% endif %}">
+                                    {% if total_pnl_pos %}+{% else %}−{% endif %}${{ total_pnl }}
+                                </span>
+                            </div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Assets</span>
+                                <span class="aside-stat-val">{{ assets_count }}</span>
+                            </div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Stocks</span>
+                                <span class="aside-stat-val">{{ stocks_count }}</span>
+                            </div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Crypto</span>
+                                <span class="aside-stat-val">{{ crypto_count }}</span>
+                            </div>
+                            <div class="aside-stat">
+                                <span class="aside-stat-label">Steam</span>
+                                <span class="aside-stat-val">{{ steam_count }}</span>
+                            </div>
                         </div>
-                        <a href="#" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px;">
+                        <a href="{{ portfolio_url }}" class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:16px;">
                             Open portfolio →
                         </a>
                     </div>
@@ -240,12 +253,11 @@
             </div>
 
         </div>
-    </div>{# /panel-overview #}
+    </div>
 
 
     <div class="profile-panel" id="panel-security">
 
-        {# Смена пароля #}
         <div class="settings-section">
             <div class="settings-section-header">
                 <div>
@@ -254,37 +266,41 @@
                 </div>
             </div>
             <div class="settings-section-body">
-                <form method="post" action="#" class="settings-form">
+                <form method="post" action="{% url 'user:profile' %}" class="settings-form" id="formPassword">
                     {% csrf_token %}
+                    <input type="hidden" name="section" value="password">
 
                     <div class="sfield">
                         <label class="sfield-label" for="id_old_password">Current password</label>
                         <div style="position:relative;">
                             <input class="sfield-input has-action" type="password" id="id_old_password"
-                                   name="old_password" placeholder="Enter current password">
-                            <button type="button" class="form-input-toggle"
-                                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;">
-                                👁
+                                   name="old_password" placeholder="Enter current password" required>
+                            <button type="button" class="form-input-toggle pw-toggle" aria-label="Show password"
+                                    style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;font-family:var(--font-mono);letter-spacing:0.02em;">
+                                Show
                             </button>
                         </div>
+                        {% if password_form.old_password.errors %}
+                            <div class="form-error">{{ password_form.old_password.errors }}</div>
+                        {% endif %}
                     </div>
 
                     <div class="sfield-row">
                         <div class="sfield">
                             <label class="sfield-label" for="id_new_password1">New password</label>
                             <input class="sfield-input" type="password" id="id_new_password1" name="new_password1"
-                                   placeholder="New password">
-                            <div class="pw-strength" style="margin-top:8px;">
-                                <div class="pw-strength-track">
-                                    <div class="pw-strength-fill"></div>
-                                </div>
-                                <div class="pw-strength-label"></div>
-                            </div>
+                                   placeholder="New password" required>
+                            {% if password_form.new_password1.errors %}
+                                <div class="form-error">{{ password_form.new_password1.errors }}</div>
+                            {% endif %}
                         </div>
                         <div class="sfield">
                             <label class="sfield-label" for="id_new_password2">Confirm new</label>
                             <input class="sfield-input" type="password" id="id_new_password2" name="new_password2"
-                                   placeholder="Repeat new password">
+                                   placeholder="Repeat new password" required>
+                            {% if password_form.new_password2.errors %}
+                                <div class="form-error">{{ password_form.new_password2.errors }}</div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -293,7 +309,6 @@
             </div>
         </div>
 
-        {# Danger zone #}
         <div class="danger-zone">
             <div class="danger-zone-header">
                 <span>⚠</span>
@@ -311,11 +326,11 @@
                     <button
                             class="btn btn-danger"
                             id="btnDeleteAccount"
-                            data-username="{{ request.user.username|default:'max2772' }}"
+                            data-username="{{ request.user.username }}"
+                            type="button"
                     >
                         Delete account
                     </button>
-                    {# Скрытая форма, submit-ится из profile.js после подтверждения #}
                     <form id="deleteAccountForm" method="post" action="#" style="display:none;">
                         {% csrf_token %}
                     </form>
@@ -323,7 +338,8 @@
             </div>
         </div>
 
-    </div>{# /panel-security #}
+    </div>
+
 
     <div class="profile-panel" id="panel-activity">
 
@@ -331,9 +347,9 @@
             <div class="settings-section-header">
                 <div>
                     <div class="settings-section-title">Recent Activity</div>
-                    <div class="settings-section-sub">Your last 20 portfolio actions.</div>
+                    <div class="settings-section-sub">Your last {{ recent_activity|length }} portfolio actions.</div>
                 </div>
-                <a href="#" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">Full history →</a>
+                <a href="{{ history_url }}" class="btn btn-ghost" style="font-size:12px;padding:6px 12px;">Full history →</a>
             </div>
             <div class="settings-section-body" style="padding-top:8px;">
                 <div class="activity-list">
@@ -351,58 +367,19 @@
                             </div>
                         </div>
                     {% empty %}
-                        {# Fallback #}
-                        <div class="activity-item">
-                            <div class="activity-icon buy">📈</div>
-                            <div class="activity-body">
-                                <div class="activity-title">Added 3.00 NVDA to portfolio</div>
-                                <div class="activity-meta">04 Feb 2026, 15:35</div>
-                            </div>
-                            <div class="activity-amount up">+$2,142.54</div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon buy">📈</div>
-                            <div class="activity-body">
-                                <div class="activity-title">Added 0.05 BTC to portfolio</div>
-                                <div class="activity-meta">04 Feb 2026, 15:36</div>
-                            </div>
-                            <div class="activity-amount up">+$3,848.05</div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon alert">🔔</div>
-                            <div class="activity-body">
-                                <div class="activity-title">Alert triggered: AMD &gt; $200</div>
-                                <div class="activity-meta">20 Mar 2026, 07:20</div>
-                            </div>
-                            <div class="activity-amount up">$202.05</div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon buy">📈</div>
-                            <div class="activity-body">
-                                <div class="activity-title">Added 10 Glove Case (Steam)</div>
-                                <div class="activity-meta">04 Feb 2026, 16:41</div>
-                            </div>
-                            <div class="activity-amount up">+$208.50</div>
-                        </div>
-                        <div class="activity-item">
-                            <div class="activity-icon sell">📉</div>
-                            <div class="activity-body">
-                                <div class="activity-title">Removed 2.00 AMD from portfolio</div>
-                                <div class="activity-meta">04 Feb 2026, 16:42</div>
-                            </div>
-                            <div class="activity-amount down">−$404.10</div>
-                        </div>
+                        <p style="font-size:14px;color:var(--text-dim);padding:12px 0;">
+                            No portfolio activity yet. Add assets from the dashboard to see them here.
+                        </p>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-    </div>{# /panel-activity #}
+    </div>
 
 {% endblock %}
 
 
-{# ── JS ── #}
 {% block js %}
     <script src="{% static 'js/profile.js' %}"></script>
 {% endblock %}
