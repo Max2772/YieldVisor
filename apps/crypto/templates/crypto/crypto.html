@@ -103,7 +103,7 @@
 {% block js %}
 {{ block.super }}
 <script src="{% static 'js/market_search.js' %}"></script>
-{% include "includes/market_page_charts.html" with chart_canvas_id="cryptoChart" donut_id="allocationDonut" chart_line_color="#7c83ff" chart_fill_start="rgba(124,131,255,0.18)" chart_fill_end="rgba(124,131,255,0)" %}
+{% include "includes/market_page_charts.html" with chart_canvas_id="cryptoChart" donut_id="allocationDonut" %}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
     searchUrl: "{% url 'crypto:market_search' %}",
   });
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
-    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
+    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "{{ chart_line_color }}");
   });
   document.getElementById("cryptoSearch")?.addEventListener("input", e => {
     const q = e.target.value.toLowerCase();

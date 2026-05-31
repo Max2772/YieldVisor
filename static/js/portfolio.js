@@ -12,9 +12,9 @@ function initPriceChart() {
   initPeriodLineChart({
     canvasId: "priceChart",
     dataElementId: "asset-chart-data",
-    lineColor: "#00e676",
-    fillStart: "rgba(0, 230, 118, 0.15)",
-    fillEnd: "rgba(0, 230, 118, 0)",
+    lineColor: canvas.dataset.lineColor || "#00e676",
+    fillStart: canvas.dataset.fillStart || "rgba(0, 230, 118, 0.15)",
+    fillEnd: canvas.dataset.fillEnd || "rgba(0, 230, 118, 0)",
     showLegend: true,
     datasetLabel: canvas.dataset.symbol || "Price",
     tension: 0.4,

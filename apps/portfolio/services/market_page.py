@@ -31,6 +31,7 @@ from apps.core.services.invest_api import (
 from apps.core.services.ticker import format_change_delta, format_ticker_price
 from apps.portfolio.models import Portfolio
 from apps.portfolio.services.holdings import build_holdings
+from apps.core.chart_colors import asset_chart_colors
 from apps.portfolio.types import AssetType
 
 
@@ -515,4 +516,5 @@ def build_market_page_context(
         ctx["steam_pnl_pos"] = summary["pnl_pos"]
         ctx["steam_pnl_pct"] = summary["pnl_pct"]
 
+    ctx.update(asset_chart_colors(asset_type))
     return ctx

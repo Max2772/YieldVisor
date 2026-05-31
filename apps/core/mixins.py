@@ -7,6 +7,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
+from apps.core.chart_colors import asset_chart_colors
 from apps.core.services.asset_detail import build_asset_detail_context
 from apps.core.services.invest_api import InvestAPIError
 from apps.portfolio.models import Portfolio
@@ -166,6 +167,7 @@ class AssetDetailMixin(LoginRequiredMixin, TemplateView):
             position=position,
         )
         context["detail_asset_type"] = self.asset_type
+        context.update(asset_chart_colors(self.asset_type))
         context["position_display"] = (
             format_position_display(position) if position else None
         )

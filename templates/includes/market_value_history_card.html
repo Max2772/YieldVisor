@@ -14,6 +14,9 @@
       <canvas
         id="{{ chart_canvas_id }}"
         {% if chart_dataset_label %}data-symbol="{{ chart_dataset_label }}"{% endif %}
+        {% if chart_line_color %}data-line-color="{{ chart_line_color }}"{% endif %}
+        {% if chart_fill_start %}data-fill-start="{{ chart_fill_start }}"{% endif %}
+        {% if chart_fill_end %}data-fill-end="{{ chart_fill_end }}"{% endif %}
       ></canvas>
     </div>
     {% elif chart_empty_message %}

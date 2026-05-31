@@ -69,7 +69,7 @@
 
 <div class="grid-main anim-2">
   {% if chart.points %}{{ chart|json_script:"asset-chart-data" }}{% endif %}
-  {% include "includes/market_value_history_card.html" with chart_title="Price History" chart_canvas_id="priceChart" chart_period_cap=chart_period_cap chart_has_data=chart.points chart_empty_message="No history data available." chart_body_class="chart-h260" chart_dataset_label=asset.market_symbol %}
+  {% include "includes/market_value_history_card.html" with chart_title="Price History" chart_canvas_id="priceChart" chart_period_cap=chart_period_cap chart_has_data=chart.points chart_empty_message="No history data available." chart_body_class="chart-h260" chart_dataset_label=asset.market_symbol chart_line_color=chart_line_color chart_fill_start=chart_fill_start chart_fill_end=chart_fill_end %}
 
   <div class="right-stack">
     <div class="card">

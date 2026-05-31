@@ -109,7 +109,7 @@
 {% block js %}
     {{ block.super }}
     <script src="{% static 'js/market_search.js' %}"></script>
-    {% include "includes/market_page_charts.html" with chart_canvas_id="stocksChart" donut_id="holdingsDonut" chart_line_color="#00e676" chart_fill_start="rgba(0,230,118,0.18)" chart_fill_end="rgba(0,230,118,0)" %}
+    {% include "includes/market_page_charts.html" with chart_canvas_id="stocksChart" donut_id="holdingsDonut" %}
     <script>
         "use strict";
         document.addEventListener("DOMContentLoaded", () => {
@@ -122,7 +122,7 @@
                 initSparkline(
                     c.id,
                     c.dataset.values.split(",").map(Number),
-                    c.dataset.color || "#00e676",
+                    c.dataset.color || "{{ chart_line_color }}",
                 );
             });
             document.getElementById("stocksSearch")?.addEventListener("input", e => {

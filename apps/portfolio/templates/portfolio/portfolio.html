@@ -241,14 +241,14 @@
 
 {% block js %}
 {{ block.super }}
-{% include "includes/market_page_charts.html" with chart_canvas_id="portfolioChart" donut_id="donutChart" chart_line_color="#00e676" chart_fill_start="rgba(0,230,118,0.18)" chart_fill_end="rgba(0,230,118,0)" %}
+{% include "includes/market_page_charts.html" with chart_canvas_id="portfolioChart" donut_id="donutChart" %}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
     const values = c.dataset.values.split(",").map(Number);
     if (values.length && values.some(v => v > 0)) {
-      initSparkline(c.id, values, c.dataset.color || "#00e676");
+      initSparkline(c.id, values, c.dataset.color || "{{ chart_line_color }}");
     }
   });
 

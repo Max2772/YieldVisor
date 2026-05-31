@@ -110,7 +110,7 @@
 {% block js %}
 {{ block.super }}
 <script src="{% static 'js/market_search.js' %}"></script>
-{% include "includes/market_page_charts.html" with chart_canvas_id="steamChart" donut_id="typeDonut" chart_line_color="#4fc3f7" chart_fill_start="rgba(79,195,247,0.18)" chart_fill_end="rgba(79,195,247,0)" %}
+{% include "includes/market_page_charts.html" with chart_canvas_id="steamChart" donut_id="typeDonut" %}
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", () => {
@@ -127,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.assign(url.toString());
   });
   document.querySelectorAll(".sparkline-canvas").forEach(c => {
-    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "#00e676");
+    initSparkline(c.id, c.dataset.values.split(",").map(Number), c.dataset.color || "{{ chart_line_color }}");
   });
   document.getElementById("steamSearch")?.addEventListener("input", e => {
     const q = e.target.value.toLowerCase();

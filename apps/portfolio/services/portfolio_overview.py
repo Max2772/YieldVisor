@@ -6,6 +6,7 @@ from typing import Any
 from django.utils.timesince import timesince
 
 from apps.alerts.models import Alert
+from apps.core.chart_colors import portfolio_chart_colors
 from apps.core.market_catalog import (
     PORTFOLIO_CHART_DAYS,
     PORTFOLIO_CHART_MAX_DAYS,
@@ -234,6 +235,7 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
             "best_asset": "—",
             "worst_asset": "—",
             "last_updated": "—",
+            **portfolio_chart_colors(),
         }
 
     market_rows = _fetch_market_data(positions)
@@ -343,4 +345,5 @@ def build_portfolio_overview_context(user) -> dict[str, Any]:
         ctx["value_change"] = None
         ctx["value_change_positive"] = True
 
+    ctx.update(portfolio_chart_colors())
     return ctx

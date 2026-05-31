@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from django.core.cache import cache
 from django.test import RequestFactory, SimpleTestCase, override_settings
 
+from apps.core.chart_colors import asset_chart_colors, portfolio_chart_colors
 from apps.core.services.asset_detail import build_asset_detail_context
 from apps.core.services.asset_logos import (
     _cache_key,
@@ -380,3 +381,21 @@ class AssetLogoTests(SimpleTestCase):
         fetch_mock.assert_called_once()
         self.assertEqual(steam_logo_url(730, "Glove Case"), url)
         fetch_mock.assert_called_once()
+
+
+class AssetChartColorsTests(SimpleTestCase):
+    def test_colors_by_asset_type(self):
+        self.assertEqual(
+            asset_chart_colors(AssetType.STEAM)["chart_line_color"], "#4fc3f7"
+        )
+        self.assertEqual(
+            asset_chart_colors(AssetType.CRYPTO)["chart_line_color"], "#7c83ff"
+        )
+        self.assertEqual(
+            asset_chart_colors(AssetType.STOCK)["chart_line_color"], "#00e676"
+        )
+
+    def test_portfolio_chart_colors(self):
+        self.assertEqual(
+            portfolio_chart_colors()["chart_line_color"], "#ffb300"
+        )
