@@ -196,6 +196,8 @@
 .assets-table--holdings .holding-actions-stack {
   flex:            0 1 auto;
   justify-content: center;
+  position:        relative;
+  z-index:         1;
 }
 
 .assets-table--holdings .sparkline-canvas {
@@ -204,6 +206,7 @@
   top:             50%;
   transform:       translateY(-50%);
   flex-shrink:     0;
+  pointer-events:  none;
 }
 
 .holding-actions-stack {
