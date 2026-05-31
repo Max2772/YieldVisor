@@ -172,6 +172,7 @@
 /* Holdings — buy / sell / delete + trade modal */
 .assets-table td.holding-trailing-cell {
   white-space: nowrap;
+  position:    relative;
 }
 
 .holding-trailing-inner {
@@ -182,9 +183,27 @@
   width:           100%;
 }
 
-.assets-table--holdings .holding-actions-stack,
+/* My Holdings / My Inventory — center Buy/Sell in trailing column; sparkline pinned right */
+.assets-table--holdings td.holding-trailing-cell {
+  padding-right: 96px;
+  text-align:    center;
+}
+
+.assets-table--holdings .holding-trailing-inner {
+  justify-content: center;
+}
+
+.assets-table--holdings .holding-actions-stack {
+  flex:            0 1 auto;
+  justify-content: center;
+}
+
 .assets-table--holdings .sparkline-canvas {
-  flex-shrink: 0;
+  position:        absolute;
+  right:           16px;
+  top:             50%;
+  transform:       translateY(-50%);
+  flex-shrink:     0;
 }
 
 .holding-actions-stack {
@@ -582,60 +601,64 @@
   width:         220px;
   padding-left:  14px;
   padding-right: 16px;
-  overflow:      hidden;
-  text-align:    right;
+  overflow:      visible;
 }
 
-/* Steam: extra Game column */
+.assets-table--holdings td:last-child {
+  text-align: center;
+}
+
+/* Steam: extra Game column — wider Item for long skin names */
 .assets-table--holdings-meta th:first-child,
 .assets-table--holdings-meta td:first-child {
-  width: 18%;
+  width:    28%;
+  overflow: visible;
 }
 
 .assets-table--holdings-meta th:nth-child(2),
 .assets-table--holdings-meta td:nth-child(2) {
-  width:      7%;
+  width:      6%;
   text-align: left;
 }
 
 .assets-table--holdings-meta th:nth-child(3),
 .assets-table--holdings-meta td:nth-child(3) {
-  width:         10%;
+  width:         9%;
   padding-right: 14px;
   white-space:   nowrap;
 }
 
 .assets-table--holdings-meta th:nth-child(4),
 .assets-table--holdings-meta td:nth-child(4) {
-  width:        10%;
+  width:        9%;
   padding-left: 10px;
   white-space:  nowrap;
 }
 
 .assets-table--holdings-meta th:nth-child(5),
 .assets-table--holdings-meta td:nth-child(5) {
-  width: 11%;
+  width: 10%;
 }
 
 .assets-table--holdings-meta th:nth-child(6),
 .assets-table--holdings-meta td:nth-child(6) {
-  width: 7%;
+  width: 6%;
 }
 
 .assets-table--holdings-meta th:nth-child(7),
 .assets-table--holdings-meta td:nth-child(7) {
-  width: 8%;
+  width: 7%;
 }
 
 .assets-table--holdings-meta th:nth-child(8),
 .assets-table--holdings-meta td:nth-child(8) {
-  width:         9%;
+  width:         8%;
   padding-right: 8px;
 }
 
 .assets-table--holdings-meta th:last-child,
 .assets-table--holdings-meta td:last-child {
-  width: 220px;
+  width: 200px;
 }
 
 .assets-table--holdings .asset-cell {
@@ -661,6 +684,19 @@
 .assets-table--holdings .badge {
   white-space:    nowrap;
   flex-wrap:      nowrap;
+}
+
+/* Steam inventory — allow long item names to wrap */
+.assets-table--holdings-meta .asset-cell > div {
+  overflow: visible;
+}
+
+.assets-table--holdings-meta .asset-ticker--wrap,
+.assets-table--holdings-meta .asset-type--wrap {
+  white-space:   normal;
+  overflow:      visible;
+  text-overflow: unset;
+  word-break:    break-word;
 }
 
 /* Portfolio /assets table: компактнее, числовые колонки ближе к названию */
