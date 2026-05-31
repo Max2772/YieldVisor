@@ -52,6 +52,23 @@ function sliceReturnSeries(points, days, periodCap) {
   return (points || []).filter((point) => dates.has(point.t));
 }
 
+/** Match benchmark values to primary series timestamps (1:1 for Chart.js). */
+function alignBenchmarkToPrimary(primary, benchmark) {
+  if (!primary.length || !benchmark.length) return [];
+  const byT = new Map(benchmark.map((point) => [point.t, point.v]));
+  return primary
+    .map((point) => ({ t: point.t, v: byT.get(point.t) }))
+    .filter((point) => point.v !== undefined && point.v !== null);
+}
+
+function returnChartSubtitle(key, days, periodCap, hasBenchmark) {
+  const period = chartPeriodSubtitle(days, periodCap);
+  if (key === "all" && hasBenchmark) {
+    return `${period} · vs S&P 500`;
+  }
+  return period;
+}
+
 function initReturnTypeFilter({ filterBar, onChange }) {
   if (!filterBar) return;
   filterBar.querySelectorAll(".analytics-return-filter-btn").forEach((btn) => {
@@ -75,15 +92,18 @@ function initAnalyticsReturnChart() {
   const payload = JSON.parse(dataEl.textContent);
   const seriesMap = payload.series || {};
   const benchmark = payload.benchmark || [];
+  const benchmarkLabel = payload.benchmark_label || "S&P 500";
   const filters = payload.filters || [];
   if (!filters.length) return;
+
+  const hasBenchmark = benchmark.length >= 2;
 
   const periodBar = document.querySelector('.chart-period-toolbar[data-chart-id="returnChart"]');
   const filterBar = document.getElementById("returnChartTypeFilter");
   const periodCap = Number(periodBar?.dataset.periodCap || 1825);
   const subtitleEl = document.getElementById("returnChart-subtitle");
 
-  let activeKey = filters[0]?.key || "all";
+  let activeKey = filters.find((f) => f.key === "all")?.key || filters[0]?.key || "all";
   let periodDays = Number(
     periodBar?.querySelector(".chart-period-btn.active")?.dataset.days || "30",
   );
@@ -93,14 +113,14 @@ function initAnalyticsReturnChart() {
     const datasets = [
       signedReturnDataset(meta.label, slicedPrimary.map((point) => point.v), meta.color),
     ];
-    if (key === "all" && slicedBenchmark.length) {
+    if (key === "all" && slicedBenchmark.length >= 2) {
       datasets.push({
-        label: "S&P 500",
+        label: benchmarkLabel,
         data: slicedBenchmark.map((point) => point.v),
         borderColor: BENCHMARK_COLOR,
         borderWidth: 1.5,
         fill: false,
-        borderDash: [4, 4],
+        borderDash: [6, 4],
         tension: 0.4,
         pointRadius: 0,
         pointHoverRadius: 5,
@@ -114,10 +134,13 @@ function initAnalyticsReturnChart() {
     if (!meta) return null;
 
     const slicedPrimary = sliceReturnSeries(meta.points, days, periodCap);
-    if (!slicedPrimary.length) return null;
+    if (slicedPrimary.length < 2) return null;
 
-    const slicedBenchmark = key === "all"
-      ? sliceReturnSeries(benchmark, days, periodCap)
+    const slicedBenchmark = key === "all" && hasBenchmark
+      ? alignBenchmarkToPrimary(
+          slicedPrimary,
+          sliceReturnSeries(benchmark, days, periodCap),
+        )
       : [];
 
     return {
@@ -177,13 +200,23 @@ function initAnalyticsReturnChart() {
     chart.data.labels = next.labels;
     chart.data.datasets = next.datasets;
     chart.update();
-    if (subtitleEl && periodBar) {
-      subtitleEl.textContent = chartPeriodSubtitle(periodDays, periodCap);
+    if (subtitleEl) {
+      subtitleEl.textContent = returnChartSubtitle(
+        activeKey,
+        periodDays,
+        periodCap,
+        hasBenchmark,
+      );
     }
   }
 
-  if (subtitleEl && periodBar) {
-    subtitleEl.textContent = chartPeriodSubtitle(periodDays, periodCap);
+  if (subtitleEl) {
+    subtitleEl.textContent = returnChartSubtitle(
+      activeKey,
+      periodDays,
+      periodCap,
+      hasBenchmark,
+    );
   }
 
   initReturnTypeFilter({

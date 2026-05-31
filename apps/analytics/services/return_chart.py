@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 from typing import Any
 
@@ -14,6 +15,7 @@ from apps.portfolio.services.market_page import (
 from apps.portfolio.types import AssetType
 
 BENCHMARK_TICKER = "SPY"
+BENCHMARK_LABEL = "S&P 500"
 
 SERIES_KEYS = ("all", AssetType.STOCK, AssetType.CRYPTO, AssetType.STEAM)
 SERIES_META: dict[str, tuple[str, str]] = {
@@ -37,36 +39,55 @@ def _chart_to_pct_points(chart: dict[str, Any]) -> list[dict[str, Any]]:
     ]
 
 
+def _history_fetch_days(portfolio_days: list[str], cap: int) -> int:
+    if not portfolio_days:
+        return cap
+    try:
+        first = date.fromisoformat(portfolio_days[0])
+        last = date.fromisoformat(portfolio_days[-1])
+        span = (last - first).days + 14
+    except ValueError:
+        span = cap
+    return max(cap, span)
+
+
 def _benchmark_pct_points(
-    portfolio_days: list[str],
+    portfolio_timestamps: list[str],
     client: InvestAPIClient,
     *,
     fetch_days: int,
 ) -> list[dict[str, Any]]:
-    if not portfolio_days:
+    """SPY cumulative return % on the same timestamps as the All series."""
+    if len(portfolio_timestamps) < 2:
         return []
+
+    portfolio_days = [timestamp[:10] for timestamp in portfolio_timestamps]
+    request_days = _history_fetch_days(portfolio_days, fetch_days)
 
     history = get_history(
         AssetType.STOCK,
         BENCHMARK_TICKER,
-        days=fetch_days,
+        days=request_days,
         client=client,
     )
     if history is None or not history.points:
         return []
 
     spy_by_day = _contrib_by_day_sorted(Decimal("1"), list(history.points))
+    if not spy_by_day:
+        return []
+
+    fallback_price = spy_by_day[0][1]
     values: list[float] = []
-    timestamps: list[str] = []
     for day in portfolio_days:
         price = _value_on_or_before(spy_by_day, day)
-        if price is None:
-            return []
-        values.append(price)
-        timestamps.append(f"{day}T00:00:00")
+        values.append(price if price is not None else fallback_price)
 
     pcts = to_cumulative_pct(values)
-    return [{"t": ts, "v": pct} for ts, pct in zip(timestamps, pcts)]
+    return [
+        {"t": timestamp, "v": pct}
+        for timestamp, pct in zip(portfolio_timestamps, pcts)
+    ]
 
 
 def build_return_chart(
@@ -75,7 +96,7 @@ def build_return_chart(
     *,
     chart_period_cap: int,
 ) -> dict[str, Any]:
-    """Cumulative return % series per asset type + S&P 500 benchmark."""
+    """Cumulative return % series per asset type + S&P 500 benchmark for All."""
     groups: dict[str, list[Portfolio]] = {"all": positions}
     for asset_type in (AssetType.STOCK, AssetType.CRYPTO, AssetType.STEAM):
         subset = [position for position in positions if position.asset_type == asset_type]
@@ -83,7 +104,6 @@ def build_return_chart(
             groups[asset_type] = subset
 
     series: dict[str, dict[str, Any]] = {}
-    master_days: list[str] = []
 
     for key in SERIES_KEYS:
         subset = groups.get(key if key != "all" else "all")
@@ -99,13 +119,12 @@ def build_return_chart(
             continue
         label, color = SERIES_META[key]
         series[key] = {"label": label, "color": color, "points": points}
-        if key == "all":
-            master_days = [(point.get("t") or "")[:10] for point in chart.get("points") or []]
 
     benchmark: list[dict[str, Any]] = []
-    if master_days:
+    all_points = series.get("all", {}).get("points") or []
+    if all_points:
         benchmark = _benchmark_pct_points(
-            master_days,
+            [point["t"] for point in all_points],
             client,
             fetch_days=chart_period_cap,
         )
@@ -113,6 +132,7 @@ def build_return_chart(
     return {
         "series": series,
         "benchmark": benchmark,
+        "benchmark_label": BENCHMARK_LABEL,
         "filters": [
             {"key": key, "label": SERIES_META[key][0]}
             for key in SERIES_KEYS
