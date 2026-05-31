@@ -92,9 +92,6 @@
         <div class="profile-tab" data-tab="security">
             <span class="profile-tab-icon">🔒</span> Security
         </div>
-        <div class="profile-tab" data-tab="preferences">
-            <span class="profile-tab-icon">⚙</span> Preferences
-        </div>
         <div class="profile-tab" data-tab="activity">
             <span class="profile-tab-icon">📜</span> Activity
         </div>
@@ -240,21 +237,6 @@
                         </a>
                     </div>
                 </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Account</div>
-                    </div>
-                    <div class="card-body" style="padding-top:14px;">
-                        <div class="aside-stat-list">
-                            <div class="aside-stat"><span class="aside-stat-label">Alerts used</span><span
-                                    class="aside-stat-val">3 / 10</span></div>
-                            <div class="aside-stat"><span class="aside-stat-label">Member since</span><span
-                                    class="aside-stat-val muted">Feb 2026</span></div>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
         </div>
@@ -311,51 +293,6 @@
             </div>
         </div>
 
-        {# Активные сессии #}
-        <div class="settings-section">
-            <div class="settings-section-header">
-                <div>
-                    <div class="settings-section-title">Active Sessions</div>
-                    <div class="settings-section-sub">Devices currently logged into your account.</div>
-                </div>
-                <button class="btn btn-danger" style="font-size:12px;padding:6px 12px;">Revoke all others</button>
-            </div>
-            <div class="settings-section-body" style="padding-top:8px;">
-                <div class="session-item">
-                    <div class="session-icon">💻</div>
-                    <div class="session-info">
-                        <div class="session-device">Chrome on macOS</div>
-                        <div class="session-meta">Moscow, RU · 192.168.1.1 · Active now</div>
-                    </div>
-                    <span class="session-current">Current</span>
-                </div>
-                <div class="session-item">
-                    <div class="session-icon">📱</div>
-                    <div class="session-info">
-                        <div class="session-device">Safari on iPhone</div>
-                        <div class="session-meta">Moscow, RU · 10.0.0.2 · 2 days ago</div>
-                    </div>
-                    <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;"
-                            data-device="iPhone" data-url="/api/sessions/2/revoke/"
-                            onclick="if(confirm('Revoke iPhone session?'))this.closest('.session-item').remove()">
-                        Revoke
-                    </button>
-                </div>
-                <div class="session-item">
-                    <div class="session-icon">🖥</div>
-                    <div class="session-info">
-                        <div class="session-device">Firefox on Windows</div>
-                        <div class="session-meta">Moscow, RU · 10.0.0.5 · 5 days ago</div>
-                    </div>
-                    <button class="btn btn-ghost" style="font-size:12px;padding:5px 10px;"
-                            data-device="Windows Firefox"
-                            onclick="if(confirm('Revoke Windows Firefox session?'))this.closest('.session-item').remove()">
-                        Revoke
-                    </button>
-                </div>
-            </div>
-        </div>
-
         {# Danger zone #}
         <div class="danger-zone">
             <div class="danger-zone-header">
@@ -387,98 +324,6 @@
         </div>
 
     </div>{# /panel-security #}
-
-
-
-    <div class="profile-panel" id="panel-preferences">
-
-        {# Настройки алертов #}
-        <div class="settings-section">
-            <div class="settings-section-header">
-                <div>
-                    <div class="settings-section-title">Alert Preferences</div>
-                    <div class="settings-section-sub">Control how and when you receive notifications.</div>
-                </div>
-            </div>
-            <div class="settings-section-body">
-                <form method="post" action="#" class="settings-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="section" value="preferences">
-
-                    <div class="toggle-row">
-                        <div class="toggle-info">
-                            <div class="toggle-title">Telegram notifications</div>
-                            <div class="toggle-desc">Send alert triggers to your Telegram bot.</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="notify_telegram"
-                                   {% if profile.notify_telegram %}checked{% endif %}>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-row">
-                        <div class="toggle-info">
-                            <div class="toggle-title">Email notifications</div>
-                            <div class="toggle-desc">Receive a daily portfolio digest by email.</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="notify_email" {% if profile.notify_email %}checked{% endif %}>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="toggle-row">
-                        <div class="toggle-info">
-                            <div class="toggle-title">Auto-dismiss triggered alerts</div>
-                            <div class="toggle-desc">Automatically delete alerts after they fire once.</div>
-                        </div>
-                        <label class="toggle-switch">
-                            <input type="checkbox" name="auto_dismiss_alerts"
-                                   {% if profile.auto_dismiss_alerts %}checked{% endif %}>
-                            <span class="toggle-slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="sfield" style="margin-top:20px;">
-                        <label class="sfield-label" for="id_alert_interval">Alert check interval</label>
-                        <select class="sfield-select" id="id_alert_interval" name="alert_interval">
-                            <option value="60" {% if profile.alert_interval == 60 %}selected{% endif %}>1 minute
-                            </option>
-                            <option value="300"
-                                    {% if profile.alert_interval == 300 or not profile.alert_interval %}selected{% endif %}>
-                                5 minutes (default)
-                            </option>
-                            <option value="900" {% if profile.alert_interval == 900 %}selected{% endif %}>15 minutes
-                            </option>
-                            <option value="3600" {% if profile.alert_interval == 3600 %}selected{% endif %}>1 hour
-                            </option>
-                        </select>
-                    </div>
-
-                    <div class="sfield">
-                        <label class="sfield-label" for="id_currency">Display currency</label>
-                        <select class="sfield-select" id="id_currency" name="currency">
-                            <option value="USD"
-                                    {% if not profile.currency or profile.currency == 'USD' %}selected{% endif %}>USD —
-                                US Dollar
-                            </option>
-                            <option value="EUR" {% if profile.currency == 'EUR' %}selected{% endif %}>EUR — Euro
-                            </option>
-                            <option value="RUB" {% if profile.currency == 'RUB' %}selected{% endif %}>RUB — Russian
-                                Ruble
-                            </option>
-                        </select>
-                        <div class="sfield-hint">Portfolio values will be converted at the current exchange rate.</div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="margin-top:8px;">Save preferences</button>
-                </form>
-            </div>
-        </div>
-
-    </div>{# /panel-preferences #}
-
 
     <div class="profile-panel" id="panel-activity">
 
