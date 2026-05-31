@@ -536,7 +536,21 @@
   color:        var(--text);
 }
 
-.btn-oauth-icon { font-size: 17px; line-height: 1; }
+.btn-oauth-icon {
+  display:         inline-flex;
+  align-items:     center;
+  justify-content: center;
+  flex-shrink:     0;
+  width:           18px;
+  height:          18px;
+  color:           var(--text);
+}
+
+.btn-oauth-icon svg {
+  display: block;
+  width:   100%;
+  height:  100%;
+}
 
 /* ── Form row (two fields side by side) ── */
 .form-row {
