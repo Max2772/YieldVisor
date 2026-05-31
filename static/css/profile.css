@@ -36,7 +36,14 @@
 }
 
 /* ── Avatar ── */
-.profile-avatar-wrap { position: relative; flex-shrink: 0; }
+.profile-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.profile-avatar-stack {
+  position: relative;
+  flex-shrink: 0;
+}
 
 .profile-avatar {
   width:           80px;
@@ -59,7 +66,8 @@
 
 .profile-avatar:hover { border-color: var(--green); }
 
-.profile-avatar input[type="file"] {
+.profile-avatar input[type="file"],
+.profile-avatar-input {
   display: none;
 }
 
@@ -274,6 +282,15 @@
   box-shadow:   0 0 0 3px rgba(0, 230, 118, 0.1);
 }
 
+.sfield-input.error {
+  border-color: var(--red);
+}
+
+.sfield-input.error:focus {
+  border-color: var(--red);
+  box-shadow:   0 0 0 3px var(--red-dim);
+}
+
 .sfield-input::placeholder { color: var(--text-muted); }
 
 .sfield-input:disabled {
@@ -284,6 +301,39 @@
 .sfield-hint {
   font-size:  12px;
   color:      var(--text-muted);
+  margin-top: 6px;
+}
+
+.form-error {
+  font-size:   12px;
+  color:       var(--red);
+  margin-top:  6px;
+  font-family: var(--font-mono);
+  line-height: 1.45;
+  display:     none;
+}
+
+.form-error.visible {
+  display: block;
+}
+
+.django-errors {
+  background:    var(--red-dim);
+  border:        1px solid rgba(255, 77, 109, 0.25);
+  border-radius: var(--radius-sm);
+  padding:       12px 16px;
+  margin-bottom: 20px;
+}
+
+.django-errors p {
+  font-size:   13px;
+  color:       var(--red);
+  font-family: var(--font-mono);
+  margin:      0;
+  line-height: 1.45;
+}
+
+.django-errors p + p {
   margin-top: 6px;
 }
 

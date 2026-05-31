@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from apps.users.models import User
 from apps.users.services.avatar import process_avatar
@@ -38,7 +38,7 @@ class UserRegistrationForm(UserCreationForm):
     password2 = forms.CharField()
 
 
-class ProfileForm(UserChangeForm):
+class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = (
@@ -50,10 +50,6 @@ class ProfileForm(UserChangeForm):
         )
 
     image = forms.ImageField(required=False)
-    first_name = forms.CharField()
-    last_name = forms.CharField()
-    username = forms.CharField()
-    email = forms.CharField()
 
     def clean_image(self):
         image = self.cleaned_data.get("image")
@@ -66,12 +62,11 @@ class ProfileForm(UserChangeForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        image = self.cleaned_data.get("image")
-        if image:
+        new_image = self.cleaned_data.get("image")
+        if new_image and "image" in self.changed_data:
             if user.pk and user.image:
                 user.image.delete(save=False)
-            user.image.save(image.name, image, save=False)
+            user.image.save(new_image.name, new_image, save=False)
         if commit:
             user.save()
-            self.save_m2m()
         return user

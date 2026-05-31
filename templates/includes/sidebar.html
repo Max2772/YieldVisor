@@ -68,7 +68,13 @@
 
       <a href="{% url 'user:profile' %}" class="sidebar-user">
         <div class="sidebar-avatar">
-          {{ request.user.username|first|upper|default:"M" }}
+          {% if request.user.image %}
+            <img src="{{ request.user.image.url }}?v={{ request.user.image.name|urlencode }}"
+                 alt="{{ request.user.username }}"
+                 class="sidebar-avatar-img">
+          {% else %}
+            {{ request.user.username|first|upper }}
+          {% endif %}
         </div>
         <div class="sidebar-user-info">
           <div class="sidebar-user-name">

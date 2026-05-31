@@ -213,7 +213,6 @@ function initPasswordToggles() {
   });
 }
 
-/* ── Bootstrap ───────────────────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", () => {
   initProfileTabs();
   initAvatarUpload();

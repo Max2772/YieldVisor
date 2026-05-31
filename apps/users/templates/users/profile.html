@@ -23,27 +23,24 @@
     {# ── Profile header ── #}
     <div class="profile-header anim-1">
         <div class="profile-avatar-wrap">
-            <div class="profile-avatar">
-                {% if request.user.image %}
-                    <img src="{{ request.user.image.url }}"
-                         alt="{{ request.user.username }} avatar"
-                         class="profile-avatar-img">
-                {% else %}
-                    {{ request.user.username|first|upper }}
-                {% endif %}
+            <div class="profile-avatar-stack">
+                <div class="profile-avatar">
+                    {% if object.image %}
+                        <img src="{{ object.image.url }}?v={{ object.image.name|urlencode }}"
+                             alt="{{ object.username }} avatar"
+                             class="profile-avatar-img">
+                    {% else %}
+                        {{ object.username|first|upper }}
+                    {% endif %}
 
-                <input type="file" id="id_image"
-                       name="image"
-                       accept="image/*"
-                       form="formOverview">
+                    <label for="id_image" class="profile-avatar-overlay" style="cursor:pointer;"></label>
 
-                <label for="id_image" class="profile-avatar-overlay" style="cursor:pointer;">📷</label>
-
-                {% if form.image.errors %}
-                    <div class="form-error">{{ form.image.errors }}</div>
-                {% endif %}
+                    {% if form.image.errors %}
+                        <div class="form-error">{{ form.image.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="profile-avatar-badge"></div>
             </div>
-            <div class="profile-avatar-badge"></div>
         </div>
 
         <div class="profile-header-info">
@@ -62,14 +59,6 @@
                 <div class="phstat-label">Portfolio</div>
             </div>
             <div class="phstat">
-                {% if value_change %}
-                    <div class="phstat-val {% if value_change_positive %}up{% else %}down{% endif %}">{{ value_change }}</div>
-                {% else %}
-                    <div class="phstat-val">—</div>
-                {% endif %}
-                <div class="phstat-label">Period</div>
-            </div>
-            <div class="phstat">
                 <div class="phstat-val">{{ assets_count }}</div>
                 <div class="phstat-label">Assets</div>
             </div>
@@ -86,20 +75,21 @@
     </div>
 
     {# ── Tabs ── #}
+    {% with tab=active_profile_tab|default:"overview" %}
     <div class="profile-tabs">
-        <div class="profile-tab active" data-tab="overview">
+        <div class="profile-tab{% if tab == 'overview' %} active{% endif %}" data-tab="overview">
             <span class="profile-tab-icon">👤</span> Overview
         </div>
-        <div class="profile-tab" data-tab="security">
+        <div class="profile-tab{% if tab == 'security' %} active{% endif %}" data-tab="security">
             <span class="profile-tab-icon">🔒</span> Security
         </div>
-        <div class="profile-tab" data-tab="activity">
+        <div class="profile-tab{% if tab == 'activity' %} active{% endif %}" data-tab="activity">
             <span class="profile-tab-icon">📜</span> Activity
         </div>
     </div>
 
 
-    <div class="profile-panel active" id="panel-overview">
+    <div class="profile-panel{% if tab == 'overview' %} active{% endif %}" id="panel-overview">
         <div class="profile-layout">
 
             <div>
@@ -116,6 +106,9 @@
                             {% csrf_token %}
 
                             <input type="hidden" name="section" value="personal">
+
+                            <input type="file" id="id_image" name="image" accept="image/*"
+                                   class="profile-avatar-input">
 
                             <div class="sfield-row" style="margin-bottom:20px;">
                                 <div class="sfield">
@@ -169,6 +162,24 @@
                     </div>
                 </div>
 
+                {% if object.image %}
+                <div class="settings-section">
+                    <div class="settings-section-header">
+                        <div>
+                            <div class="settings-section-title">Profile Photo</div>
+                            <div class="settings-section-sub">Remove your custom avatar and return to the default letter.</div>
+                        </div>
+                    </div>
+                    <div class="settings-section-body">
+                        <form method="post" action="{% url 'user:profile' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="section" value="remove_avatar">
+                            <button type="submit" class="btn btn-danger">Remove photo</button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="settings-section">
                     <div class="settings-section-header">
                         <div>
@@ -200,7 +211,7 @@
                             <p style="font-size:14px;color:var(--text-dim);margin-bottom:16px;line-height:1.6;">
                                 Connect your Telegram to receive price alert notifications directly in the bot.
                             </p>
-                            <a href="https://t.me/InvestingAPIBot?start=link_{{ request.user.id }}"
+                            <a href="https://t.me/InvestingAPIBot?start=link_{{ request.user.username }}"
                                class="btn btn-ghost" target="_blank" rel="noopener noreferrer">
                                 ✈ Connect via Telegram
                             </a>
@@ -256,7 +267,7 @@
     </div>
 
 
-    <div class="profile-panel" id="panel-security">
+    <div class="profile-panel{% if tab == 'security' %} active{% endif %}" id="panel-security">
 
         <div class="settings-section">
             <div class="settings-section-header">
@@ -270,37 +281,48 @@
                     {% csrf_token %}
                     <input type="hidden" name="section" value="password">
 
+                    {% if password_form.non_field_errors %}
+                        <div class="django-errors">
+                            {% for error in password_form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <div class="sfield">
                         <label class="sfield-label" for="id_old_password">Current password</label>
                         <div style="position:relative;">
-                            <input class="sfield-input has-action" type="password" id="id_old_password"
+                            <input class="sfield-input has-action{% if password_form.old_password.errors %} error{% endif %}"
+                                   type="password" id="id_old_password"
                                    name="old_password" placeholder="Enter current password" required>
                             <button type="button" class="form-input-toggle pw-toggle" aria-label="Show password"
                                     style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:12px;font-family:var(--font-mono);letter-spacing:0.02em;">
                                 Show
                             </button>
                         </div>
-                        {% if password_form.old_password.errors %}
-                            <div class="form-error">{{ password_form.old_password.errors }}</div>
-                        {% endif %}
+                        <div class="form-error{% if password_form.old_password.errors %} visible{% endif %}">
+                            {{ password_form.old_password.errors.0 }}
+                        </div>
                     </div>
 
                     <div class="sfield-row">
                         <div class="sfield">
                             <label class="sfield-label" for="id_new_password1">New password</label>
-                            <input class="sfield-input" type="password" id="id_new_password1" name="new_password1"
+                            <input class="sfield-input{% if password_form.new_password1.errors %} error{% endif %}"
+                                   type="password" id="id_new_password1" name="new_password1"
                                    placeholder="New password" required>
-                            {% if password_form.new_password1.errors %}
-                                <div class="form-error">{{ password_form.new_password1.errors }}</div>
-                            {% endif %}
+                            <div class="form-error{% if password_form.new_password1.errors %} visible{% endif %}">
+                                {{ password_form.new_password1.errors.0 }}
+                            </div>
                         </div>
                         <div class="sfield">
                             <label class="sfield-label" for="id_new_password2">Confirm new</label>
-                            <input class="sfield-input" type="password" id="id_new_password2" name="new_password2"
+                            <input class="sfield-input{% if password_form.new_password2.errors %} error{% endif %}"
+                                   type="password" id="id_new_password2" name="new_password2"
                                    placeholder="Repeat new password" required>
-                            {% if password_form.new_password2.errors %}
-                                <div class="form-error">{{ password_form.new_password2.errors }}</div>
-                            {% endif %}
+                            <div class="form-error{% if password_form.new_password2.errors %} visible{% endif %}">
+                                {{ password_form.new_password2.errors.0 }}
+                            </div>
                         </div>
                     </div>
 
@@ -331,8 +353,9 @@
                     >
                         Delete account
                     </button>
-                    <form id="deleteAccountForm" method="post" action="#" style="display:none;">
+                    <form id="deleteAccountForm" method="post" action="{% url 'user:profile' %}" style="display:none;">
                         {% csrf_token %}
+                        <input type="hidden" name="section" value="delete">
                     </form>
                 </div>
             </div>
@@ -341,7 +364,7 @@
     </div>
 
 
-    <div class="profile-panel" id="panel-activity">
+    <div class="profile-panel{% if tab == 'activity' %} active{% endif %}" id="panel-activity">
 
         <div class="settings-section">
             <div class="settings-section-header">
@@ -376,6 +399,7 @@
         </div>
 
     </div>
+    {% endwith %}
 
 {% endblock %}
 

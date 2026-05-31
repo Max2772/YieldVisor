@@ -1,19 +1,27 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from typing import Any
 
+from django.core.cache import cache
 from django.db.models import Count
 from django.urls import reverse
 
 from apps.alerts.models import Alert
 from apps.history.models import History, HistoryOperation
 from apps.portfolio.models import Portfolio
-from apps.portfolio.services.holdings import _format_money, _format_qty
-from apps.portfolio.services.portfolio_overview import build_portfolio_overview_context
+from apps.portfolio.services.holdings import (
+    _fetch_quote_prices,
+    _format_money,
+    _format_qty,
+    _format_value_short,
+)
+from apps.portfolio.services.market_page import _split_money_display
 from apps.portfolio.types import AssetType
 from apps.users.models import UserProfile
 
 ACTIVITY_LIMIT = 20
+SUMMARY_CACHE_TTL = 120
 
 
 def _positions_by_type(user) -> dict[str, int]:
@@ -69,8 +77,61 @@ def _recent_activity(user) -> list[dict[str, Any]]:
     return events[:ACTIVITY_LIMIT]
 
 
+def _build_portfolio_summary(user) -> dict[str, Any]:
+    cache_key = f"users.profile_summary.{user.pk}"
+    cached = cache.get(cache_key)
+    if cached is not None:
+        return cached
+
+    positions = list(Portfolio.objects.filter(user=user))
+    assets_count = len(positions)
+    alerts_count = Alert.objects.filter(user=user, is_active=True).count()
+
+    if not positions:
+        summary = {
+            "total_value_short": "0",
+            "total_value_dollars": "0",
+            "total_value_cents": "00",
+            "total_pnl": "0",
+            "total_pnl_pos": True,
+            "value_change": None,
+            "value_change_positive": True,
+            "alerts_count": alerts_count,
+            "assets_count": 0,
+        }
+        cache.set(cache_key, summary, SUMMARY_CACHE_TTL)
+        return summary
+
+    total_value = Decimal("0")
+    total_pnl = Decimal("0")
+
+    for position, price in _fetch_quote_prices(positions):
+        if price is None:
+            continue
+        total_value += position.current_value(price)
+        total_pnl += position.pnl(price)
+
+    dollars, cents = _split_money_display(total_value)
+    summary = {
+        "total_value_short": _format_value_short(total_value),
+        "total_value_dollars": dollars,
+        "total_value_cents": cents,
+        "total_pnl": _format_money(abs(total_pnl)),
+        "total_pnl_pos": total_pnl >= 0,
+        "value_change": None,
+        "value_change_positive": True,
+        "alerts_count": alerts_count,
+        "assets_count": assets_count,
+    }
+    cache.set(cache_key, summary, SUMMARY_CACHE_TTL)
+    return summary
+
+
+def invalidate_profile_summary_cache(user_id: int) -> None:
+    cache.delete(f"users.profile_summary.{user_id}")
+
+
 def build_profile_page_context(user) -> dict[str, Any]:
-    portfolio = build_portfolio_overview_context(user)
     by_type = _positions_by_type(user)
 
     try:
@@ -84,15 +145,7 @@ def build_profile_page_context(user) -> dict[str, Any]:
         "recent_activity": _recent_activity(user),
         "history_url": reverse("history:history"),
         "portfolio_url": reverse("portfolio:portfolio"),
-        "total_value_short": portfolio.get("total_value_short", "0"),
-        "total_value_dollars": portfolio.get("total_value_dollars", "0"),
-        "total_value_cents": portfolio.get("total_value_cents", "00"),
-        "total_pnl": portfolio.get("total_pnl", "0"),
-        "total_pnl_pos": portfolio.get("total_pnl_pos", True),
-        "value_change": portfolio.get("value_change"),
-        "value_change_positive": portfolio.get("value_change_positive", True),
-        "alerts_count": portfolio.get("alerts_count", 0),
-        "assets_count": portfolio.get("assets_count", 0),
+        **_build_portfolio_summary(user),
         "stocks_count": by_type.get(AssetType.STOCK, 0),
         "crypto_count": by_type.get(AssetType.CRYPTO, 0),
         "steam_count": by_type.get(AssetType.STEAM, 0),
