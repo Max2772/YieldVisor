@@ -16,8 +16,11 @@
     </div>
 
     <div class="pub-nav-actions">
-      <a href="{% url "user:login" %}"    class="btn btn-ghost">Log in</a>
-      <a href="{% url "user:registration" %}" class="btn btn-primary">Get started →</a>
+      {% block pub_nav_actions %}
+        {% for action in pub_nav_actions %}
+        <a href="{% url action.url_name %}" class="btn {{ action.btn_class }}">{{ action.label }}</a>
+        {% endfor %}
+      {% endblock %}
     </div>
   </nav>
 {% endblock %}

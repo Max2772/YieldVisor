@@ -1,8 +1,10 @@
 from decimal import Decimal
 from unittest.mock import MagicMock, patch
 
+from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from apps.main.services.hero_mockup import (
     HERO_QUANTITY,
@@ -90,3 +92,27 @@ class HeroMockupContextTests(TestCase):
         self.assertEqual(len(positions), 3)
         for position in positions:
             self.assertEqual(position.quantity, HERO_QUANTITY)
+
+
+class IndexViewHeaderTests(TestCase):
+    def test_guest_sees_login_and_registration_ctas(self):
+        response = self.client.get(reverse("main:main"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Log in")
+        self.assertContains(response, "Get started →")
+        self.assertNotContains(response, "Open portfolio →", html=False)
+
+    def test_authenticated_user_sees_app_ctas(self):
+        user = get_user_model().objects.create_user(
+            username="indexuser",
+            password="test-pass-123",
+        )
+        self.client.force_login(user)
+        response = self.client.get(reverse("main:main"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Open portfolio →")
+        self.assertContains(response, "Analytics")
+        self.assertNotContains(response, "Log in")
+        self.assertNotContains(response, "Get started →")
