@@ -195,3 +195,122 @@
   text-align: right;
   flex-shrink: 0;
 }
+
+/* Metric help (i) tooltips — hover only */
+.stats-grid .stat-card {
+  overflow: visible;
+}
+
+.label-with-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.stat-label.label-with-help {
+  margin-bottom: 10px;
+}
+
+.card-title.label-with-help {
+  display: inline-flex;
+}
+
+.metric-help {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.metric-help__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  padding: 0;
+  font-family: var(--font-serif);
+  font-size: 10px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-muted);
+  background: var(--surface2);
+  border: 1px solid var(--border-light);
+  border-radius: 50%;
+  cursor: help;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.metric-help:hover .metric-help__btn {
+  color: var(--text);
+  background: var(--surface3);
+  border-color: var(--text-muted);
+}
+
+.metric-help__tip {
+  display: none;
+  position: absolute;
+  z-index: 100;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 240px;
+  padding: 10px 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.metric-help__tip::before {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--border-light);
+}
+
+.metric-help__tip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: -1px;
+  border: 5px solid transparent;
+  border-bottom-color: var(--surface2);
+}
+
+.metric-help:hover .metric-help__tip {
+  display: block;
+}
+
+.analytics-sidebar .metric-help__tip {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+.analytics-sidebar .metric-help__tip::before,
+.analytics-sidebar .metric-help__tip::after {
+  left: auto;
+  right: 6px;
+  transform: none;
+}
+
+.card {
+  overflow: visible;
+}

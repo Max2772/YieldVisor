@@ -1,0 +1,11 @@
+{# Analytics metric tooltip — pass help_id (unique) and help_text #}
+<span class="metric-help">
+  <button
+    type="button"
+    class="metric-help__btn"
+    tabindex="-1"
+    aria-label="Explain this metric"
+    aria-describedby="{{ help_id }}"
+  >i</button>
+  <span id="{{ help_id }}" class="metric-help__tip" role="tooltip">{{ help_text }}</span>
+</span>

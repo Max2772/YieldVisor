@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 from typing import Any
 
+from apps.analytics.services.metric_help import METRIC_HELP
 from apps.analytics.services.metrics import metric_bar
 from apps.portfolio.services.market_page import slice_portfolio_chart_calendar_days
 
@@ -63,6 +64,8 @@ def build_risk_metrics(
     if beta is not None:
         metrics.append({
             "label": "Beta",
+            "help_id": "help-risk-beta",
+            "help_text": METRIC_HELP["beta"],
             "value": f"{beta:.2f}",
             "positive": False,
             "negative": False,
@@ -75,6 +78,8 @@ def build_risk_metrics(
         sign = "+" if positive else "−"
         metrics.append({
             "label": "Alpha (annualised)",
+            "help_id": "help-risk-alpha",
+            "help_text": METRIC_HELP["alpha"],
             "value": f"{sign}{abs(alpha):.1f}%",
             "positive": positive,
             "negative": not positive,
@@ -86,6 +91,8 @@ def build_risk_metrics(
         positive = sharpe >= 1
         metrics.append({
             "label": "Sharpe Ratio",
+            "help_id": "help-risk-sharpe",
+            "help_text": METRIC_HELP["sharpe"],
             "value": f"{sharpe:.2f}",
             "positive": positive,
             "negative": sharpe < 0,
@@ -95,6 +102,8 @@ def build_risk_metrics(
 
     metrics.append({
         "label": "Max Drawdown",
+        "help_id": "help-risk-drawdown",
+        "help_text": METRIC_HELP["max_drawdown"],
         "value": f"−{max_drawdown:.1f}%",
         "positive": False,
         "negative": True,
@@ -105,6 +114,8 @@ def build_risk_metrics(
     if volatility is not None:
         metrics.append({
             "label": "Volatility (30d)",
+            "help_id": "help-risk-volatility",
+            "help_text": METRIC_HELP["volatility"],
             "value": f"{volatility:.1f}%",
             "positive": False,
             "negative": False,

@@ -19,7 +19,10 @@
 
 <div class="stats-grid anim-1">
   <div class="stat-card c-green">
-    <div class="stat-label">Total Return</div>
+    <div class="stat-label label-with-help">
+      Total Return
+      {% include "includes/metric_help.html" with help_id="help-total-return" help_text=metric_help.total_return %}
+    </div>
     <div class="stat-value {% if total_return_pos %}up{% else %}down{% endif %}">
       {% if total_return_pos %}+{% else %}−{% endif %}{{ total_return_pct }}<span class="cents">%</span>
     </div>
@@ -32,12 +35,18 @@
     {% endif %}
   </div>
   <div class="stat-card c-blue">
-    <div class="stat-label">Sharpe Ratio</div>
+    <div class="stat-label label-with-help">
+      Sharpe Ratio
+      {% include "includes/metric_help.html" with help_id="help-sharpe" help_text=metric_help.sharpe %}
+    </div>
     <div class="stat-value">{{ sharpe }}</div>
     <span class="badge badge-blue">{{ sharpe_badge }}</span>
   </div>
   <div class="stat-card c-amber">
-    <div class="stat-label">Max Drawdown</div>
+    <div class="stat-label label-with-help">
+      Max Drawdown
+      {% include "includes/metric_help.html" with help_id="help-max-drawdown" help_text=metric_help.max_drawdown %}
+    </div>
     <div class="stat-value down">−{{ max_drawdown }}<span class="cents">%</span></div>
     {% if max_drawdown_badge %}
     <span class="badge badge-warn">{{ max_drawdown_badge }}</span>
@@ -46,7 +55,10 @@
     {% endif %}
   </div>
   <div class="stat-card c-red">
-    <div class="stat-label">Volatility (30d)</div>
+    <div class="stat-label label-with-help">
+      Volatility (30d)
+      {% include "includes/metric_help.html" with help_id="help-volatility" help_text=metric_help.volatility %}
+    </div>
     <div class="stat-value">{{ volatility }}{% if volatility != "—" %}<span class="cents">%</span>{% endif %}</div>
     {% if volatility_badge %}
     <span class="badge badge-down">{{ volatility_badge }}</span>
@@ -64,7 +76,10 @@
       <div class="card-header">
         <div class="analytics-return-chart-header">
           <div>
-            <div class="card-title">Cumulative Return</div>
+            <div class="card-title label-with-help">
+              Cumulative Return
+              {% include "includes/metric_help.html" with help_id="help-cumulative-return" help_text=metric_help.cumulative_return %}
+            </div>
             <div class="card-subtitle" id="returnChart-subtitle">Portfolio vs benchmark (S&amp;P 500)</div>
           </div>
           {% if return_chart.filters %}
@@ -103,7 +118,10 @@
 
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Monthly Returns</div>
+        <div class="card-title label-with-help">
+          Monthly Returns
+          {% include "includes/metric_help.html" with help_id="help-monthly-returns" help_text=metric_help.monthly_returns %}
+        </div>
         <div class="card-subtitle">Last 12 months, % change</div>
       </div>
       <div class="card-body">
@@ -183,7 +201,10 @@
 
     <div class="card">
       <div class="card-header">
-        <div class="card-title">Allocation</div>
+        <div class="card-title label-with-help">
+          Allocation
+          {% include "includes/metric_help.html" with help_id="help-allocation" help_text=metric_help.allocation %}
+        </div>
         <span class="muted" style="font-size:11px">by asset type</span>
       </div>
       <div class="card-body">
@@ -218,12 +239,20 @@
     </div>
 
     <div class="card">
-      <div class="card-header"><div class="card-title">Risk Metrics</div></div>
+      <div class="card-header">
+        <div class="card-title label-with-help">
+          Risk Metrics
+          {% include "includes/metric_help.html" with help_id="help-risk-metrics" help_text=metric_help.risk_metrics %}
+        </div>
+      </div>
       <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
         {% for metric in risk_metrics %}
         <div>
           <div class="qs-row" style="margin-bottom:4px">
-            <span class="qs-label">{{ metric.label }}</span>
+            <span class="qs-label label-with-help">
+              {{ metric.label }}
+              {% include "includes/metric_help.html" with help_id=metric.help_id help_text=metric.help_text %}
+            </span>
             <span class="qs-val {% if metric.positive %}up{% elif metric.negative %}down{% endif %}">{{ metric.value }}</span>
           </div>
           <div style="height:3px;background:var(--surface2);border-radius:2px;overflow:hidden">
@@ -237,7 +266,12 @@
     </div>
 
     <div class="card">
-      <div class="card-header"><div class="card-title">Notable Days</div></div>
+      <div class="card-header">
+        <div class="card-title label-with-help">
+          Notable Days
+          {% include "includes/metric_help.html" with help_id="help-notable-days" help_text=metric_help.notable_days %}
+        </div>
+      </div>
       <div class="card-body" style="padding-top:4px">
         {% if best_day_pct %}
         <div class="alert-item">
