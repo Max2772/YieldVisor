@@ -6,6 +6,7 @@ from django.urls import reverse
 
 from apps.history.models import History, HistoryOperation
 from apps.history.services.history_page import build_history_page_context
+from apps.portfolio.models import Portfolio
 from apps.portfolio.services.add_holding import add_holding
 from apps.portfolio.services.holding_actions import sell_holding
 from apps.portfolio.types import AssetType
@@ -48,6 +49,48 @@ class HistoryPageContextTests(TestCase):
         self.assertEqual(len(ctx["history_export"]), 2)
         self.assertIn("detail_url", ctx["history"][0])
         self.assertNotIn(",", ctx["history_export"][0]["total"])
+
+    def test_steam_sell_matches_legacy_buy_without_app_id(self):
+        History.objects.create(
+            user=self.user,
+            operation=HistoryOperation.BUY,
+            asset_type=AssetType.STEAM,
+            asset_name="Glove Case",
+            app_id=None,
+            quantity=Decimal("1"),
+            price=Decimal("3"),
+        )
+        pos = Portfolio.objects.create(
+            user=self.user,
+            asset_type=AssetType.STEAM,
+            asset_name="Glove Case",
+            app_id=730,
+            quantity=Decimal("1"),
+            avg_buy_price=Decimal("3"),
+        )
+        sell_holding(
+            self.user,
+            position_id=pos.pk,
+            quantity=Decimal("1"),
+            sell_price=Decimal("8"),
+        )
+
+        ctx = build_history_page_context(self.user, params={})
+        self.assertEqual(ctx["realised_pnl_dollars"], "5")
+
+    def test_sell_without_matching_buy_does_not_inflate_realised(self):
+        History.objects.create(
+            user=self.user,
+            operation=HistoryOperation.SELL,
+            asset_type=AssetType.STOCK,
+            asset_name="ORPHAN",
+            app_id=None,
+            quantity=Decimal("1"),
+            price=Decimal("999"),
+        )
+
+        ctx = build_history_page_context(self.user, params={})
+        self.assertEqual(ctx["realised_pnl_dollars"], "0")
 
     def test_filter_by_operation(self):
         add_holding(

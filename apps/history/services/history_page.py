@@ -44,12 +44,53 @@ _LINE_TOTAL = ExpressionWrapper(
 )
 
 
-def _asset_key(tx: History) -> tuple[str, str, int | None]:
-    return (tx.asset_type, tx.asset_name, tx.app_id)
+AssetLotKey = tuple[str, str, int | None]
+
+
+def _asset_key(tx: History) -> AssetLotKey:
+    """FIFO queue key; Steam names are normalised (strip)."""
+    name = tx.asset_name.strip()
+    return (tx.asset_type, name, tx.app_id)
+
+
+def _steam_lot_fallback_key(key: AssetLotKey) -> AssetLotKey | None:
+    """Legacy Steam buys may have app_id=NULL while sells use a real app_id."""
+    asset_type, name, app_id = key
+    if asset_type == AssetType.STEAM and app_id is not None:
+        return (asset_type, name, None)
+    return None
+
+
+def _fifo_consume_lots(
+    lots: dict[AssetLotKey, list[list[Decimal]]],
+    key: AssetLotKey,
+    quantity: Decimal,
+) -> tuple[Decimal, Decimal]:
+    """Return (cost_basis, matched_quantity) for a sell."""
+    remaining = quantity
+    cost = Decimal("0")
+    keys_to_try: list[AssetLotKey] = [key]
+    fallback = _steam_lot_fallback_key(key)
+    if fallback is not None and fallback != key:
+        keys_to_try.append(fallback)
+
+    for lot_key in keys_to_try:
+        while remaining > 0 and lots[lot_key]:
+            lot_qty, lot_price = lots[lot_key][0]
+            take = min(remaining, lot_qty)
+            cost += take * lot_price
+            remaining -= take
+            lot_qty -= take
+            if lot_qty <= 0:
+                lots[lot_key].pop(0)
+            else:
+                lots[lot_key][0] = [lot_qty, lot_price]
+    matched = quantity - remaining
+    return cost, matched
 
 
 def _fifo_realised_pnl(transactions: Iterable[History]) -> Decimal:
-    lots: dict[tuple[str, str, int | None], list[list[Decimal]]] = defaultdict(list)
+    lots: dict[AssetLotKey, list[list[Decimal]]] = defaultdict(list)
     pnl = Decimal("0")
 
     for tx in sorted(transactions, key=lambda row: row.created_at):
@@ -58,19 +99,9 @@ def _fifo_realised_pnl(transactions: Iterable[History]) -> Decimal:
             lots[key].append([tx.quantity, tx.price])
             continue
 
-        remaining = tx.quantity
-        cost = Decimal("0")
-        while remaining > 0 and lots[key]:
-            lot_qty, lot_price = lots[key][0]
-            take = min(remaining, lot_qty)
-            cost += take * lot_price
-            remaining -= take
-            lot_qty -= take
-            if lot_qty <= 0:
-                lots[key].pop(0)
-            else:
-                lots[key][0] = [lot_qty, lot_price]
-        pnl += tx.quantity * tx.price - cost
+        cost, matched = _fifo_consume_lots(lots, key, tx.quantity)
+        if matched > 0:
+            pnl += matched * tx.price - cost
     return pnl
 
 

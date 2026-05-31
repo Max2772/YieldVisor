@@ -25,11 +25,12 @@ a {
 
 /* ── Body ─────────────────────────────────── */
 body {
-  background:  var(--bg);
-  color:       var(--text);
-  font-family: var(--font-sans);
-  min-height:  100vh;
-  overflow-x:  hidden;
+  background:    var(--bg);
+  color:         var(--text);
+  font-family:   var(--font-sans);
+  min-height:    100vh;
+  overflow-x:    hidden;
+  color-scheme:  dark;
 }
 
 /* Grain texture overlay */
