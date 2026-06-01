@@ -1,5 +1,5 @@
 {% extends "base_auth.html" %}
-{% load static %}
+{% load static socialaccount %}
 
 
 {% block brand %}
@@ -113,14 +113,17 @@
 
 
 
-  <div class="auth-divider">
-    <div class="auth-divider-line"></div>
-    <div class="auth-divider-text">or continue with</div>
-    <div class="auth-divider-line"></div>
-  </div>
+  {% get_providers as oauth_providers %}
+  {% if oauth_providers %}
+    <div class="auth-divider">
+      <div class="auth-divider-line"></div>
+      <div class="auth-divider-text">or continue with</div>
+      <div class="auth-divider-line"></div>
+    </div>
 
-  <div class="oauth-row">
-    {% include "includes/oauth_buttons.html" %}
-  </div>
+    <div class="oauth-row">
+      {% include "includes/oauth_buttons.html" %}
+    </div>
+  {% endif %}
 
 {% endblock %}

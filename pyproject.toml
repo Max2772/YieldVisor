@@ -9,4 +9,5 @@ dependencies = [
     "pillow>=12.2.0",
     "django-redis>=6.0.0",
     "python-dotenv>=1.2.2",
+    "django-allauth[socialaccount]>=65.18.0",
 ]

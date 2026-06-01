@@ -1,5 +1,5 @@
 {% extends "base_auth.html" %}
-{% load static %}
+{% load static socialaccount %}
 
 {% block brand %}
 
@@ -50,14 +50,18 @@
     </div>
   {% endif %}
 
-  {# OAuth первым — как в Stripe/Linear #}
-  <div class="oauth-row" style="margin-bottom:6px;">
-    {% include "includes/oauth_buttons.html" %}
-  </div>
+  {% get_providers as oauth_providers %}
+  {% if oauth_providers %}
+    <div class="oauth-row" style="margin-bottom:6px;">
+      {% include "includes/oauth_buttons.html" %}
+    </div>
 
-  <div class="auth-divider">
-    <div class="auth-divider-line"></div>
-  </div>
+    <div class="auth-divider">
+      <div class="auth-divider-line"></div>
+      <div class="auth-divider-text">or sign up with email</div>
+      <div class="auth-divider-line"></div>
+    </div>
+  {% endif %}
 
   <form method="post" action="{% url 'user:registration' %}" class="auth-form" novalidate>
     {% csrf_token %}

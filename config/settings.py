@@ -54,6 +54,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.github',
     'apps.analytics',
     'apps.alerts',
     'apps.core',
@@ -72,6 +78,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -79,7 +86,6 @@ MIDDLEWARE = [
 if MODE == RunMode.DEV:
     INSTALLED_APPS += ['debug_toolbar']
     MIDDLEWARE += ['debug_toolbar.middleware.DebugToolbarMiddleware']
-
     INTERNAL_IPS = ["127.0.0.1"]
 
 ROOT_URLCONF = 'config.urls'
@@ -160,8 +166,55 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'users.User'
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+SITE_ID = int(os.getenv('SITE_ID', '1'))
+# Host:port only (no http://). Used by django.contrib.sites / allauth.
+SITE_DOMAIN = os.getenv('SITE_DOMAIN', '127.0.0.1:8000' if DEBUG else '').strip()
 LOGIN_URL = 'user:login'
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = 'user:profile'
+LOGOUT_REDIRECT_URL = 'main:main'
+
+# django-allauth: email/password stays on custom views; OAuth via socialaccount.
+# Keys live in .env (SOCIALACCOUNT_PROVIDERS below). Do not also add Social applications
+# in Django admin — that creates duplicate providers and breaks /login/.
+ACCOUNT_SIGNUP_ENABLED = False
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_ADAPTER = 'apps.users.adapters.YieldVisorSocialAccountAdapter'
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_QUERY_EMAIL = True
+SOCIALACCOUNT_LOGIN_ON_GET = False
+
+
+def _social_app_settings(client_id_env: str, secret_env: str) -> dict | None:
+    client_id = os.getenv(client_id_env, '').strip()
+    secret = os.getenv(secret_env, '').strip()
+    if not client_id or not secret:
+        return None
+    return {'client_id': client_id, 'secret': secret}
+
+
+SOCIALACCOUNT_PROVIDERS: dict = {}
+_google_app = _social_app_settings('GOOGLE_OAUTH_CLIENT_ID', 'GOOGLE_OAUTH_CLIENT_SECRET')
+if _google_app:
+    SOCIALACCOUNT_PROVIDERS['google'] = {
+        'APP': _google_app,
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    }
+_github_app = _social_app_settings('GITHUB_OAUTH_CLIENT_ID', 'GITHUB_OAUTH_CLIENT_SECRET')
+if _github_app:
+    SOCIALACCOUNT_PROVIDERS['github'] = {
+        'APP': _github_app,
+        'SCOPE': ['read:user', 'user:email'],
+    }
+# GitHub OAuth App → Authorization callback URL (must match character-for-character):
+#   http://127.0.0.1:8000/accounts/github/login/callback/
+# If you open the site as localhost, register that host too or always use 127.0.0.1.
+# Docs: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
 
 # InvestAPI (https://api.bibikau.org)
 INVEST_API_BASE_URL = os.environ.get(

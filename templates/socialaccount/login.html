@@ -1,0 +1,26 @@
+{% extends "base_auth.html" %}
+
+{% block brand %}
+  <div class="auth-brand-body">
+    <div class="auth-brand-eyebrow">OAuth</div>
+    <h1 class="auth-brand-headline">Redirecting…</h1>
+  </div>
+{% endblock %}
+
+{% block form %}
+  <div class="auth-form-title">Use the login page</div>
+  <div class="auth-form-subtitle">
+    <a href="{% url 'user:login' %}">← Back to login</a>
+  </div>
+  <form method="post" action="" id="oauth-continue-form" class="auth-form">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary btn-submit">Continue with {{ provider.name }} →</button>
+  </form>
+{% endblock %}
+
+{% block js %}
+  {{ block.super }}
+  <script>
+    document.getElementById("oauth-continue-form")?.requestSubmit();
+  </script>
+{% endblock %}

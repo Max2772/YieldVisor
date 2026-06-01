@@ -514,6 +514,15 @@
   gap:    10px;
 }
 
+.btn-oauth-form {
+  display: contents;
+  margin:  0;
+}
+
+.btn-oauth-form button {
+  width: 100%;
+}
+
 .btn-oauth {
   display:         flex;
   align-items:     center;
@@ -529,6 +538,7 @@
   cursor:          pointer;
   transition:      all 0.15s;
   font-family:     var(--font-sans);
+  text-decoration: none;
 }
 
 .btn-oauth:hover {
