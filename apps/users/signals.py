@@ -29,13 +29,15 @@ def ensure_site_domain() -> None:
     from django.contrib.sites.models import Site
 
     domain = _normalize_site_domain(configured)
-    site, _ = Site.objects.update_or_create(
-        pk=settings.SITE_ID,
-        defaults={"domain": domain, "name": "YieldVisor"},
-    )
-    if site.name != "YieldVisor":
-        site.name = "YieldVisor"
-        site.save(update_fields=["name"])
+    site_id = settings.SITE_ID
+
+    if Site.objects.filter(pk=site_id).exists():
+        Site.objects.filter(pk=site_id).update(domain=domain, name="YieldVisor")
+        return
+
+    # SITE_ID row missing but another Site already uses this domain (common after SITE_ID change).
+    Site.objects.filter(domain=domain).exclude(pk=site_id).delete()
+    Site.objects.create(pk=site_id, domain=domain, name="YieldVisor")
 
 
 @receiver(post_migrate)

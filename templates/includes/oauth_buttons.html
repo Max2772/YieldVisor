@@ -18,7 +18,11 @@
         Google
       </button>
     </form>
-  {% elif provider.id == "github" %}
+  {% endif %}
+{% endfor %}
+
+{% for provider in oauth_providers %}
+  {% if provider.id == "github" %}
     <form method="post" action="{% provider_login_url 'github' next=next %}" class="btn-oauth-form">
       {% csrf_token %}
       <button type="submit" class="btn-oauth">
@@ -33,4 +37,3 @@
     </form>
   {% endif %}
 {% endfor %}
-

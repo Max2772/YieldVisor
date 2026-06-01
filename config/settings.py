@@ -170,6 +170,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
+# Must match the primary key of django_site row used by allauth (usually 1).
 SITE_ID = int(os.getenv('SITE_ID', '1'))
 # Host:port only (no http://). Used by django.contrib.sites / allauth.
 SITE_DOMAIN = os.getenv('SITE_DOMAIN', '127.0.0.1:8000' if DEBUG else '').strip()
@@ -211,10 +212,6 @@ if _github_app:
         'APP': _github_app,
         'SCOPE': ['read:user', 'user:email'],
     }
-# GitHub OAuth App → Authorization callback URL (must match character-for-character):
-#   http://127.0.0.1:8000/accounts/github/login/callback/
-# If you open the site as localhost, register that host too or always use 127.0.0.1.
-# Docs: https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
 
 # InvestAPI (https://api.bibikau.org)
 INVEST_API_BASE_URL = os.environ.get(
