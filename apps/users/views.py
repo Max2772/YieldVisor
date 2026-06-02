@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import auth, messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
@@ -9,7 +10,9 @@ from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import CreateView, UpdateView
-from apps.users.forms import UserLoginForm, UserRegistrationForm, ProfileForm
+
+from apps.users.forms import ProfileForm, UserLoginForm, UserRegistrationForm
+from apps.users.services.antispam import rate_limit_exceeded
 from apps.users.services.profile_page import (
     build_profile_page_context,
     invalidate_profile_summary_cache,
@@ -20,6 +23,19 @@ class UserLoginView(LoginView):
     template_name = 'users/login.html'
     form_class = UserLoginForm
     success_url = reverse_lazy('user:profile')
+
+    def post(self, request, *args, **kwargs):
+        if rate_limit_exceeded(
+            request,
+            scope="login",
+            limit=settings.LOGIN_RATE_LIMIT,
+        ):
+            messages.error(
+                request,
+                "Слишком много попыток входа. Попробуйте через час.",
+            )
+            return self.get(request, *args, **kwargs)
+        return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
         redirect_page = self.request.POST.get('next', None)
@@ -45,18 +61,46 @@ class UserRegistrationView(CreateView):
     form_class = UserRegistrationForm
     success_url = reverse_lazy('user:profile')
 
+    def get(self, request, *args, **kwargs):
+        if rate_limit_exceeded(request, scope="registration_get"):
+            messages.error(
+                request,
+                "Слишком много запросов. Попробуйте позже.",
+            )
+            return redirect("user:login")
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        if rate_limit_exceeded(request, scope="registration_post"):
+            messages.error(
+                request,
+                "Слишком много попыток регистрации с вашего IP. Попробуйте позже.",
+            )
+            return self.get(request, *args, **kwargs)
+        return super().post(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.request = self.request
+        return form
+
     def form_valid(self, form):
-        user = form.instance
-
-        form.save()
-        auth.login(self.request, user)
-
-        messages.success(self.request, f"{user.username}, Вы успешно зарегестрированы и вошли в аккаунт")
+        user = form.save()
+        auth.login(
+            self.request,
+            user,
+            backend="django.contrib.auth.backends.ModelBackend",
+        )
+        messages.success(
+            self.request,
+            f"{user.username}, вы успешно зарегистрированы и вошли в аккаунт.",
+        )
         return HttpResponseRedirect(self.success_url)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Registration'
+        context["title"] = "Registration"
+        context["turnstile_site_key"] = settings.TURNSTILE_SITE_KEY
         return context
 
 

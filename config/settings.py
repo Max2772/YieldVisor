@@ -183,6 +183,12 @@ LOGOUT_REDIRECT_URL = 'main:main'
 # in Django admin — that creates duplicate providers and breaks /login/.
 ACCOUNT_SIGNUP_ENABLED = False
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+# Anti-spam: registration (PROD — set in .env on server)
+REGISTRATION_RATE_LIMIT = int(os.getenv("REGISTRATION_RATE_LIMIT", "10"))
+LOGIN_RATE_LIMIT = int(os.getenv("LOGIN_RATE_LIMIT", "30"))
+TURNSTILE_SITE_KEY = os.getenv("TURNSTILE_SITE_KEY", "").strip()
+TURNSTILE_SECRET_KEY = os.getenv("TURNSTILE_SECRET_KEY", "").strip()
 SOCIALACCOUNT_ADAPTER = 'apps.users.adapters.YieldVisorSocialAccountAdapter'
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'

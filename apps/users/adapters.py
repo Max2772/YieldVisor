@@ -4,6 +4,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
+from apps.users.services.antispam import rate_limit_exceeded
+
 User = get_user_model()
 
 
@@ -59,6 +61,16 @@ class YieldVisorSocialAccountAdapter(DefaultSocialAccountAdapter):
         return user
 
     def is_open_for_signup(self, request, sociallogin):
+        if rate_limit_exceeded(
+            request,
+            scope="oauth_signup",
+            limit=settings.REGISTRATION_RATE_LIMIT,
+        ):
+            messages.error(
+                request,
+                "Слишком много попыток регистрации. Попробуйте позже.",
+            )
+            return False
         return True
 
     def get_signup_form_initial_data(self, request, sociallogin):

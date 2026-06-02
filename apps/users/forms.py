@@ -2,7 +2,13 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from apps.users.models import User
+from apps.users.services.antispam import verify_turnstile
 from apps.users.services.avatar import process_avatar
+from apps.users.validators import (
+    validate_registration_display_name,
+    validate_registration_email,
+    validate_registration_username,
+)
 
 
 class UserLoginForm(AuthenticationForm):
@@ -30,12 +36,53 @@ class UserRegistrationForm(UserCreationForm):
             'password2',
         )
 
-    first_name = forms.CharField()
-    last_name = forms.CharField()
-    username = forms.CharField()
-    email = forms.CharField()
+    first_name = forms.CharField(max_length=50)
+    last_name = forms.CharField(max_length=50, required=False)
+    username = forms.CharField(max_length=32)
+    email = forms.EmailField()
     password1 = forms.CharField()
     password2 = forms.CharField()
+
+    def clean_username(self):
+        username = self.cleaned_data["username"]
+        validate_registration_username(username)
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        validate_registration_email(email)
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("Пользователь с таким email уже существует.")
+        return email
+
+    def clean_first_name(self):
+        value = self.cleaned_data["first_name"].strip()
+        validate_registration_display_name(value, field_label="Имя")
+        return value
+
+    def clean_last_name(self):
+        value = self.cleaned_data.get("last_name", "").strip()
+        if value:
+            validate_registration_display_name(value, field_label="Фамилия")
+        return value
+
+    def clean(self):
+        cleaned = super().clean()
+        request = getattr(self, "request", None)
+        if request is None:
+            return cleaned
+        token = self.data.get("cf-turnstile-response")
+        ok, message = verify_turnstile(request, token)
+        if not ok:
+            raise forms.ValidationError(message)
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
 
 
 class ProfileForm(forms.ModelForm):
