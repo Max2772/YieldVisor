@@ -397,5 +397,5 @@ class AssetChartColorsTests(SimpleTestCase):
 
     def test_portfolio_chart_colors(self):
         self.assertEqual(
-            portfolio_chart_colors()["chart_line_color"], "#ffb300"
+            portfolio_chart_colors()["chart_line_color"], "#ff9800"
         )

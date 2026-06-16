@@ -24,7 +24,7 @@ class HeroAssetsTests(SimpleTestCase):
         self.assertEqual(assets[1]["asset_type"], AssetType.CRYPTO)
         self.assertEqual(assets[2]["asset_type"], AssetType.STEAM)
         self.assertEqual(assets[0]["symbol"], "NVDA")
-        self.assertEqual(assets[1]["symbol"], "ETH")
+        self.assertEqual(assets[1]["symbol"], "BTC")
         self.assertEqual(assets[2]["symbol"], HERO_STEAM_NAME)
         self.assertEqual(assets[2]["app_id"], 730)
 
@@ -52,7 +52,7 @@ class HeroMockupContextTests(TestCase):
 
         with patch(
             "apps.main.services.hero_mockup.get_crypto_quotes",
-            return_value={"ethereum": MagicMock(price=Decimal("3000"))},
+            return_value={"bitcoin": MagicMock(price=Decimal("3000"))},
         ), patch(
             "apps.main.services.hero_mockup.get_price",
             side_effect=lambda asset_type, asset_name, app_id, client: {
@@ -112,7 +112,7 @@ class IndexViewHeaderTests(TestCase):
         response = self.client.get(reverse("main:main"))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Open portfolio →")
+        self.assertContains(response, "Portfolio →")
         self.assertContains(response, "Analytics")
         self.assertNotContains(response, "Log in")
         self.assertNotContains(response, "Get started →")
