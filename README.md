@@ -33,11 +33,6 @@ Market prices and item history are provided by a separate API at **https://api.b
 ![Analytics page screenshot](assets/analytics-page.png)
 ---
 
-### History
-
-![History page screenshot](assets/history-page.png)
----
-
 ### Stocks
 
 ![Stocks page screenshot](assets/stocks-page.png)
@@ -71,6 +66,11 @@ Market prices and item history are provided by a separate API at **https://api.b
 ### Alerts
 
 ![Alerts page screenshot](assets/alerts-page.png)
+---
+
+### History
+
+![History page screenshot](assets/history-page.png)
 ---
 
 ## Features
@@ -127,17 +127,23 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
 INVEST_API_BASE_URL=https://api.bibikau.org
 
-##################### Optional #####################
+# Caching 
 INVEST_API_TIMEOUT=15
 INVEST_API_CACHE_TTL=300
 
+# allauth settings 
 SITE_ID=1
 SITE_DOMAIN=example.com
+
+# Google OAuth
 GOOGLE_OAUTH_CLIENT_ID=
 GOOGLE_OAUTH_CLIENT_SECRET=
+
+# Github OAuth
 GITHUB_OAUTH_CLIENT_ID=
 GITHUB_OAUTH_CLIENT_SECRET=
 
+# Cloudflare Captcha
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 ```
