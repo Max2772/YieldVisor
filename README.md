@@ -1,68 +1,77 @@
-<p align="center">
-  <img src="assets/logo.png" alt="YieldVisor logo" width="140">
-</p>
-
-<h1 align="center">YieldVisor</h1>
+<h1 align="center" style="font-family: 'Libre Baskerville', Georgia, serif; font-weight: 700; font-size: 2.25rem; letter-spacing: -0.3px; margin: 0;">
+  Yield<span style="color: #00e676">Visor</span>
+</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Stocks-Supported-131722?logo=tradingview&logoColor=white">
   <img src="https://img.shields.io/badge/Crypto-Supported-F7931A?logo=bitcoin&logoColor=white">
   <img src="https://img.shields.io/badge/Steam_Items-Supported-171a21?logo=steam&logoColor=white">
-  <a href="https://www.python.org"><img src="https://img.shields.io/badge/python-3.11+-blue" alt="Python 3.11+"></a>
+  <img src="https://img.shields.io/badge/Django-6.0-092E20?logo=django&logoColor=white">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT License"></a>
 </p>
 
-YieldVisor is a Django web application for tracking investments across **stocks**, **cryptocurrencies**, and **Steam market items**. It combines portfolio management, live prices, historical charts, analytics, and price alerts in one dashboard.
+**YieldVisor** is a Django web application for tracking investments across **stocks**, **cryptocurrencies**, and **Steam market items**. It combines portfolio management, live prices, historical charts, analytics, and price alerts in one dashboard.
 
 The public website is available at **https://yieldvisor.bibikau.org**.
 
-Market prices and item history are provided by a separate API at **https://api.bibikau.org**.
+Market prices and item history are provided by a separate API at **https://api.bibikau.org**. API used for gathering prices and history [InvestAPI](https://github.com/Max2772/InvestAPI).
 
 ## Screenshots
 
 ### Landing Page
 
 ![Landing page screenshot](assets/landing-page.png)
+---
 
 ### Portfolio
 
 ![Portfolio page screenshot](assets/portfolio-page.png)
+---
 
 ### Analytics
 
 ![Analytics page screenshot](assets/analytics-page.png)
+---
 
 ### History
 
 ![History page screenshot](assets/history-page.png)
+---
 
 ### Stocks
 
 ![Stocks page screenshot](assets/stocks-page.png)
+---
 
 ### Stock Details
 
 ![Single stock page screenshot](assets/single-stock-page.png)
+---
 
 ### Crypto
 
 ![Crypto page screenshot](assets/crypto-page.png)
+---
 
 ### Crypto Details
 
 ![Single crypto page screenshot](assets/single-crypto-page.png)
+---
 
 ### Steam Market
 
 ![Steam page screenshot](assets/steam-page.png)
+---
 
 ### Steam Item Details
 
 ![Single Steam item page screenshot](assets/single-steam-page.png)
+---
 
 ### Alerts
 
 ![Alerts page screenshot](assets/alerts-page.png)
+---
 
 ## Features
 
