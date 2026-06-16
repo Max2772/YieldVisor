@@ -1,6 +1,6 @@
-<h1 align="center" style="font-family: 'Libre Baskerville', Georgia, serif; font-weight: 700; font-size: 2.25rem; letter-spacing: -0.3px; margin: 0;">
-  Yield<span style="color: #00e676">Visor</span>
-</h1>
+<p align="center">
+  <img src="assets/brand.svg" alt="YieldVisor" height="52">
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Stocks-Supported-131722?logo=tradingview&logoColor=white">
@@ -127,7 +127,7 @@ ALLOWED_HOSTS=127.0.0.1,localhost
 CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
 INVEST_API_BASE_URL=https://api.bibikau.org
 
-# Optional
+##################### Optional #####################
 INVEST_API_TIMEOUT=15
 INVEST_API_CACHE_TTL=300
 
